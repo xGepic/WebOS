@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { LinksWidget } from '../links-widget/links-widget';
+import { TodosWidget } from '../todos-widget/todos-widget';
 import { WebOSCore } from '../webos-core';
 
 /** The Desktop: the snap grid between the Menu Bar and the Dock, with each Widget at its layout position. */
 @Component({
   selector: 'webos-desktop',
-  imports: [ClockWidget, LinksWidget],
+  imports: [ClockWidget, LinksWidget, TodosWidget],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.--grid-columns]': 'webos.grid()?.columns',
@@ -25,6 +26,9 @@ import { WebOSCore } from '../webos-core';
           }
           @case ('links') {
             <webos-links-widget />
+          }
+          @case ('todos') {
+            <webos-todos-widget />
           }
         }
       </div>

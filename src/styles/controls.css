@@ -1,5 +1,5 @@
 /*
- * Shared controls used inside Apps and Widgets: text fields and buttons.
+ * Shared controls used inside Apps and Widgets: text fields, buttons and checkboxes.
  * They sit on a .material surface and take their fills from the tokens.
  */
 .text-field {
@@ -81,4 +81,38 @@
 /* A toggle button that is on. */
 .button[aria-pressed='true'] {
   background: var(--selected-fill);
+}
+
+/* A round checkbox, e.g. for checking off a Todo. Give it an aria-label. */
+.checkbox {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.checkbox:hover {
+  border-color: var(--text-primary);
+}
+.checkbox:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.checkbox:checked::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.28rem;
+  margin-top: -0.12rem;
+  border: solid var(--on-accent);
+  border-width: 0 0 2px 2px;
+  transform: rotate(-45deg);
+}
+.checkbox:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }

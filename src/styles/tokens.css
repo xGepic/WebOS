@@ -28,6 +28,8 @@
   --control-fill: rgba(255, 255, 255, 0.07);
   --control-fill-hover: rgba(255, 255, 255, 0.14);
   --control-fill-active: rgba(255, 255, 255, 0.22);
+  --accent: #5fd9cb;
+  --on-accent: #07141a;
   --focus-ring: rgba(110, 230, 216, 0.75);
   /* A control that is switched on, e.g. a Docked Link's Dock button */
   --selected-fill: rgba(110, 230, 216, 0.18);

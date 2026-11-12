@@ -1,9 +1,10 @@
 import type { AppId } from './apps';
 import type { Storage } from './edges';
 import type { LinkGroup } from './links';
+import type { Todo } from './todos';
 
 /**
- * The single persisted state document. Later tickets add Todos, Notes and the
+ * The single persisted state document. Later tickets add Notes and the
  * Desktop layout here, each with a migration.
  */
 export interface StateDocument {
@@ -21,9 +22,11 @@ export interface StateDocument {
   linkGroups: LinkGroup[];
   /** The ids of the Docked Links, in Dock order. Independent of the Link Groups' order. */
   dockedLinkIds: string[];
+  /** Every Todo, open and completed, in display order. */
+  todos: Todo[];
 }
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -38,6 +41,7 @@ const migrations: Record<number, Migration> = {
   1: (document) => ({ ...document, schemaVersion: 2, profile: { name: '' }, apps: {} }),
   2: (document) => ({ ...document, schemaVersion: 3, linkGroups: [] }),
   3: (document) => ({ ...document, schemaVersion: 4, dockedLinkIds: [] }),
+  4: (document) => ({ ...document, schemaVersion: 5, todos: [] }),
 };
 
 export class StateDocumentError extends Error {
@@ -45,7 +49,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [] };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [] };
 }
 
 function versionOf(document: unknown): number {
@@ -75,7 +79,8 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     apps === null ||
     Array.isArray(apps) ||
     !Array.isArray(document['linkGroups']) ||
-    !Array.isArray(document['dockedLinkIds'])
+    !Array.isArray(document['dockedLinkIds']) ||
+    !Array.isArray(document['todos'])
   ) {
     throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }

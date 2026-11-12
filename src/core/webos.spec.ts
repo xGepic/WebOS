@@ -127,11 +127,27 @@ describe('state document', () => {
     expect(webos.links.docked()).toEqual([]);
   });
 
+  it('keeps the name, Links and Docked Links when migrating a v4 document (ticket 06 builds) forward', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 4,
+      profile: { name: 'Stefan' },
+      apps: {},
+      linkGroups: [{ id: 'g', name: 'Local', links: [{ id: 'l', title: 'web', url: 'http://localhost:4200' }] }],
+      dockedLinkIds: ['l'],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.profile.greeting()).toBe('Good morning, Stefan');
+    expect(webos.links.docked().map((link) => link.title)).toEqual(['web']);
+    expect(webos.todos.open()).toEqual([]);
+  });
+
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 4, apps: {}, linkGroups: [], dockedLinkIds: [] }],
+    ['at the current version but missing its profile', { schemaVersion: 5, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

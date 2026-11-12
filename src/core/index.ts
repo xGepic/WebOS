@@ -4,12 +4,14 @@ import type { Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
 import * as links from './links';
+import * as todos from './todos';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { Clock, Storage } from './edges';
 export type { Link, LinkGroup, LinkInput } from './links';
+export type { Todo } from './todos';
 export { StateDocumentError } from './state';
 
 export interface WebOSEdges {
@@ -54,6 +56,23 @@ export interface WebOS {
     /** Moves a Docked Link to `toIndex` in the Dock (clamped). */
     moveDocked(linkId: string, toIndex: number): Promise<void>;
   };
+  readonly todos: {
+    /** Open Todos in display order. */
+    open(): readonly todos.Todo[];
+    /** Completed Todos, most recently completed first. */
+    completed(): readonly todos.Todo[];
+    /** Adds a Todo at the end of the list. Resolves to its id, or undefined if the text is blank. */
+    add(text: string): Promise<string | undefined>;
+    /** Checks a Todo off, recording the current time. */
+    complete(id: string): Promise<void>;
+    /** Unchecks a Todo, which returns to its place and is no longer due to be cleared. */
+    uncomplete(id: string): Promise<void>;
+    /** Replaces a Todo's text; blank text is ignored. */
+    editText(id: string, text: string): Promise<void>;
+    delete(id: string): Promise<void>;
+    /** Moves an open Todo to `toIndex` among the open Todos (clamped). */
+    move(id: string, toIndex: number): Promise<void>;
+  };
   readonly desktop: {
     /** The snap grid, in cells. */
     readonly grid: typeof desktop.grid;
@@ -78,7 +97,8 @@ export interface WebOS {
 }
 
 /**
- * Creates the webOS core. Rejects with a `StateDocumentError` if the stored
+ * Creates the webOS core, as the Desktop loads. Completed Todos that are due
+ * to be cleared are cleared now. Rejects with a `StateDocumentError` if the stored
  * state can't be used, without touching it.
  */
 export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS> {
@@ -93,6 +113,10 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     notify();
     return storage.write(next);
   };
+
+  // The Desktop is loading: clear Todos completed 3 or more days ago, and save that.
+  const remaining = todos.clearCompleted(state.todos, clock.now().getTime());
+  if (remaining.length !== state.todos.length) await commit({ ...state, todos: remaining });
 
   // Another tab saved: adopt its document, so this tab never writes back a stale copy.
   // A document this build can't use is ignored rather than adopted.
@@ -111,8 +135,27 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     return commit({ ...state, linkGroups, dockedLinkIds: links.pruneDock(linkGroups, state.dockedLinkIds) });
   };
 
+  /** Applies a change to the Todos. */
+  const commitTodos = (change: (list: readonly todos.Todo[]) => todos.Todo[]) =>
+    commit({ ...state, todos: change(state.todos) });
+
   return {
     apps,
+    todos: {
+      open: () => todos.openTodos(state.todos),
+      completed: () => todos.completedTodos(state.todos),
+      async add(text) {
+        if (!text.trim()) return undefined;
+        const id = crypto.randomUUID();
+        await commitTodos((list) => todos.addTodo(list, { id, text, createdAt: clock.now().getTime() }));
+        return id;
+      },
+      complete: (id) => commitTodos((list) => todos.setCompleted(list, id, clock.now().getTime())),
+      uncomplete: (id) => commitTodos((list) => todos.setCompleted(list, id, null)),
+      editText: (id, text) => commitTodos((list) => todos.editText(list, id, text)),
+      delete: (id) => commitTodos((list) => todos.deleteTodo(list, id)),
+      move: (id, toIndex) => commitTodos((list) => todos.moveTodo(list, id, toIndex)),
+    },
     links: {
       groups: () => state.linkGroups,
       async addGroup(name) {

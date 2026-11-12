@@ -24,6 +24,14 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
+  todos: {
+    name: 'Todos',
+    sizes: {
+      S: { columns: 3, rows: 3 },
+      M: { columns: 4, rows: 4 },
+      L: { columns: 4, rows: 6 },
+    },
+  },
   links: {
     name: 'Links',
     sizes: {
@@ -51,6 +59,7 @@ export interface PlacedWidget extends Placement, Span {}
 const defaultLayout: readonly Placement[] = [
   { widget: 'clock', size: 'M', column: 0, row: 0 },
   { widget: 'links', size: 'M', column: 0, row: 2 },
+  { widget: 'todos', size: 'M', column: 8, row: 0 },
 ];
 
 export function layout(): readonly PlacedWidget[] {

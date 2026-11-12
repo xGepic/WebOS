@@ -136,12 +136,14 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Todos module supports add, edit text, complete, uncomplete, delete and reorder. Each Todo records its created time and its completion time (if any).
-- [ ] A completed Todo is removed once 3 days have passed since its completion time. Unchecking it earlier cancels the removal. Clearing runs when the Desktop loads.
-- [ ] The Todos Widget is added to the Widget catalog and default layout, with a quick-add input, a checkbox per Todo, in-place editing, delete, drag-reorder, and a collapsible completed section.
-- [ ] Core tests (with the controllable Clock): clearing exactly at the 3-day boundary, cancelling by unchecking, ordering after reorder and after completion.
+- [x] The core Todos module supports add, edit text, complete, uncomplete, delete and reorder. Each Todo records its created time and its completion time (if any).
+- [x] A completed Todo is removed once 3 days have passed since its completion time. Unchecking it earlier cancels the removal. Clearing runs when the Desktop loads.
+- [x] The Todos Widget is added to the Widget catalog and default layout, with a quick-add input, a checkbox per Todo, in-place editing, delete, drag-reorder, and a collapsible completed section.
+- [x] Core tests (with the controllable Clock): clearing exactly at the 3-day boundary, cancelling by unchecking, ordering after reorder and after completion.
+
+**Decisions made while building:** the completed section lists the most recently completed first. Alt+↑/↓ on a Todo's text reorders it without a mouse. Blank text is ignored when adding, and an edit saved blank keeps the old text. A tab left open is only cleared on its next load.
 
 ---
 
