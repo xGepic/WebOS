@@ -8,7 +8,8 @@ const openable = (page: BrowserPage) => !/^javascript:/i.test(page.url);
 
 /**
  * The browser's bookmarks and history, through the extension `bookmarks` and
- * `history` permissions. Outside the extension (`ng serve`) there are none.
+ * `history` permissions, for the Launcher and the Recent Widget. Outside the
+ * extension (`ng serve`) there are none.
  */
 export function createBrowserLookup(): BrowserLookup {
   const bookmarks = globalThis.chrome?.bookmarks;
@@ -30,6 +31,11 @@ export function createBrowserLookup(): BrowserLookup {
       return items
         .flatMap((item) => (item.url ? [{ title: item.title ?? '', url: item.url, visitedAt: item.lastVisitTime ?? 0 }] : []))
         .filter(openable);
+    },
+    async recent(count) {
+      if (!history) return [];
+      const items = await history.search({ text: '', startTime: 0, maxResults: count });
+      return items.flatMap((item) => (item.url ? [{ title: item.title ?? '', url: item.url, visitedAt: item.lastVisitTime ?? 0 }] : []));
     },
   };
 }

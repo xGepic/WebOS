@@ -66,6 +66,14 @@ _Avoid_: Favorite note, featured note
 A single item on the one flat to-do list. It is either open or completed.
 _Avoid_: Task, item, ticket
 
+**Countdown**:
+A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
+_Avoid_: Event, deadline, timer
+
+**World Clock city**:
+A city on the World Clock Widget, kept with its time zone.
+_Avoid_: Time zone, location
+
 ## Data
 
 **Data Source**:

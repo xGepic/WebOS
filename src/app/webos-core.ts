@@ -16,6 +16,7 @@ import { createBrowserLookup } from '../edges/browser-lookup';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createNetworkFetch } from '../edges/network';
 import { createSystemClock } from '../edges/system-clock';
+import { createSystemMonitor } from '../edges/system-monitor';
 
 /**
  * Holds the webOS core for the Angular layer and exposes its read-only state
@@ -51,6 +52,16 @@ export class WebOSCore {
   readonly date = this.read((core) => core.clock.date());
   readonly weather = this.read((core) => core.weather.view());
   readonly weatherCity = this.read((core) => core.weather.city());
+  readonly countdowns = this.read((core) => core.countdowns.list());
+  readonly upcomingCountdowns = this.read((core) => core.countdowns.upcoming());
+  readonly worldClockCities = this.read((core) => core.worldClock.cities());
+  readonly worldClock = this.read((core) => core.worldClock.view());
+  readonly moon = this.read((core) => core.moon.view());
+  readonly sun = this.read((core) => core.sun.view());
+  readonly recentPages = this.read((core) => core.recent.pages());
+  readonly system = this.read((core) => core.system.view());
+  readonly github = this.read((core) => core.github.view());
+  readonly hasGitHubToken = this.read((core) => core.github.hasToken());
 
   /** Creates the core. Called once by the app initializer before the first render. */
   async start(): Promise<void> {
@@ -60,6 +71,7 @@ export class WebOSCore {
         clock: createSystemClock(),
         browser: createBrowserLookup(),
         fetch: createNetworkFetch(),
+        system: createSystemMonitor(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {

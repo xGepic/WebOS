@@ -2,6 +2,7 @@
 
 Status: ready to build
 Related: [GLOSSARY](../../GLOSSARY.md), [ADR-0001 Angular instead of React](../adr/0001-angular-over-react.md)
+Extended by: [Spec 0002: More Widgets](0002-more-widgets.md), which adds seven Widgets, a GitHub integration, a full-width 21-column grid and a new Stage layout.
 
 ## Problem Statement
 
@@ -264,7 +265,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - Dropping a Widget onto occupied cells pushes the other Widgets to the next free position, so Widgets never overlap.
 - Edit Mode is entered only from the Desktop's right-click menu ("Edit Desktop"). It is left with Esc or the Menu Bar "Done" button.
 - The default layout is the **Stage** layout: a top band of Weather at S (3 × 3 cells), the Clock at M (6 × 3) and Calendar at S (3 × 3), and Links, Todos and Notes at M (4 × 5 each) in a row beneath it. The Clock's L is the full width (12 × 3). The layout shows all v1 Widgets and fills the grid, so in Edit Mode a Widget swaps with one of the same size dropped onto, and other moves need room made first by making a Widget smaller or hiding it.
-- The Desktop's grid is centred and at most 1180 px wide.
+- The Desktop's grid is centred and at most 1180 px wide. (Spec 0002 widens it to the full screen in 21 columns.)
 - Schema version 9 moved every saved layout to the first Stage layout, and schema version 10 moves it once more, to the Stage layout with Weather and Calendar. Hidden Widgets stay hidden.
 
 ### Window and Apps
@@ -351,7 +352,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - Syncing across devices. Export/import is the only way to move data.
 - Publishing to the Chrome Web Store, and the rename that would require.
 - End-to-end browser tests and visual regression tests.
-- GitHub, Hacker News/RSS and other third-party integrations, apart from the weather.
+- GitHub (until spec 0002 added the contribution graph), Hacker News/RSS and other third-party integrations, apart from the weather.
 - Calendar events and calendar accounts.
 - Hourly or multi-day forecasts, other units than °C, and detecting the location from the browser.
 - A generic Data Source contract or a generic Data Source Widget.

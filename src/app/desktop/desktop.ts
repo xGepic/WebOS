@@ -14,10 +14,17 @@ import { capturePlaces, slideToNewPlaces, type GridCell, type GridItem } from '.
 import { springTo } from '../../motion/springs';
 import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
+import { CountdownWidget } from '../countdown-widget/countdown-widget';
+import { GitHubWidget } from '../github-widget/github-widget';
 import { LinksWidget } from '../links-widget/links-widget';
+import { MoonWidget } from '../moon-widget/moon-widget';
 import { NotesWidget } from '../notes-widget/notes-widget';
+import { RecentWidget } from '../recent-widget/recent-widget';
+import { SunWidget } from '../sun-widget/sun-widget';
+import { SystemWidget } from '../system-widget/system-widget';
 import { TodosWidget } from '../todos-widget/todos-widget';
 import { WeatherWidget } from '../weather-widget/weather-widget';
+import { WorldClockWidget } from '../world-clock-widget/world-clock-widget';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 import { DesktopEditor } from './desktop-editor';
@@ -44,7 +51,22 @@ const MENU_MARGIN = 8;
  */
 @Component({
   selector: 'webos-desktop',
-  imports: [GridDrag, ClockWidget, LinksWidget, TodosWidget, NotesWidget, WeatherWidget, CalendarWidget],
+  imports: [
+    GridDrag,
+    ClockWidget,
+    LinksWidget,
+    TodosWidget,
+    NotesWidget,
+    WeatherWidget,
+    CalendarWidget,
+    WorldClockWidget,
+    CountdownWidget,
+    MoonWidget,
+    SunWidget,
+    RecentWidget,
+    SystemWidget,
+    GitHubWidget,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.editing]': 'editor.editing()',
@@ -91,6 +113,27 @@ const MENU_MARGIN = 8;
                 }
                 @case ('calendar') {
                   <webos-calendar-widget />
+                }
+                @case ('world-clock') {
+                  <webos-world-clock-widget />
+                }
+                @case ('countdown') {
+                  <webos-countdown-widget />
+                }
+                @case ('moon') {
+                  <webos-moon-widget [size]="placed.size" />
+                }
+                @case ('sun') {
+                  <webos-sun-widget />
+                }
+                @case ('recent') {
+                  <webos-recent-widget />
+                }
+                @case ('system') {
+                  <webos-system-widget />
+                }
+                @case ('github') {
+                  <webos-github-widget [size]="placed.size" />
                 }
               }
             </div>
@@ -158,7 +201,8 @@ const MENU_MARGIN = 8;
       display: grid;
       grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
       grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
-      gap: 1.25rem;
+      /* Narrower gaps on smaller screens leave the 21 columns more room. */
+      gap: clamp(0.75rem, 1vw, 1.25rem);
       /* Centred, never wider than --desktop-max-width. */
       padding: 1.25rem max(1.5rem, calc((100vw - var(--desktop-max-width)) / 2)) 0;
     }

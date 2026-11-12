@@ -47,7 +47,8 @@ import { WebOSCore } from '../../webos-core';
         <p class="hint" role="status">{{ message }}</p>
       }
       <p class="hint">
-        The Weather Widget shows it in °C, from Open-Meteo. Only the city's coordinates are sent.
+        The Weather Widget shows it in °C, from Open-Meteo. Only the city's coordinates are sent. The Sun and Moon
+        Widgets use this city too; they are worked out on this machine.
       </p>
     </section>
   `,

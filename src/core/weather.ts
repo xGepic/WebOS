@@ -1,4 +1,4 @@
-import { formatTime } from './format';
+import { formatTime, isTimeZone } from './format';
 
 /**
  * Weather for the Weather Widget, from Open-Meteo (free, no key). It is not a
@@ -15,6 +15,11 @@ export interface WeatherCity {
   country: string;
   latitude: number;
   longitude: number;
+  /**
+   * The city's IANA time zone, e.g. "Europe/Vienna", when the geocoder gives
+   * one the browser knows. Cities chosen before webOS kept it have none.
+   */
+  timeZone?: string;
 }
 
 export type WeatherCondition =
@@ -147,6 +152,7 @@ export function parseCities(response: unknown): WeatherCity[] {
       country: text(result['country']),
       latitude: result['latitude'] as number,
       longitude: result['longitude'] as number,
+      ...(isTimeZone(result['timezone']) ? { timeZone: result['timezone'] } : {}),
     }));
 }
 

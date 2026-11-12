@@ -69,8 +69,8 @@
   --dock-icon-size: 52px;
   /* Space the Desktop leaves at the bottom for the Dock, including icons magnified by MAX_MAGNIFICATION (dock.ts). */
   --dock-clearance: 104px;
-  /* The Desktop's grid is centred and never wider than this. */
-  --desktop-max-width: 1180px;
+  /* The Desktop's grid spans the screen, and is centred only on screens wider than this. */
+  --desktop-max-width: 2560px;
 
   /* Wallpaper */
   --wallpaper-base: #010208;

@@ -2,8 +2,11 @@ import { defaultLayout, type LayoutEntry } from './desktop';
 import type { Storage } from './edges';
 import type { LinkGroup } from './links';
 import type { Note } from './notes';
+import type { Countdown } from './countdown';
+import type { GitHubContributions } from './github';
 import type { Todo } from './todos';
 import type { WeatherCity, WeatherReport } from './weather';
+import type { WorldClockCity } from './world-clock';
 
 /**
  * The single persisted state document. Later tickets add Notes and the
@@ -35,9 +38,19 @@ export interface StateDocument {
     /** The last forecast fetched for that city. A cache: backups leave it out. */
     report: WeatherReport | null;
   };
+  /** The Countdowns, in the order they were added. The Widget shows them soonest first. */
+  countdowns: Countdown[];
+  /** The World Clock's cities, in the order the user put them. */
+  worldClocks: WorldClockCity[];
+  github: {
+    /** The personal access token the GitHub Widget reads with; empty when not set. Backups leave it out. */
+    token: string;
+    /** The last contribution graph fetched with it. A cache: backups leave it out. */
+    contributions: GitHubContributions | null;
+  };
 }
 
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 12;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -96,6 +109,65 @@ const migrations: Record<number, Migration> = {
       weather: { city: null, report: null },
     };
   },
+  // More Widgets: every Desktop moves once to the Stage layout with a fourth column beneath the
+  // top band, holding the World Clock and a Countdown. Hidden Widgets stay hidden; the other new
+  // Widgets start hidden, for Edit Mode to show.
+  10: (document) => {
+    const hidden = hiddenIn(document);
+    const stage = [
+      { widget: 'weather', size: 'S', column: 0, row: 0 },
+      { widget: 'clock', size: 'M', column: 3, row: 0 },
+      { widget: 'calendar', size: 'S', column: 9, row: 0 },
+      { widget: 'links', size: 'M', column: 0, row: 3 },
+      { widget: 'todos', size: 'M', column: 3, row: 3 },
+      { widget: 'notes', size: 'M', column: 6, row: 3 },
+      { widget: 'world-clock', size: 'S', column: 9, row: 3 },
+      { widget: 'countdown', size: 'M', column: 9, row: 5 },
+    ];
+    const startHidden = [
+      { widget: 'moon', size: 'S', column: 0, row: 0, visible: false },
+      { widget: 'sun', size: 'S', column: 0, row: 0, visible: false },
+      { widget: 'recent', size: 'M', column: 0, row: 0, visible: false },
+      { widget: 'system', size: 'S', column: 0, row: 0, visible: false },
+      { widget: 'github', size: 'S', column: 0, row: 0, visible: false },
+    ];
+    return {
+      ...document,
+      schemaVersion: 11,
+      layout: [...stage.map((entry) => ({ ...entry, visible: !hidden.has(entry.widget) })), ...startHidden],
+      countdowns: [],
+      worldClocks: [],
+      github: { token: '', contributions: null },
+    };
+  },
+  // The wide Desktop: the grid spans the screen in 21 columns, room for every Widget at once.
+  // Every Desktop moves once to the Stage layout for it. Of the Widgets webOS had before
+  // version 11, hidden ones stay hidden; the newer ones are shown, as version 11 hid them
+  // only for lack of room.
+  11: (document) => {
+    const hidden = hiddenIn(document);
+    const older = new Set(['weather', 'clock', 'calendar', 'links', 'todos', 'notes']);
+    const stage = [
+      { widget: 'world-clock', size: 'M', column: 0, row: 0 },
+      { widget: 'weather', size: 'S', column: 3, row: 0 },
+      { widget: 'clock', size: 'M', column: 6, row: 0 },
+      { widget: 'calendar', size: 'S', column: 12, row: 0 },
+      { widget: 'sun', size: 'M', column: 15, row: 0 },
+      { widget: 'moon', size: 'M', column: 18, row: 0 },
+      { widget: 'links', size: 'M', column: 0, row: 3 },
+      { widget: 'todos', size: 'M', column: 3, row: 3 },
+      { widget: 'notes', size: 'M', column: 6, row: 3 },
+      { widget: 'github', size: 'M', column: 9, row: 3 },
+      { widget: 'recent', size: 'M', column: 18, row: 3 },
+      { widget: 'countdown', size: 'S', column: 9, row: 6 },
+      { widget: 'system', size: 'S', column: 12, row: 6 },
+    ];
+    return {
+      ...document,
+      schemaVersion: 12,
+      layout: stage.map((entry) => ({ ...entry, visible: !(older.has(entry.widget) && hidden.has(entry.widget)) })),
+    };
+  },
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -135,6 +207,9 @@ function freshDocument(): StateDocument {
     pinnedNoteId: null,
     layout: [...defaultLayout],
     weather: { city: null, report: null },
+    countdowns: [],
+    worldClocks: [],
+    github: { token: '', contributions: null },
   };
 }
 
@@ -166,6 +241,7 @@ function assertCurrentShape(
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
   const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
+  const github = document['github'] as { token?: unknown; contributions?: unknown } | undefined;
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -179,7 +255,12 @@ function assertCurrentShape(
     !Array.isArray(document['layout']) ||
     !isRecord(weather) ||
     !(weather.city === null || isRecord(weather.city)) ||
-    !(weather.report === null || isRecord(weather.report))
+    !(weather.report === null || isRecord(weather.report)) ||
+    !Array.isArray(document['countdowns']) ||
+    !Array.isArray(document['worldClocks']) ||
+    !isRecord(github) ||
+    typeof github.token !== 'string' ||
+    !(github.contributions === null || isRecord(github.contributions))
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }
@@ -237,7 +318,7 @@ function allRecords(list: unknown, check: (item: Record<string, unknown>) => boo
 }
 
 /**
- * Throws unless every Link Group, Link, Docked Link, Todo and Note in a
+ * Throws unless every Link Group, Link, Docked Link, Todo, Note, Countdown and World Clock city in a
  * current-shape document has the fields webOS reads, and no two of a kind share
  * an id. Checked for documents from outside, such as a backup file; the layout
  * needs no check, as it is made safe whenever it is read.
@@ -256,6 +337,11 @@ export function assertValidContents(document: StateDocument, subject: string): v
       (todo) => isText(todo['text']) && isTime(todo['createdAt']) && (todo['completedAt'] === null || isTime(todo['completedAt'])),
     ) &&
     allRecords(document.notes, (note) => isText(note['body']) && isTime(note['createdAt']) && isTime(note['editedAt'])) &&
-    (document.weather.city === null || isCity(document.weather.city));
+    (document.weather.city === null || isCity(document.weather.city)) &&
+    allRecords(document.countdowns, (countdown) => isText(countdown['title']) && isText(countdown['date'])) &&
+    allRecords(
+      document.worldClocks,
+      (city) => isText(city['name']) && isText(city['country']) && isText(city['timeZone']),
+    );
   if (!valid) throw new StateDocumentError(`${subject} is damaged: some of its data isn't what webOS expects.`);
 }

@@ -217,7 +217,11 @@ describe('Launcher', () => {
     const webos = await createWebOS({
       storage: createMemoryStorage(),
       clock: createTestClock(new Date(2026, 10, 12, 9, 0)),
-      browser: { bookmarks: () => Promise.reject(new Error('no access')), history: () => Promise.reject(new Error('no access')) },
+      browser: {
+        bookmarks: () => Promise.reject(new Error('no access')),
+        history: () => Promise.reject(new Error('no access')),
+        recent: () => Promise.reject(new Error('no access')),
+      },
     });
 
     expect(titles(await webos.launcher.search('notes'))).toEqual(['Notes', 'Search Brave for "notes"']);

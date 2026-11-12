@@ -2,24 +2,42 @@ import { apps } from './apps';
 import * as backup from './backup';
 import * as base64 from './base64';
 import * as calendar from './calendar';
+import * as countdown from './countdown';
 import * as desktop from './desktop';
 import * as devUtilities from './dev-utilities';
-import type { BrowserLookup, Clock, Fetch, Storage } from './edges';
+import type { BrowserLookup, Clock, Fetch, Storage, SystemMonitor, VisitedPage } from './edges';
+import { FetchError } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
+import * as github from './github';
 import * as json from './json';
 import * as jwt from './jwt';
 import * as launcher from './launcher';
 import * as links from './links';
+import * as moon from './moon';
 import * as notes from './notes';
+import * as recent from './recent';
+import * as sun from './sun';
+import * as system from './system';
 import * as timestamp from './timestamp';
 import * as todos from './todos';
 import * as weather from './weather';
+import * as worldClock from './world-clock';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
-export type { BrowserLookup, BrowserPage, Clock, Fetch, Storage, VisitedPage } from './edges';
+export type { BrowserLookup, BrowserPage, Clock, Fetch, FetchRequest, Storage, SystemMonitor, SystemSample, VisitedPage } from './edges';
+export { FetchError } from './edges';
+export type { Countdown, CountdownInput, CountdownView } from './countdown';
+export type { WorldClockCity, WorldClockView } from './world-clock';
+export { MAX_WORLD_CLOCKS } from './world-clock';
+export type { MoonEvent, MoonPhase, MoonView } from './moon';
+export type { SunView } from './sun';
+export type { RecentPage } from './recent';
+export type { SystemView } from './system';
+export { CPU_HISTORY } from './system';
+export type { ContributionDay, ContributionLevel, GitHubProblem, GitHubView } from './github';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './calendar';
 export type { WeatherCity, WeatherCondition, WeatherView } from './weather';
 export { describeCity } from './weather';
@@ -40,8 +58,10 @@ export interface WebOSEdges {
   clock: Clock;
   /** The browser's bookmarks and history, for the Launcher. Without it, the Launcher finds none. */
   browser?: BrowserLookup;
-  /** The network, for the Weather Widget. Without it, no weather is fetched. */
+  /** The network, for the Weather and GitHub Widgets. Without it, nothing is fetched. */
   fetch?: Fetch;
+  /** The machine's processors and memory, for the System Widget. Without it, the Widget says they are unavailable. */
+  system?: SystemMonitor;
 }
 
 export interface WebOS {
@@ -253,6 +273,69 @@ export interface WebOS {
      */
     refresh(): Promise<void>;
   };
+  /** Days the user counts down to, for the Countdown Widget, managed in Settings. */
+  readonly countdowns: {
+    /** Every Countdown, soonest first. */
+    list(): readonly countdown.Countdown[];
+    /** Today's and later Countdowns, soonest first, with the days to go. */
+    upcoming(): readonly countdown.CountdownView[];
+    /** Adds a Countdown. Resolves to its id, or undefined if the title is blank or the date isn't a real one. */
+    add(input: countdown.CountdownInput): Promise<string | undefined>;
+    /** Changes a Countdown. Resolves to whether it was changed: not with a blank title or a date that isn't real. */
+    edit(id: string, input: countdown.CountdownInput): Promise<boolean>;
+    delete(id: string): Promise<void>;
+  };
+  /** The World Clock's cities, managed in Settings. */
+  readonly worldClock: {
+    /** The cities, in the order the user put them. */
+    cities(): readonly worldClock.WorldClockCity[];
+    /** Each city's time now, and how it compares with the time here. */
+    view(): readonly worldClock.WorldClockView[];
+    /**
+     * Adds a city found by `weather.searchCities` at the end. Resolves to
+     * whether it was added: not without a time zone, if it is already there,
+     * or once there are `MAX_WORLD_CLOCKS`.
+     */
+    add(city: weather.WeatherCity): Promise<boolean>;
+    /** Moves a city to `toIndex` (clamped). */
+    move(id: string, toIndex: number): Promise<void>;
+    delete(id: string): Promise<void>;
+  };
+  /** The Moon tonight, computed locally. Seen from the Weather city's hemisphere (north without one). */
+  readonly moon: {
+    view(): moon.MoonView;
+  };
+  /** Sunrise and sunset in the Weather city, computed locally. */
+  readonly sun: {
+    view(): sun.SunView;
+  };
+  /** The pages visited last, for the Recent Widget. Kept per tab and never saved. */
+  readonly recent: {
+    /** The pages from the last `refresh`, latest first; none before one. */
+    pages(): readonly recent.RecentPage[];
+    /** Asks the browser for the pages visited last. Resolves when they are in; a failure keeps the ones there were. */
+    refresh(): Promise<void>;
+  };
+  /** The machine's processor and memory use, for the System Widget. Kept per tab and never saved. */
+  readonly system: {
+    view(): system.SystemView;
+    /** Takes a reading. The Widget takes one every few seconds while it is shown; processor use needs two. */
+    sample(): Promise<void>;
+  };
+  /** The GitHub Widget's contribution graph, read with a personal access token set in Settings. */
+  readonly github: {
+    /** Whether a token is set. The token itself never leaves the core. */
+    hasToken(): boolean;
+    view(): github.GitHubView;
+    /** Sets the token (blank removes it), drops the old token's graph, and fetches the new one's. */
+    setToken(token: string): Promise<void>;
+    /**
+     * Fetches the graph if the stored one is an hour old or there is none,
+     * unless a fetch is already under way. A failed fetch keeps the last graph
+     * and doesn't reject.
+     */
+    refresh(): Promise<void>;
+  };
   /**
    * Calls `listener` whenever anything readable from the core may have changed,
    * including the time at the start of every minute. Returns an unsubscribe function.
@@ -267,7 +350,7 @@ export interface WebOS {
  * to be cleared are cleared now. Rejects with a `StateDocumentError` if the stored
  * state can't be used, without touching it.
  */
-export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges): Promise<WebOS> {
+export async function createWebOS({ storage, clock, browser, fetch, system: systemMonitor }: WebOSEdges): Promise<WebOS> {
   /** A document with its layout made safe to use; see `desktop.normalizeLayout`. */
   const withSafeLayout = (document: StateDocument): StateDocument => ({ ...document, layout: desktop.normalizeLayout(document.layout) });
   let state = withSafeLayout(await loadState(storage));
@@ -290,9 +373,13 @@ export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges
     return storage.write(next);
   };
 
-  // The Desktop is loading: clear Todos completed 3 or more days ago, and save that.
+  // The Desktop is loading: clear Todos completed 3 or more days ago, and Countdowns whose
+  // day has passed, and save that.
   const remaining = todos.clearCompleted(state.todos, clock.now().getTime());
-  if (remaining.length !== state.todos.length) await commit({ ...state, todos: remaining });
+  const comingUp = countdown.clearPassed(state.countdowns, clock.now());
+  if (remaining.length !== state.todos.length || comingUp.length !== state.countdowns.length) {
+    await commit({ ...state, todos: remaining, countdowns: comingUp });
+  }
 
   // Another tab saved: adopt its document, so this tab never writes back a stale copy.
   // A document this build can't use is ignored rather than adopted.
@@ -388,6 +475,53 @@ export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges
 
   // The Desktop is loading: fetch the weather in the background if it is due.
   void refreshWeather();
+
+  /** The GitHub fetch under way in this tab, if any. */
+  let gitHubFetch: Promise<void> | undefined;
+  /** Why this tab's last GitHub fetch failed, if it did. Per tab, so it isn't part of `state`. */
+  let gitHubProblem: github.GitHubProblem | undefined;
+
+  /** Fetches the contribution graph if it is due, or if `force`d. See `github.refresh`. */
+  const refreshGitHub = (force = false): Promise<void> => {
+    const token = state.github.token;
+    if (!token || !fetch) return Promise.resolve();
+    if (gitHubFetch) return gitHubFetch;
+    if (!force && !github.isDue(state.github.contributions, clock.now().getTime())) return Promise.resolve();
+    // The token may be changed while the graph is on the way; then the answer is ignored.
+    const stillSet = () => state.github.token === token;
+    gitHubFetch = (async () => {
+      try {
+        const response = await fetch.json(github.GITHUB_GRAPHQL_URL, {
+          method: 'POST',
+          headers: { Authorization: `bearer ${token}` },
+          body: { query: github.CONTRIBUTIONS_QUERY },
+        });
+        const contributions = github.parseContributions(response, clock.now().getTime());
+        if (stillSet()) {
+          gitHubProblem = undefined;
+          await commit({ ...state, github: { ...state.github, contributions } });
+        }
+      } catch (error) {
+        if (stillSet()) {
+          gitHubProblem = error instanceof FetchError && (error.status === 401 || error.status === 403) ? 'token' : 'unavailable';
+          notify();
+        }
+      } finally {
+        gitHubFetch = undefined;
+      }
+      // The token changed while this fetch was under way: fetch the new token's graph now.
+      if (!stillSet()) await refreshGitHub(true);
+    })();
+    return gitHubFetch;
+  };
+
+  // The Desktop is loading: fetch the contribution graph in the background if it is due.
+  void refreshGitHub();
+
+  /** The pages visited last, as the browser gave them at this tab's last refresh. */
+  let recentVisits: VisitedPage[] = [];
+  /** This tab's processor and memory readings. */
+  let systemReadings = system.noReadings();
 
   return {
     apps,
@@ -504,12 +638,16 @@ export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges
     backup: {
       export: () => backup.exportFile(state, clock.now()),
       async import(text) {
-        const next = withSafeLayout(backup.importDocument(text));
+        // A backup holds no GitHub token: this machine keeps its own, and fetches its graph afresh.
+        const imported = backup.importDocument(text);
+        const next = withSafeLayout({ ...imported, github: { token: state.github.token, contributions: null } });
         // Saved before this tab takes it on: if saving fails, nothing here has changed either.
         await storage.write(next);
         // This tab shows the Note the backup remembers, like a tab that has just opened.
         shownNoteId = notes.shownNoteId(next.notes, next.apps.notes?.selectedNoteId);
+        gitHubProblem = undefined;
         adopt(next);
+        void refreshGitHub(true);
       },
     },
     clock: {
@@ -537,6 +675,85 @@ export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges
         void refreshWeather(true);
       },
       refresh: () => refreshWeather(),
+    },
+    countdowns: {
+      list: () => [...state.countdowns].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title)),
+      upcoming: () => countdown.upcoming(state.countdowns, clock.now()),
+      async add(input) {
+        const id = crypto.randomUUID();
+        const list = countdown.addCountdown(state.countdowns, id, input);
+        if (!list) return undefined;
+        await commit({ ...state, countdowns: list });
+        return id;
+      },
+      async edit(id, input) {
+        const list = countdown.editCountdown(state.countdowns, id, input);
+        if (!list) return false;
+        await commit({ ...state, countdowns: list });
+        return true;
+      },
+      delete: (id) => commit({ ...state, countdowns: countdown.deleteCountdown(state.countdowns, id) }),
+    },
+    worldClock: {
+      cities: () => state.worldClocks,
+      view: () => worldClock.worldClockView(state.worldClocks, clock.now()),
+      async add(city) {
+        const list = city.timeZone
+          ? worldClock.addWorldClock(state.worldClocks, {
+              id: crypto.randomUUID(),
+              name: city.name,
+              country: city.country,
+              timeZone: city.timeZone,
+            })
+          : undefined;
+        if (!list) return false;
+        await commit({ ...state, worldClocks: list });
+        return true;
+      },
+      move: (id, toIndex) => commit({ ...state, worldClocks: worldClock.moveWorldClock(state.worldClocks, id, toIndex) }),
+      delete: (id) => commit({ ...state, worldClocks: worldClock.deleteWorldClock(state.worldClocks, id) }),
+    },
+    moon: {
+      view: () => moon.moonView(clock.now(), state.weather.city?.latitude),
+    },
+    sun: {
+      view: () => sun.sunView(state.weather.city, clock.now()),
+    },
+    recent: {
+      pages: () => recent.recentPages(recentVisits, clock.now()),
+      async refresh() {
+        if (!browser) return;
+        try {
+          // Asks for extra, as the new tab itself and repeated pages are left out.
+          recentVisits = await browser.recent(recent.RECENT_PAGES * 3);
+          notify();
+        } catch {
+          // Keeps the pages there were.
+        }
+      },
+    },
+    system: {
+      view: () => system.systemView(systemReadings, !!systemMonitor),
+      async sample() {
+        if (!systemMonitor) return;
+        try {
+          systemReadings = system.addReading(systemReadings, await systemMonitor.sample());
+        } catch {
+          systemReadings = { ...systemReadings, failed: true };
+        }
+        notify();
+      },
+    },
+    github: {
+      hasToken: () => !!state.github.token,
+      view: () =>
+        github.gitHubView(!!state.github.token, state.github.contributions, { problem: gitHubProblem, now: clock.now() }),
+      async setToken(token) {
+        gitHubProblem = undefined;
+        await commit({ ...state, github: { token: token.trim(), contributions: null } });
+        void refreshGitHub(true);
+      },
+      refresh: () => refreshGitHub(),
     },
     subscribe(listener) {
       listeners.add(listener);

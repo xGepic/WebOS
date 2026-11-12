@@ -9,12 +9,18 @@ async function freshWebOS() {
 }
 
 describe('default Desktop layout', () => {
-  it('contains every Widget in the catalog exactly once', async () => {
+  it('contains every Widget in the catalog exactly once, shown or hidden', async () => {
     const { desktop } = await freshWebOS();
 
-    const placed = desktop.layout().map((p) => p.widget).sort();
+    const all = [...desktop.layout().map((p) => p.widget), ...desktop.hidden()].sort();
 
-    expect(placed).toEqual(Object.keys(desktop.widgets).sort());
+    expect(all).toEqual(Object.keys(desktop.widgets).sort());
+  });
+
+  it('shows every Widget at once', async () => {
+    const { desktop } = await freshWebOS();
+
+    expect(desktop.hidden()).toEqual([]);
   });
 });
 
@@ -41,22 +47,29 @@ describe('default Desktop layout geometry', () => {
     expect(new Set(cells).size).toBe(cells.length);
   });
 
-  it('is the Stage layout: Weather, the Clock and Calendar across the top, Links, Todos and Notes in a row beneath', async () => {
+  it('is the Stage layout: a top band of six Widgets around the Clock, and Links, Todos, Notes, GitHub and Recent beneath', async () => {
     const { desktop } = await freshWebOS();
 
     expect(desktop.layout().map((p) => `${p.widget} ${p.size} ${p.columns}×${p.rows}@${p.column},${p.row}`)).toEqual([
-      'weather S 3×3@0,0',
-      'clock M 6×3@3,0',
-      'calendar S 3×3@9,0',
-      'links M 4×5@0,3',
-      'todos M 4×5@4,3',
-      'notes M 4×5@8,3',
+      'world-clock M 3×3@0,0',
+      'weather S 3×3@3,0',
+      'clock M 6×3@6,0',
+      'calendar S 3×3@12,0',
+      'sun M 3×3@15,0',
+      'moon M 3×3@18,0',
+      'links M 3×5@0,3',
+      'todos M 3×5@3,3',
+      'notes M 3×5@6,3',
+      'github M 9×3@9,3',
+      'recent M 3×5@18,3',
+      'countdown S 3×2@9,6',
+      'system S 3×2@12,6',
     ]);
   });
 
-  it('fills every cell of the grid', async () => {
+  it('fills every cell of the grid but one 3 × 2 slot, left for Edit Mode to move into', async () => {
     const { desktop } = await freshWebOS();
 
-    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows);
+    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - 6);
   });
 });

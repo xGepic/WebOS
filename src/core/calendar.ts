@@ -94,13 +94,22 @@ export function monthView(now: Date, offset = 0): CalendarMonth {
   };
 }
 
-/** A day as the line under the grid describes it, relative to `now`. Undefined for text that isn't a date. */
-export function describeDay(date: string, now: Date): CalendarDayDetails | undefined {
+/** A date written as `2026-11-30`, as a local midnight. Undefined for text that isn't a real date. */
+export function parseIsoDate(date: string): Date | undefined {
   const match = ISO_DATE.exec(date);
   if (!match) return undefined;
   const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  if (isoDate(day) !== date) return undefined;
-  const away = dayNumber(day) - dayNumber(now);
+  return isoDate(day) === date ? day : undefined;
+}
+
+/** Whole calendar days from the day of `now` to `day` (negative if it is before), unaffected by daylight saving. */
+export const daysFrom = (now: Date, day: Date) => dayNumber(day) - dayNumber(now);
+
+/** A day as the line under the grid describes it, relative to `now`. Undefined for text that isn't a date. */
+export function describeDay(date: string, now: Date): CalendarDayDetails | undefined {
+  const day = parseIsoDate(date);
+  if (!day) return undefined;
+  const away = daysFrom(now, day);
   const relative =
     away === 0 ? 'today' : away === 1 ? 'tomorrow' : away === -1 ? 'yesterday' : away > 0 ? `in ${away} days` : `${-away} days ago`;
   return {

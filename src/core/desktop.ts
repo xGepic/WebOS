@@ -1,5 +1,9 @@
-/** The Desktop's snap grid, in cells. Widgets are placed and sized in whole cells. */
-export const grid = { columns: 12, rows: 8 } as const;
+/**
+ * The Desktop's snap grid, in cells. Widgets are placed and sized in whole
+ * cells. It spans the screen's full width, and is wide enough for every Widget
+ * at once: 21 columns is seven Widgets three columns wide side by side.
+ */
+export const grid = { columns: 21, rows: 8 } as const;
 
 export type WidgetSize = 'S' | 'M' | 'L';
 
@@ -22,7 +26,7 @@ export const widgets = {
       S: { columns: 3, rows: 2 },
       // The middle of the Stage layout's top band, between Weather and Calendar.
       M: { columns: 6, rows: 3 },
-      // The full width of the Desktop.
+      // A wide band across the Desktop.
       L: { columns: 12, rows: 3 },
     },
   },
@@ -30,7 +34,7 @@ export const widgets = {
     name: 'Todos',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 5 },
+      M: { columns: 3, rows: 5 },
       L: { columns: 4, rows: 6 },
     },
   },
@@ -38,7 +42,7 @@ export const widgets = {
     name: 'Links',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 5 },
+      M: { columns: 3, rows: 5 },
       L: { columns: 6, rows: 5 },
     },
   },
@@ -46,7 +50,7 @@ export const widgets = {
     name: 'Notes',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 5 },
+      M: { columns: 3, rows: 5 },
       L: { columns: 6, rows: 5 },
     },
   },
@@ -64,6 +68,63 @@ export const widgets = {
       S: { columns: 3, rows: 3 },
       M: { columns: 4, rows: 4 },
       L: { columns: 4, rows: 5 },
+    },
+  },
+  'world-clock': {
+    name: 'World Clock',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 2 },
+    },
+  },
+  countdown: {
+    name: 'Countdown',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 3 },
+    },
+  },
+  moon: {
+    name: 'Moon',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 4, rows: 4 },
+    },
+  },
+  sun: {
+    name: 'Sun',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 3 },
+    },
+  },
+  recent: {
+    name: 'Recent',
+    sizes: {
+      S: { columns: 3, rows: 3 },
+      M: { columns: 3, rows: 5 },
+      L: { columns: 6, rows: 5 },
+    },
+  },
+  system: {
+    name: 'System',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 3 },
+    },
+  },
+  // The contribution graph is wide: half a year at S, three quarters at M, the whole year at L.
+  github: {
+    name: 'GitHub',
+    sizes: {
+      S: { columns: 6, rows: 2 },
+      M: { columns: 9, rows: 3 },
+      L: { columns: 12, rows: 3 },
     },
   },
 } as const satisfies Record<string, WidgetDefinition>;
@@ -92,16 +153,25 @@ export interface LayoutEntry extends Placement {
 
 /**
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
- * Weather, the Clock and Calendar, with Links, Todos and Notes in a row
- * beneath it. Every Widget is visible, and together they fill the grid.
+ * the World Clock, Weather, the Clock, Calendar, Sun and Moon; beneath it
+ * Links, Todos, Notes, GitHub (with a Countdown and System under it) and
+ * Recent. Every Widget is visible, and one 3 × 2 slot under GitHub is left
+ * free, so Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
-  { widget: 'weather', size: 'S', column: 0, row: 0, visible: true },
-  { widget: 'clock', size: 'M', column: 3, row: 0, visible: true },
-  { widget: 'calendar', size: 'S', column: 9, row: 0, visible: true },
+  { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
+  { widget: 'weather', size: 'S', column: 3, row: 0, visible: true },
+  { widget: 'clock', size: 'M', column: 6, row: 0, visible: true },
+  { widget: 'calendar', size: 'S', column: 12, row: 0, visible: true },
+  { widget: 'sun', size: 'M', column: 15, row: 0, visible: true },
+  { widget: 'moon', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'links', size: 'M', column: 0, row: 3, visible: true },
-  { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
-  { widget: 'notes', size: 'M', column: 8, row: 3, visible: true },
+  { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
+  { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
+  { widget: 'github', size: 'M', column: 9, row: 3, visible: true },
+  { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
+  { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
+  { widget: 'system', size: 'S', column: 12, row: 6, visible: true },
 ];
 
 /** The sizes, largest first: a Widget that has to shrink tries them in this order. */

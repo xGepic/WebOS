@@ -43,12 +43,52 @@ export interface VisitedPage extends BrowserPage {
 export interface BrowserLookup {
   bookmarks(query: string): Promise<BrowserPage[]>;
   history(query: string): Promise<VisitedPage[]>;
+  /** The `count` pages visited last, latest first, for the Recent Widget. */
+  recent(count: number): Promise<VisitedPage[]>;
+}
+
+/** How a request is sent; a plain GET without one. */
+export interface FetchRequest {
+  method?: 'GET' | 'POST';
+  headers?: Record<string, string>;
+  /** A JSON body, for a POST. */
+  body?: unknown;
+}
+
+/** A request the server answered without success, with the HTTP status it gave. */
+export class FetchError extends Error {
+  override readonly name = 'FetchError';
+  constructor(
+    readonly status: number,
+    message = `The request failed with status ${status}.`,
+  ) {
+    super(message);
+  }
 }
 
 /**
- * Fetches JSON over the network, for the Weather Widget. Rejects when the
- * request fails, times out, or doesn't succeed.
+ * Fetches JSON over the network, for the Weather and GitHub Widgets. Rejects
+ * when the request fails or times out, and with a `FetchError` when the
+ * server answers without success.
  */
 export interface Fetch {
-  json(url: string): Promise<unknown>;
+  json(url: string, request?: FetchRequest): Promise<unknown>;
+}
+
+/** One reading of the machine's processors and memory, for the System Widget. */
+export interface SystemSample {
+  /** Processor time since the machine started, summed over every core, in any unit. */
+  cpuTotal: number;
+  /** How much of that was idle, in the same unit. */
+  cpuIdle: number;
+  /** The number of logical processors. */
+  cores: number;
+  /** Bytes. */
+  memoryCapacity: number;
+  memoryAvailable: number;
+}
+
+/** Reads the machine's processors and memory. Rejects when it can't. */
+export interface SystemMonitor {
+  sample(): Promise<SystemSample>;
 }
