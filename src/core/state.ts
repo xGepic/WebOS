@@ -1,6 +1,6 @@
-import type { AppId } from './apps';
 import type { Storage } from './edges';
 import type { LinkGroup } from './links';
+import type { Note } from './notes';
 import type { Todo } from './todos';
 
 /**
@@ -13,20 +13,19 @@ export interface StateDocument {
     /** As typed in Settings; the greeting trims it. Empty when not set. */
     name: string;
   };
-  /**
-   * What each App remembers between openings, such as the selected Note.
-   * Each App adds its own fields here when it needs them.
-   */
-  apps: Partial<Record<AppId, Record<string, unknown>>>;
+  /** What each App remembers between openings, such as the selected Note. */
+  apps: AppMemory;
   /** Link Groups in display order, each holding its Links in display order. */
   linkGroups: LinkGroup[];
   /** The ids of the Docked Links, in Dock order. Independent of the Link Groups' order. */
   dockedLinkIds: string[];
   /** Every Todo, open and completed, in display order. */
   todos: Todo[];
+  /** Every Note, in the order they were created. */
+  notes: Note[];
 }
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -42,14 +41,26 @@ const migrations: Record<number, Migration> = {
   2: (document) => ({ ...document, schemaVersion: 3, linkGroups: [] }),
   3: (document) => ({ ...document, schemaVersion: 4, dockedLinkIds: [] }),
   4: (document) => ({ ...document, schemaVersion: 5, todos: [] }),
+  5: (document) => ({ ...document, schemaVersion: 6, notes: [] }),
 };
+
+/**
+ * What each App remembers between openings, so it survives closing the App
+ * and opening a new tab. Each App adds its own entry when it needs one.
+ */
+export interface AppMemory {
+  notes?: {
+    /** The Note the Notes App shows. It may since have been deleted. */
+    selectedNoteId?: string;
+  };
+}
 
 export class StateDocumentError extends Error {
   override readonly name = 'StateDocumentError';
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [] };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [] };
 }
 
 function versionOf(document: unknown): number {
@@ -80,7 +91,8 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     Array.isArray(apps) ||
     !Array.isArray(document['linkGroups']) ||
     !Array.isArray(document['dockedLinkIds']) ||
-    !Array.isArray(document['todos'])
+    !Array.isArray(document['todos']) ||
+    !Array.isArray(document['notes'])
   ) {
     throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }

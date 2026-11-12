@@ -14,6 +14,7 @@ import type { AppId } from '../../core';
 import { collapseInto, expandFrom, settle } from '../../motion/flip';
 import { springTo } from '../../motion/springs';
 import { AppPlaceholder } from '../apps/app-placeholder';
+import { NotesApp } from '../apps/notes/notes-app';
 import { SettingsApp } from '../apps/settings/settings-app';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from './window-state';
@@ -33,7 +34,7 @@ interface WindowElements {
  */
 @Component({
   selector: 'webos-window',
-  imports: [SettingsApp, AppPlaceholder],
+  imports: [NotesApp, SettingsApp, AppPlaceholder],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closeOnEscape()' },
   template: `
@@ -50,6 +51,9 @@ interface WindowElements {
         </header>
         <div class="content">
           @switch (app) {
+            @case ('notes') {
+              <webos-notes-app />
+            }
             @case ('settings') {
               <webos-settings-app />
             }

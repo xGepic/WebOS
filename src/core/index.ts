@@ -4,6 +4,7 @@ import type { Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
 import * as links from './links';
+import * as notes from './notes';
 import * as todos from './todos';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
@@ -11,6 +12,7 @@ export type { AppId } from './apps';
 export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { Clock, Storage } from './edges';
 export type { Link, LinkGroup, LinkInput } from './links';
+export type { ListedNote, Note } from './notes';
 export type { Todo } from './todos';
 export { StateDocumentError } from './state';
 
@@ -73,6 +75,25 @@ export interface WebOS {
     /** Moves an open Todo to `toIndex` among the open Todos (clamped). */
     move(id: string, toIndex: number): Promise<void>;
   };
+  readonly notes: {
+    /** Every Note with its title, most recently edited first. */
+    list(): readonly notes.ListedNote[];
+    /** Creates a Note with `body` (empty by default) and selects it. Resolves to its id. */
+    create(body?: string): Promise<string>;
+    /** Replaces a Note's body, recording the edit time. An unchanged body is not an edit. */
+    edit(id: string, body: string): Promise<void>;
+    delete(id: string): Promise<void>;
+    /**
+     * The Note the Notes App shows in this tab. It starts as the remembered
+     * selection (or the most recently edited Note) and changes only by this
+     * tab's own commands, or when the Note is deleted: then it falls back to the
+     * most recently edited Note. Another tab selecting or editing Notes never
+     * swaps it. Undefined when there are no Notes.
+     */
+    selected(): notes.ListedNote | undefined;
+    /** Selects a Note in this tab, and remembers it for the next time the Notes App opens in any tab. */
+    select(id: string): Promise<void>;
+  };
   readonly desktop: {
     /** The snap grid, in cells. */
     readonly grid: typeof desktop.grid;
@@ -103,14 +124,22 @@ export interface WebOS {
  */
 export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS> {
   let state = await loadState(storage);
+  /** The Note this tab's Notes App shows; see `notes.selected`. Kept per tab, so it isn't part of `state`. */
+  let shownNoteId = notes.shownNoteId(state.notes, state.apps.notes?.selectedNoteId);
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((listener) => listener());
   const stopMinuteTicks = clock.onMinute(notify);
 
+  /** Takes `next` as the state, keeps the shown Note one that exists, and tells subscribers. */
+  const adopt = (next: StateDocument) => {
+    state = next;
+    shownNoteId = notes.shownNoteId(state.notes, shownNoteId);
+    notify();
+  };
+
   /** Replaces the state, tells subscribers, and writes it to storage right away. */
   const commit = (next: StateDocument) => {
-    state = next;
-    notify();
+    adopt(next);
     return storage.write(next);
   };
 
@@ -121,18 +150,29 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
   // Another tab saved: adopt its document, so this tab never writes back a stale copy.
   // A document this build can't use is ignored rather than adopted.
   const stopExternalChanges = storage.onExternalChange((document) => {
+    let next: StateDocument;
     try {
-      state = toCurrentDocument(document);
+      next = toCurrentDocument(document);
     } catch {
       return;
     }
-    notify();
+    adopt(next);
   });
 
   /** Applies a change to the Link Groups. Deleted Links leave the Dock with them. */
   const commitLinks = (change: (groups: readonly links.LinkGroup[]) => links.LinkGroup[]) => {
     const linkGroups = change(state.linkGroups);
     return commit({ ...state, linkGroups, dockedLinkIds: links.pruneDock(linkGroups, state.dockedLinkIds) });
+  };
+
+  /** Applies a change to the Notes. */
+  const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) =>
+    commit({ ...state, notes: change(state.notes) });
+
+  /** Shows a Note in this tab and remembers it as the Notes App's selection, saved with `next`. */
+  const commitSelection = (id: string, next: StateDocument = state) => {
+    shownNoteId = id;
+    return commit({ ...next, apps: { ...next.apps, notes: { ...next.apps.notes, selectedNoteId: id } } });
   };
 
   /** Applies a change to the Todos. */
@@ -155,6 +195,18 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       editText: (id, text) => commitTodos((list) => todos.editText(list, id, text)),
       delete: (id) => commitTodos((list) => todos.deleteTodo(list, id)),
       move: (id, toIndex) => commitTodos((list) => todos.moveTodo(list, id, toIndex)),
+    },
+    notes: {
+      list: () => notes.listNotes(state.notes, clock.now()),
+      async create(body = '') {
+        const id = crypto.randomUUID();
+        await commitSelection(id, { ...state, notes: notes.createNote(state.notes, { id, body }, clock.now().getTime()) });
+        return id;
+      },
+      edit: (id, body) => commitNotes((list) => notes.editNote(list, id, body, clock.now().getTime())),
+      delete: (id) => commitNotes((list) => notes.deleteNote(list, id)),
+      selected: () => notes.listedNote(state.notes, shownNoteId, clock.now()),
+      select: (id) => commitSelection(id),
     },
     links: {
       groups: () => state.linkGroups,

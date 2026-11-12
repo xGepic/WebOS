@@ -8,6 +8,8 @@
 
   /* Text */
   --font-sans: 'Inter Variable', system-ui, sans-serif;
+  /* Code and the Notes editor */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
   --text-primary: #f5f4fb;
   --text-secondary: rgba(245, 244, 251, 0.68);
 
@@ -40,6 +42,8 @@
 
   /* Corner radius */
   --radius-control: 8px;
+  /* Small marks inside text, such as inline code */
+  --radius-inline: 4px;
   /* A grouping drawn inside a surface, such as a Link Group in Settings */
   --radius-inset: 12px;
   --radius-window: 14px;

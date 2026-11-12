@@ -153,15 +153,27 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Notes module supports creating, editing and deleting Notes, with created and last-edited times.
-- [ ] A Note's title is its first non-empty line with Markdown heading markers stripped, or "Untitled" when empty.
-- [ ] The sidebar lists Notes most-recently-edited first.
-- [ ] The editor autosaves with a short debounce while typing.
-- [ ] The live preview is rendered by an established Markdown library and sanitised before display.
-- [ ] The selected Note is remembered as per-App state and restored when the Notes App reopens.
-- [ ] Core tests: title derivation cases, ordering by last edit, deletion, and remembering the selected Note.
+- [x] The core Notes module supports creating, editing and deleting Notes, with created and last-edited times.
+- [x] A Note's title is its first non-empty line with Markdown heading markers stripped, or "Untitled" when empty.
+- [x] The sidebar lists Notes most-recently-edited first.
+- [x] The editor autosaves with a short debounce while typing.
+- [x] The live preview is rendered by an established Markdown library and sanitised before display.
+- [x] The selected Note is remembered as per-App state and restored when the Notes App reopens.
+- [x] Core tests: title derivation cases, ordering by last edit, deletion, and remembering the selected Note.
+
+**Decisions made while building:**
+- Creating a Note selects it.
+- When the selected Note is deleted, or none has been chosen yet, the most recently edited Note is shown.
+- Each tab keeps showing its own Note. Selecting a Note is remembered for the next opening in any tab, but it doesn't swap the Note open in another tab. Edits from another tab appear in the open editor unless typed text is waiting to be saved.
+- Text typed into a Note that another tab deleted is kept as a new Note.
+- An edit that leaves the text unchanged doesn't count as an edit, so the Note keeps its place in the list.
+- The editor saves 400 ms after typing stops, and straight away on blur, when switching Notes, when the Window closes, or when the page is hidden or left.
+- Each Note in the sidebar shows when it was last edited.
+- Deleting a Note that has text asks first; an empty Note is deleted straight away.
+- The title rule follows CommonMark: `#text` without a space is not a heading, and closing `#`s are stripped only from headings. A line that is only heading markers counts as empty.
+- The preview removes styles as well as scripts, so a Note can't restyle the page. Remote images in a Note still load: it is the user's own text.
 
 ---
 
