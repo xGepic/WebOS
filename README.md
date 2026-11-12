@@ -20,7 +20,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 ## Layout
 
 - `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`), and its tests run against in-memory and controllable versions of them from `src/core/testing.ts`.
-- `src/edges/`: the production edges (extension storage, system clock).
-- `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the fixed wallpaper. Surfaces get their translucent look only from `.material`.
+- `src/edges/`: the browser-facing edges. Extension storage and the system clock are injected into the core; the favicon lookup is used by views directly.
+- `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the fixed wallpaper. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, section headings and hints used inside Apps and Widgets.
 - `src/motion/`: spring presets on Motion's `animate()`, with a short opacity fade under reduced motion.
 - `src/app/`: the Angular layer. `WebOSCore` exposes the core's state as signals, and components are thin views over it.

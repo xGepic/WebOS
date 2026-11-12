@@ -3,11 +3,13 @@ import * as desktop from './desktop';
 import type { Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
+import * as links from './links';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { Clock, Storage } from './edges';
+export type { Link, LinkGroup, LinkInput } from './links';
 export { StateDocumentError } from './state';
 
 export interface WebOSEdges {
@@ -25,6 +27,24 @@ export interface WebOS {
     name(): string;
     /** Sets the name the greeting uses, and saves it. */
     setName(name: string): Promise<void>;
+  };
+  readonly links: {
+    /** Link Groups in display order, each with its Links in display order. */
+    groups(): readonly links.LinkGroup[];
+    /** Adds a Link Group at the end. Resolves to its id. */
+    addGroup(name: string): Promise<string>;
+    /** Adds a Link at the end of a Link Group, normalising its URL. Resolves to its id. */
+    addLink(groupId: string, link: links.LinkInput): Promise<string>;
+    /** Moves a Link Group to `toIndex` (clamped to the list). */
+    moveGroup(groupId: string, toIndex: number): Promise<void>;
+    /** Moves a Link to `toIndex` (clamped) in a Link Group, which may be the one it is in. */
+    moveLink(linkId: string, toGroupId: string, toIndex: number): Promise<void>;
+    renameGroup(groupId: string, name: string): Promise<void>;
+    /** Replaces a Link's title and URL, normalising the URL. */
+    editLink(linkId: string, link: links.LinkInput): Promise<void>;
+    deleteLink(linkId: string): Promise<void>;
+    /** Deletes a Link Group together with all of its Links. */
+    deleteGroup(groupId: string): Promise<void>;
   };
   readonly desktop: {
     /** The snap grid, in cells. */
@@ -77,8 +97,32 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     notify();
   });
 
+  /** Applies a change to the Link Groups. */
+  const commitLinks = (change: (groups: readonly links.LinkGroup[]) => links.LinkGroup[]) =>
+    commit({ ...state, linkGroups: change(state.linkGroups) });
+
   return {
     apps,
+    links: {
+      groups: () => state.linkGroups,
+      async addGroup(name) {
+        const id = crypto.randomUUID();
+        await commitLinks((groups) => links.addGroup(groups, id, name));
+        return id;
+      },
+      async addLink(groupId, link) {
+        const id = crypto.randomUUID();
+        await commitLinks((groups) => links.addLink(groups, groupId, id, link));
+        return id;
+      },
+      moveGroup: (groupId, toIndex) => commitLinks((groups) => links.moveGroup(groups, groupId, toIndex)),
+      moveLink: (linkId, toGroupId, toIndex) =>
+        commitLinks((groups) => links.moveLink(groups, linkId, toGroupId, toIndex)),
+      renameGroup: (groupId, name) => commitLinks((groups) => links.renameGroup(groups, groupId, name)),
+      editLink: (linkId, link) => commitLinks((groups) => links.editLink(groups, linkId, link)),
+      deleteLink: (linkId) => commitLinks((groups) => links.deleteLink(groups, linkId)),
+      deleteGroup: (groupId) => commitLinks((groups) => links.deleteGroup(groups, groupId)),
+    },
     profile: {
       name: () => state.profile.name,
       greeting: () => greetingFor(clock.now(), state.profile.name),

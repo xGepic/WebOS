@@ -1,0 +1,79 @@
+/*
+ * Shared controls used inside Apps and Widgets: text fields and buttons.
+ * They sit on a .material surface and take their fills from the tokens.
+ */
+.text-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--material-border);
+  border-radius: var(--radius-control);
+  background: var(--control-fill);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+}
+.text-field::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+.text-field:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--control-fill);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.button:hover {
+  background: var(--control-fill-hover);
+}
+.button:active {
+  background: var(--control-fill-active);
+}
+.button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: var(--control-fill);
+}
+.button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+/* A square button holding a single glyph; give it an aria-label. */
+.button.icon-only {
+  width: 2rem;
+  padding: 0.45rem 0;
+}
+.button.danger {
+  color: var(--danger);
+}
+
+/* The heading of a section inside an App, e.g. Settings › Links. */
+.section-heading {
+  margin: 0 0 0.375rem;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: var(--tracking-title);
+}
+
+/* Secondary explanatory text under a heading or field. */
+.hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}

@@ -22,6 +22,7 @@ export class WebOSCore {
   readonly layout = this.read((core) => core.desktop.layout());
   readonly name = this.read((core) => core.profile.name());
   readonly greeting = this.read((core) => core.profile.greeting());
+  readonly linkGroups = this.read((core) => core.links.groups());
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
 
@@ -49,8 +50,11 @@ export class WebOSCore {
     return this.apps()?.find((candidate) => candidate.id === app)?.name ?? '';
   }
 
-  setName(name: string): void {
-    this.core()?.profile.setName(name).catch((error) => console.error('Saving the name failed', error));
+  /** Sends a command to the core. The change shows at once; if saving it fails, the failure is logged. */
+  send(command: (core: WebOS) => Promise<unknown>): void {
+    const core = this.core();
+    if (!core) return;
+    command(core).catch((error) => console.error('webOS could not save a change', error));
   }
 
   private read<T>(selector: (core: WebOS) => T) {

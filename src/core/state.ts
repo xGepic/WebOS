@@ -1,9 +1,10 @@
 import type { AppId } from './apps';
 import type { Storage } from './edges';
+import type { LinkGroup } from './links';
 
 /**
- * The single persisted state document. Later tickets add Links, Todos, Notes
- * and the Desktop layout here, each with a migration.
+ * The single persisted state document. Later tickets add Todos, Notes and the
+ * Desktop layout here, each with a migration.
  */
 export interface StateDocument {
   schemaVersion: typeof SCHEMA_VERSION;
@@ -16,9 +17,11 @@ export interface StateDocument {
    * Each App adds its own fields here when it needs them.
    */
   apps: Partial<Record<AppId, Record<string, unknown>>>;
+  /** Link Groups in display order, each holding its Links in display order. */
+  linkGroups: LinkGroup[];
 }
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -31,6 +34,7 @@ type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 const migrations: Record<number, Migration> = {
   0: () => ({ schemaVersion: 1 }),
   1: (document) => ({ ...document, schemaVersion: 2, profile: { name: '' }, apps: {} }),
+  2: (document) => ({ ...document, schemaVersion: 3, linkGroups: [] }),
 };
 
 export class StateDocumentError extends Error {
@@ -38,7 +42,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {} };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [] };
 }
 
 function versionOf(document: unknown): number {
@@ -62,8 +66,14 @@ function versionOf(document: unknown): number {
 function assertCurrentShape(document: Record<string, unknown>): asserts document is Record<string, unknown> & StateDocument {
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
-  if (typeof profile?.name !== 'string' || typeof apps !== 'object' || apps === null || Array.isArray(apps)) {
-    throw new StateDocumentError('The stored state is damaged: its profile or per-App state is missing.');
+  if (
+    typeof profile?.name !== 'string' ||
+    typeof apps !== 'object' ||
+    apps === null ||
+    Array.isArray(apps) ||
+    !Array.isArray(document['linkGroups'])
+  ) {
+    throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }
 }
 

@@ -102,15 +102,15 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Links module supports creating, editing, reordering and deleting Link Groups and Links (title, URL, group, order).
-- [ ] URL normalisation: a URL without a scheme gets `http://` for `localhost` and IP addresses, and `https://` otherwise.
-- [ ] Settings has a Links section for managing Link Groups and Links, including reordering.
-- [ ] The Links Widget is added to the Widget catalog and default layout. It shows Link Groups as sections, and each Link with its favicon (via the browser's `favicon` permission) and title.
-- [ ] A plain click opens a Link in the current tab. ⌘/Ctrl+click and middle-click open it in a background tab.
-- [ ] Links to `localhost` and private IP addresses work.
-- [ ] Core tests: normalisation cases, ordering within and across Link Groups, and deleting a Link Group together with its Links.
+- [x] The core Links module supports creating, editing, reordering and deleting Link Groups and Links (title, URL, group, order).
+- [x] URL normalisation: a URL without a scheme gets `http://` for `localhost` and IP addresses, and `https://` otherwise.
+- [x] Settings has a Links section for managing Link Groups and Links, including reordering.
+- [x] The Links Widget is added to the Widget catalog and default layout. It shows Link Groups as sections, and each Link with its favicon (via the browser's `favicon` permission) and title.
+- [x] A plain click opens a Link in the current tab. ⌘/Ctrl+click and middle-click open it in a background tab.
+- [x] Links to `localhost` and private IP addresses work.
+- [x] Core tests: normalisation cases, ordering within and across Link Groups, and deleting a Link Group together with its Links.
 
 ---
 

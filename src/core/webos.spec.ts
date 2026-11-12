@@ -103,11 +103,20 @@ describe('state document', () => {
     await loadsIntoWorkingCore({ schemaVersion: 1 });
   });
 
+  it('keeps the name when migrating a v2 document (ticket 04 builds) forward', async () => {
+    const storage = createMemoryStorage({ schemaVersion: 2, profile: { name: 'Stefan' }, apps: {} });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.profile.greeting()).toBe('Good morning, Stefan');
+    expect(webos.links.groups()).toEqual([]);
+  });
+
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 2, apps: {} }],
+    ['at the current version but missing its profile', { schemaVersion: 3, apps: {}, linkGroups: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

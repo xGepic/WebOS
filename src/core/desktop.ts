@@ -24,6 +24,14 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
+  links: {
+    name: 'Links',
+    sizes: {
+      S: { columns: 3, rows: 3 },
+      M: { columns: 4, rows: 4 },
+      L: { columns: 6, rows: 5 },
+    },
+  },
 } as const satisfies Record<string, WidgetDefinition>;
 
 export type WidgetId = keyof typeof widgets;
@@ -42,6 +50,7 @@ export interface PlacedWidget extends Placement, Span {}
 /** Where each Widget sits on a fresh Desktop. Every Widget is visible. */
 const defaultLayout: readonly Placement[] = [
   { widget: 'clock', size: 'M', column: 0, row: 0 },
+  { widget: 'links', size: 'M', column: 0, row: 2 },
 ];
 
 export function layout(): readonly PlacedWidget[] {

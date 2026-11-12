@@ -3,6 +3,7 @@
 @import './styles/tokens.css';
 @import './styles/wallpaper.css';
 @import './styles/material.css';
+@import './styles/controls.css';
 
 html,
 body {
