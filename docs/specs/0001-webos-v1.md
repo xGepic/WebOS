@@ -225,7 +225,8 @@ Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with
 
 - One versioned state document in local extension storage. It contains:
   - profile: name
-  - Link Groups (name, order) and Links (title, URL, group, order, docked flag, dock order)
+  - Link Groups (name, order) and Links (title, URL, group, order)
+  - Docked Links: an ordered list of Link ids. Being in the list is the docked flag; its order is the dock order, independent of the Link Groups' order
   - Todos (text, order, created time, completed time or none)
   - Notes (Markdown body, created time, last-edited time) and the Pinned Note reference
   - Desktop layout (per Widget: visible, size S/M/L, grid position)

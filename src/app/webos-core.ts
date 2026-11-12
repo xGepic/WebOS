@@ -23,6 +23,7 @@ export class WebOSCore {
   readonly name = this.read((core) => core.profile.name());
   readonly greeting = this.read((core) => core.profile.greeting());
   readonly linkGroups = this.read((core) => core.links.groups());
+  readonly dockedLinks = this.read((core) => core.links.docked());
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
 

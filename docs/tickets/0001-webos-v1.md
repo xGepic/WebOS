@@ -120,13 +120,13 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Links module supports a docked flag and a separate dock order.
-- [ ] In Settings, a Link can be Docked or undocked, and Docked Links can be reordered.
-- [ ] The Dock shows Docked Links after a divider, with favicons, taking part in the hover magnification.
-- [ ] Open behavior matches the Links Widget (current tab, background tab on ⌘/Ctrl+click or middle-click).
-- [ ] Core tests: docking and undocking, dock order independent of group order, and deleting a Docked Link removing it from the Dock.
+- [x] The core Links module supports a docked flag and a separate dock order.
+- [x] In Settings, a Link can be Docked or undocked, and Docked Links can be reordered.
+- [x] The Dock shows Docked Links after a divider, with favicons, taking part in the hover magnification.
+- [x] Open behavior matches the Links Widget (current tab, background tab on ⌘/Ctrl+click or middle-click).
+- [x] Core tests: docking and undocking, dock order independent of group order, and deleting a Docked Link removing it from the Dock.
 
 ---
 

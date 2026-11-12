@@ -3,7 +3,8 @@ import type { Link, LinkGroup } from '../../../core';
 import { WebOSCore } from '../../webos-core';
 
 /**
- * Settings › Links: add, edit, reorder and delete Link Groups and Links.
+ * Settings › Links and Dock: add, edit, reorder and delete Link Groups and
+ * Links, and choose which Links are Docked and in what order.
  * Edits to a field are saved when it loses focus or Enter is pressed, so URLs
  * are normalised once, not on every keystroke.
  */
@@ -53,6 +54,9 @@ import { WebOSCore } from '../../webos-core';
                     <option [value]="option.id" [selected]="option.id === group.id">{{ option.name }}</option>
                   }
                 </select>
+                <button type="button" class="button" [attr.aria-pressed]="isDocked(link)"
+                  [title]="isDocked(link) ? 'Docked: click to remove it from the Dock' : 'Add it to the Dock'"
+                  (click)="toggleDocked(link)">Dock</button>
                 <button type="button" class="button icon-only" aria-label="Move Link up" title="Move up"
                   [disabled]="firstLink" (click)="moveLink(link, group, linkIndex - 1)">↑</button>
                 <button type="button" class="button icon-only" aria-label="Move Link down" title="Move down"
@@ -75,6 +79,28 @@ import { WebOSCore } from '../../webos-core';
         <input #groupName class="text-field" aria-label="New Link Group name" placeholder="New Link Group, e.g. Local" required />
         <button type="submit" class="button">Add Link Group</button>
       </form>
+    </section>
+
+    <section class="dock-section" aria-labelledby="settings-dock">
+      <h3 id="settings-dock" class="section-heading">Dock</h3>
+      <p class="hint">Docked Links sit in the Dock after the Apps, in this order. Dock a Link with its Dock button above.</p>
+      @if (docked().length) {
+        <ol class="docked">
+          @for (link of docked(); track link.id; let index = $index, first = $first, last = $last) {
+            <li class="docked-row">
+              <span class="docked-title">{{ link.title }}</span>
+              <span class="docked-url">{{ link.url }}</span>
+              <button type="button" class="button icon-only" [attr.aria-label]="'Move ' + link.title + ' earlier in the Dock'"
+                title="Move up" [disabled]="first" (click)="moveDocked(link, index - 1)">↑</button>
+              <button type="button" class="button icon-only" [attr.aria-label]="'Move ' + link.title + ' later in the Dock'"
+                title="Move down" [disabled]="last" (click)="moveDocked(link, index + 1)">↓</button>
+              <button type="button" class="button" (click)="undock(link)">Undock</button>
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="hint empty-dock">No Docked Links yet.</p>
+      }
     </section>
   `,
   styles: `
@@ -133,11 +159,43 @@ import { WebOSCore } from '../../webos-core';
     .add-group {
       max-width: 30rem;
     }
+    .dock-section {
+      margin-top: 2.25rem;
+    }
+    .docked {
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+      max-width: 40rem;
+    }
+    .docked-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0;
+    }
+    .docked-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    .docked-url {
+      flex: 1;
+      overflow: hidden;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .empty-dock {
+      margin-top: 0.75rem;
+    }
   `,
 })
 export class LinksSettings {
   private readonly webos = inject(WebOSCore);
   protected readonly groups = computed(() => this.webos.linkGroups() ?? []);
+  protected readonly docked = computed(() => this.webos.dockedLinks() ?? []);
+  private readonly dockedIds = computed(() => new Set(this.docked().map((link) => link.id)));
   /** The Link Group waiting for delete confirmation, if any. */
   protected readonly confirmingDelete = signal<string | undefined>(undefined);
 
@@ -198,6 +256,23 @@ export class LinksSettings {
   protected moveToGroup(link: Link, event: Event): void {
     const toGroupId = (event.target as HTMLSelectElement).value;
     this.webos.send((core) => core.links.moveLink(link.id, toGroupId, Infinity));
+  }
+
+  protected isDocked(link: Link): boolean {
+    return this.dockedIds().has(link.id);
+  }
+
+  protected toggleDocked(link: Link): void {
+    if (this.isDocked(link)) this.undock(link);
+    else this.webos.send((core) => core.links.dock(link.id));
+  }
+
+  protected moveDocked(link: Link, toIndex: number): void {
+    this.webos.send((core) => core.links.moveDocked(link.id, toIndex));
+  }
+
+  protected undock(link: Link): void {
+    this.webos.send((core) => core.links.undock(link.id));
   }
 
   protected deleteLink(link: Link): void {

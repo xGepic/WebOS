@@ -112,11 +112,26 @@ describe('state document', () => {
     expect(webos.links.groups()).toEqual([]);
   });
 
+  it('keeps the name and Links when migrating a v3 document (ticket 05 builds) forward', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 3,
+      profile: { name: 'Stefan' },
+      apps: {},
+      linkGroups: [{ id: 'g', name: 'Local', links: [{ id: 'l', title: 'web', url: 'http://localhost:4200' }] }],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.profile.greeting()).toBe('Good morning, Stefan');
+    expect(webos.links.groups()[0].links[0].title).toBe('web');
+    expect(webos.links.docked()).toEqual([]);
+  });
+
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 3, apps: {}, linkGroups: [] }],
+    ['at the current version but missing its profile', { schemaVersion: 4, apps: {}, linkGroups: [], dockedLinkIds: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

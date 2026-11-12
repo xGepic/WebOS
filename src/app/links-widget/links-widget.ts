@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { faviconUrl } from '../../edges/favicon';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
+import { LinkIcon } from './link-icon';
 
 /**
  * The Links Widget: each Link Group as a section, each Link with its favicon
@@ -10,6 +10,7 @@ import { WindowState } from '../window/window-state';
  */
 @Component({
   selector: 'webos-links-widget',
+  imports: [LinkIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'material' },
   template: `
@@ -20,11 +21,7 @@ import { WindowState } from '../window/window-state';
           @for (link of group.links; track link.id) {
             <li>
               <a class="link" [href]="link.url" [title]="link.url">
-                @if (favicon(link.url); as src) {
-                  <img [src]="src" width="16" height="16" alt="" />
-                } @else {
-                  <span class="monogram" aria-hidden="true">{{ link.title.charAt(0) }}</span>
-                }
+                <webos-link-icon class="icon" [link]="link" />
                 <span class="title">{{ link.title }}</span>
               </a>
             </li>
@@ -83,20 +80,10 @@ import { WindowState } from '../window/window-state';
       outline: 2px solid var(--focus-ring);
       outline-offset: -2px;
     }
-    img,
-    .monogram {
+    .icon {
       flex: none;
       width: 16px;
       height: 16px;
-      border-radius: 4px;
-    }
-    .monogram {
-      display: grid;
-      place-items: center;
-      background: var(--control-fill-hover);
-      font-size: 0.625rem;
-      font-weight: 700;
-      text-transform: uppercase;
     }
     .title {
       overflow: hidden;
@@ -122,5 +109,4 @@ import { WindowState } from '../window/window-state';
 export class LinksWidget {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
-  protected readonly favicon = faviconUrl;
 }

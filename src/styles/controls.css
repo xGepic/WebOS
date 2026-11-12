@@ -77,3 +77,8 @@
   color: var(--text-secondary);
   font-size: 0.8125rem;
 }
+
+/* A toggle button that is on. */
+.button[aria-pressed='true'] {
+  background: var(--selected-fill);
+}

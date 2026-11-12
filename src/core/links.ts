@@ -72,9 +72,14 @@ export function moveGroup(groups: readonly LinkGroup[], groupId: string, toIndex
   );
 }
 
+/** Every Link, across all Link Groups. */
+function allLinks(groups: readonly LinkGroup[]): Link[] {
+  return groups.flatMap((group) => group.links);
+}
+
 /** Moves a Link to `toIndex` in `toGroupId`, which may be the Link Group it is already in. */
 export function moveLink(groups: readonly LinkGroup[], linkId: string, toGroupId: string, toIndex: number): LinkGroup[] {
-  const link = groups.flatMap((group) => group.links).find((candidate) => candidate.id === linkId);
+  const link = allLinks(groups).find((candidate) => candidate.id === linkId);
   if (!link || !groups.some((group) => group.id === toGroupId)) return [...groups];
 
   return groups.map((group) => {
@@ -102,4 +107,39 @@ export function deleteLink(groups: readonly LinkGroup[], linkId: string): LinkGr
 /** Deletes a Link Group and every Link in it. */
 export function deleteGroup(groups: readonly LinkGroup[], groupId: string): LinkGroup[] {
   return groups.filter((group) => group.id !== groupId);
+}
+
+/** The Docked Links, resolved from their ids, in Dock order. */
+export function dockedLinks(groups: readonly LinkGroup[], dockedIds: readonly string[]): Link[] {
+  const byId = new Map(allLinks(groups).map((link) => [link.id, link]));
+  return dockedIds.flatMap((id) => byId.get(id) ?? []);
+}
+
+/** Adds a Link to the end of the Dock, unless it is already Docked or doesn't exist. */
+export function dock(groups: readonly LinkGroup[], dockedIds: readonly string[], linkId: string): string[] {
+  const exists = allLinks(groups).some((link) => link.id === linkId);
+  return exists && !dockedIds.includes(linkId) ? [...dockedIds, linkId] : [...dockedIds];
+}
+
+export function undock(dockedIds: readonly string[], linkId: string): string[] {
+  return dockedIds.filter((id) => id !== linkId);
+}
+
+/**
+ * Moves a Docked Link to `toIndex` among the Docked Links that exist (clamped).
+ * The Link Groups are untouched.
+ */
+export function moveDocked(
+  groups: readonly LinkGroup[],
+  dockedIds: readonly string[],
+  linkId: string,
+  toIndex: number,
+): string[] {
+  const shown = pruneDock(groups, dockedIds);
+  return shown.includes(linkId) ? insertAt(undock(shown, linkId), toIndex, linkId) : shown;
+}
+
+/** The Dock order without Links that no longer exist. */
+export function pruneDock(groups: readonly LinkGroup[], dockedIds: readonly string[]): string[] {
+  return dockedLinks(groups, dockedIds).map((link) => link.id);
 }

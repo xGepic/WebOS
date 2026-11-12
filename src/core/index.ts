@@ -45,6 +45,14 @@ export interface WebOS {
     deleteLink(linkId: string): Promise<void>;
     /** Deletes a Link Group together with all of its Links. */
     deleteGroup(groupId: string): Promise<void>;
+    /** The Docked Links, in Dock order. */
+    docked(): readonly links.Link[];
+    /** Adds a Link to the end of the Dock. */
+    dock(linkId: string): Promise<void>;
+    /** Takes a Link out of the Dock; the Link itself stays. */
+    undock(linkId: string): Promise<void>;
+    /** Moves a Docked Link to `toIndex` in the Dock (clamped). */
+    moveDocked(linkId: string, toIndex: number): Promise<void>;
   };
   readonly desktop: {
     /** The snap grid, in cells. */
@@ -97,9 +105,11 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     notify();
   });
 
-  /** Applies a change to the Link Groups. */
-  const commitLinks = (change: (groups: readonly links.LinkGroup[]) => links.LinkGroup[]) =>
-    commit({ ...state, linkGroups: change(state.linkGroups) });
+  /** Applies a change to the Link Groups. Deleted Links leave the Dock with them. */
+  const commitLinks = (change: (groups: readonly links.LinkGroup[]) => links.LinkGroup[]) => {
+    const linkGroups = change(state.linkGroups);
+    return commit({ ...state, linkGroups, dockedLinkIds: links.pruneDock(linkGroups, state.dockedLinkIds) });
+  };
 
   return {
     apps,
@@ -122,6 +132,11 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       editLink: (linkId, link) => commitLinks((groups) => links.editLink(groups, linkId, link)),
       deleteLink: (linkId) => commitLinks((groups) => links.deleteLink(groups, linkId)),
       deleteGroup: (groupId) => commitLinks((groups) => links.deleteGroup(groups, groupId)),
+      docked: () => links.dockedLinks(state.linkGroups, state.dockedLinkIds),
+      dock: (linkId) => commit({ ...state, dockedLinkIds: links.dock(state.linkGroups, state.dockedLinkIds, linkId) }),
+      undock: (linkId) => commit({ ...state, dockedLinkIds: links.undock(state.dockedLinkIds, linkId) }),
+      moveDocked: (linkId, toIndex) =>
+        commit({ ...state, dockedLinkIds: links.moveDocked(state.linkGroups, state.dockedLinkIds, linkId, toIndex) }),
     },
     profile: {
       name: () => state.profile.name,

@@ -19,9 +19,11 @@ export interface StateDocument {
   apps: Partial<Record<AppId, Record<string, unknown>>>;
   /** Link Groups in display order, each holding its Links in display order. */
   linkGroups: LinkGroup[];
+  /** The ids of the Docked Links, in Dock order. Independent of the Link Groups' order. */
+  dockedLinkIds: string[];
 }
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -35,6 +37,7 @@ const migrations: Record<number, Migration> = {
   0: () => ({ schemaVersion: 1 }),
   1: (document) => ({ ...document, schemaVersion: 2, profile: { name: '' }, apps: {} }),
   2: (document) => ({ ...document, schemaVersion: 3, linkGroups: [] }),
+  3: (document) => ({ ...document, schemaVersion: 4, dockedLinkIds: [] }),
 };
 
 export class StateDocumentError extends Error {
@@ -42,7 +45,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [] };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [] };
 }
 
 function versionOf(document: unknown): number {
@@ -71,7 +74,8 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     typeof apps !== 'object' ||
     apps === null ||
     Array.isArray(apps) ||
-    !Array.isArray(document['linkGroups'])
+    !Array.isArray(document['linkGroups']) ||
+    !Array.isArray(document['dockedLinkIds'])
   ) {
     throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }
