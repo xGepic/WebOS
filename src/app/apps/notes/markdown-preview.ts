@@ -31,16 +31,17 @@ import { renderMarkdown } from './markdown';
       line-height: 1.2;
       font-weight: 650;
     }
+    /* Sizes are in em, so a host can scale the whole preview with its font-size. */
     webos-markdown-preview h1 {
-      font-size: 1.6rem;
+      font-size: 1.7em;
       letter-spacing: var(--tracking-display);
     }
     webos-markdown-preview h2 {
-      font-size: 1.25rem;
+      font-size: 1.33em;
       letter-spacing: var(--tracking-title);
     }
     webos-markdown-preview h3 {
-      font-size: 1.05rem;
+      font-size: 1.12em;
     }
     webos-markdown-preview :is(p, ul, ol, pre, blockquote, table) {
       margin: 0 0 0.9em;

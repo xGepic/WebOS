@@ -40,6 +40,14 @@ export const widgets = {
       L: { columns: 6, rows: 5 },
     },
   },
+  notes: {
+    name: 'Notes',
+    sizes: {
+      S: { columns: 3, rows: 3 },
+      M: { columns: 4, rows: 4 },
+      L: { columns: 6, rows: 5 },
+    },
+  },
 } as const satisfies Record<string, WidgetDefinition>;
 
 export type WidgetId = keyof typeof widgets;
@@ -60,6 +68,7 @@ const defaultLayout: readonly Placement[] = [
   { widget: 'clock', size: 'M', column: 0, row: 0 },
   { widget: 'links', size: 'M', column: 0, row: 2 },
   { widget: 'todos', size: 'M', column: 8, row: 0 },
+  { widget: 'notes', size: 'M', column: 8, row: 4 },
 ];
 
 export function layout(): readonly PlacedWidget[] {

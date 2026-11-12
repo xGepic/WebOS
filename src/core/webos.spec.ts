@@ -162,11 +162,33 @@ describe('state document', () => {
     expect(webos.notes.selected()).toBeUndefined();
   });
 
+  it('keeps everything, Notes and the selected Note included, when migrating a v6 document (ticket 08 builds) forward', async () => {
+    const note = (id: string, body: string, editedAt: number) => ({ id, body, createdAt: at(8, 0).getTime(), editedAt });
+    const storage = createMemoryStorage({
+      schemaVersion: 6,
+      profile: { name: 'Stefan' },
+      apps: { notes: { selectedNoteId: 'n1' } },
+      linkGroups: [{ id: 'g', name: 'Local', links: [{ id: 'l', title: 'web', url: 'http://localhost:4200' }] }],
+      dockedLinkIds: ['l'],
+      todos: [{ id: 't', text: 'Ship it', createdAt: at(8, 0).getTime(), completedAt: null }],
+      notes: [note('n1', '# Older', at(8, 0).getTime()), note('n2', '# Newer', at(8, 30).getTime())],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.profile.greeting()).toBe('Good morning, Stefan');
+    expect(webos.links.docked().map((link) => link.title)).toEqual(['web']);
+    expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
+    expect(webos.notes.list().map((listed) => listed.title)).toEqual(['Newer', 'Older']);
+    expect(webos.notes.selected()?.title).toBe('Older');
+    expect(webos.notes.forWidget()?.title).toBe('Newer');
+  });
+
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 6, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [] }],
+    ['at the current version but missing its profile', { schemaVersion: 7, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

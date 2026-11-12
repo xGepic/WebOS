@@ -1,5 +1,6 @@
 /*
- * Shared controls used inside Apps and Widgets: text fields, buttons and checkboxes.
+ * Shared controls used inside Apps and Widgets: text fields, buttons and
+ * checkboxes, plus the small text helpers that go with them.
  * They sit on a .material surface and take their fills from the tokens.
  */
 .text-field {
@@ -115,4 +116,14 @@
 .checkbox:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Text for screen readers only, e.g. "Pinned" beside a pin icon. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

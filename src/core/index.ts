@@ -93,6 +93,15 @@ export interface WebOS {
     selected(): notes.ListedNote | undefined;
     /** Selects a Note in this tab, and remembers it for the next time the Notes App opens in any tab. */
     select(id: string): Promise<void>;
+    /** Makes a Note the Pinned Note, replacing any other. */
+    pin(id: string): Promise<void>;
+    /** Leaves no Note pinned. */
+    unpin(): Promise<void>;
+    /**
+     * The Note the Notes Widget previews: the Pinned Note, or the most recently
+     * edited Note when none is pinned. Undefined when there are no Notes.
+     */
+    forWidget(): notes.ListedNote | undefined;
   };
   readonly desktop: {
     /** The snap grid, in cells. */
@@ -166,8 +175,11 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
   };
 
   /** Applies a change to the Notes. */
-  const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) =>
-    commit({ ...state, notes: change(state.notes) });
+  /** Applies a change to the Notes. Deleting the Pinned Note leaves none pinned. */
+  const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) => {
+    const list = change(state.notes);
+    return commit({ ...state, notes: list, pinnedNoteId: notes.prunePin(list, state.pinnedNoteId) });
+  };
 
   /** Shows a Note in this tab and remembers it as the Notes App's selection, saved with `next`. */
   const commitSelection = (id: string, next: StateDocument = state) => {
@@ -197,7 +209,7 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       move: (id, toIndex) => commitTodos((list) => todos.moveTodo(list, id, toIndex)),
     },
     notes: {
-      list: () => notes.listNotes(state.notes, clock.now()),
+      list: () => notes.listNotes(state, clock.now()),
       async create(body = '') {
         const id = crypto.randomUUID();
         await commitSelection(id, { ...state, notes: notes.createNote(state.notes, { id, body }, clock.now().getTime()) });
@@ -205,8 +217,11 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       },
       edit: (id, body) => commitNotes((list) => notes.editNote(list, id, body, clock.now().getTime())),
       delete: (id) => commitNotes((list) => notes.deleteNote(list, id)),
-      selected: () => notes.listedNote(state.notes, shownNoteId, clock.now()),
+      selected: () => notes.listedNote(state, shownNoteId, clock.now()),
       select: (id) => commitSelection(id),
+      pin: (id) => commit({ ...state, pinnedNoteId: notes.pinNote(state, id) }),
+      unpin: () => commit({ ...state, pinnedNoteId: null }),
+      forWidget: () => notes.listedNote(state, notes.shownNoteId(state.notes, state.pinnedNoteId), clock.now()),
     },
     links: {
       groups: () => state.linkGroups,

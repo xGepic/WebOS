@@ -28,6 +28,7 @@ export class WebOSCore {
   readonly completedTodos = this.read((core) => core.todos.completed());
   readonly notes = this.read((core) => core.notes.list());
   readonly selectedNote = this.read((core) => core.notes.selected());
+  readonly widgetNote = this.read((core) => core.notes.forWidget());
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
 

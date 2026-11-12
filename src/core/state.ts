@@ -23,9 +23,11 @@ export interface StateDocument {
   todos: Todo[];
   /** Every Note, in the order they were created. */
   notes: Note[];
+  /** The Note the Notes Widget previews, or null when none is pinned. */
+  pinnedNoteId: string | null;
 }
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -42,6 +44,7 @@ const migrations: Record<number, Migration> = {
   3: (document) => ({ ...document, schemaVersion: 4, dockedLinkIds: [] }),
   4: (document) => ({ ...document, schemaVersion: 5, todos: [] }),
   5: (document) => ({ ...document, schemaVersion: 6, notes: [] }),
+  6: (document) => ({ ...document, schemaVersion: 7, pinnedNoteId: null }),
 };
 
 /**
@@ -60,7 +63,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [] };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null };
 }
 
 function versionOf(document: unknown): number {
@@ -92,7 +95,8 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     !Array.isArray(document['linkGroups']) ||
     !Array.isArray(document['dockedLinkIds']) ||
     !Array.isArray(document['todos']) ||
-    !Array.isArray(document['notes'])
+    !Array.isArray(document['notes']) ||
+    (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null)
   ) {
     throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }

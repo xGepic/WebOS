@@ -183,14 +183,23 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 08
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Notes module supports pinning and unpinning one Note (pinning another replaces it).
-- [ ] Fallback: with no Pinned Note, or after the Pinned Note is deleted, the Widget shows the most recently edited Note.
-- [ ] The Notes Widget is added to the Widget catalog and default layout, showing the preview. With no Notes at all, it offers to create one.
-- [ ] Clicking the Widget opens the Notes App with that Note selected.
-- [ ] The Notes App has a pin/unpin control.
-- [ ] Core tests: pin, replace pin, fallback when unpinned, fallback after deleting the Pinned Note, and the empty state.
+- [x] The core Notes module supports pinning and unpinning one Note (pinning another replaces it).
+- [x] Fallback: with no Pinned Note, or after the Pinned Note is deleted, the Widget shows the most recently edited Note.
+- [x] The Notes Widget is added to the Widget catalog and default layout, showing the preview. With no Notes at all, it offers to create one.
+- [x] Clicking the Widget opens the Notes App with that Note selected.
+- [x] The Notes App has a pin/unpin control.
+- [x] Core tests: pin, replace pin, fallback when unpinned, fallback after deleting the Pinned Note, and the empty state.
+
+**Decisions made while building:**
+- The Pinned Note is stored as `pinnedNoteId` (schema v7). Any change that leaves the Pinned Note gone clears it, and pinning an id that isn't a Note is ignored. A pin left pointing at a Note another tab deleted falls back like no pin.
+- Text recovered from a Note deleted in another tab becomes a new Note, so it isn't pinned even if the deleted Note was.
+- The Widget is placed at medium size (4 × 4) below the Todos Widget, and has the same sizes as the Links Widget.
+- The Widget's caption reads "Pinned" for the Pinned Note, otherwise when the Note was edited.
+- The Widget's preview is not interactive: a click anywhere opens the Note, rather than following a link inside it.
+- The Widget's "New Note" opens the Notes App on a new, empty Note.
+- The Notes App marks the Pinned Note in its sidebar with a pin.
 
 ---
 
