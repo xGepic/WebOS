@@ -286,7 +286,7 @@ export class NotesApp {
     const edit = this.pendingEdit;
     if (!edit) return;
     this.discardPendingEdit();
-    this.webos.send((core) =>
+    this.webos.send<unknown>((core) =>
       core.notes.list().some((note) => note.id === edit.noteId)
         ? core.notes.edit(edit.noteId, edit.body)
         : core.notes.create(edit.body),

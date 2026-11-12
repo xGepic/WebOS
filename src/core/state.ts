@@ -1,3 +1,4 @@
+import { defaultLayout, type LayoutEntry } from './desktop';
 import type { Storage } from './edges';
 import type { LinkGroup } from './links';
 import type { Note } from './notes';
@@ -25,9 +26,11 @@ export interface StateDocument {
   notes: Note[];
   /** The Note the Notes Widget previews, or null when none is pinned. */
   pinnedNoteId: string | null;
+  /** Every Widget once: where it sits, its size, and whether it is shown. */
+  layout: LayoutEntry[];
 }
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -45,6 +48,17 @@ const migrations: Record<number, Migration> = {
   4: (document) => ({ ...document, schemaVersion: 5, todos: [] }),
   5: (document) => ({ ...document, schemaVersion: 6, notes: [] }),
   6: (document) => ({ ...document, schemaVersion: 7, pinnedNoteId: null }),
+  // Until v8 the layout was fixed; this is what it was.
+  7: (document) => ({
+    ...document,
+    schemaVersion: 8,
+    layout: [
+      { widget: 'clock', size: 'M', column: 0, row: 0, visible: true },
+      { widget: 'links', size: 'M', column: 0, row: 2, visible: true },
+      { widget: 'todos', size: 'M', column: 8, row: 0, visible: true },
+      { widget: 'notes', size: 'M', column: 8, row: 4, visible: true },
+    ],
+  }),
 };
 
 /**
@@ -67,7 +81,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [...defaultLayout] };
 }
 
 function versionOf(document: unknown): number {
@@ -100,7 +114,8 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     !Array.isArray(document['dockedLinkIds']) ||
     !Array.isArray(document['todos']) ||
     !Array.isArray(document['notes']) ||
-    (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null)
+    (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null) ||
+    !Array.isArray(document['layout'])
   ) {
     throw new StateDocumentError('The stored state is damaged: part of it is missing.');
   }

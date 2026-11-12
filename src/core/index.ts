@@ -14,7 +14,7 @@ import * as todos from './todos';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
-export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
+export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { Clock, Storage } from './edges';
 export type { Base64Result } from './base64';
 export type { DevUtilitiesTab } from './dev-utilities';
@@ -149,8 +149,30 @@ export interface WebOS {
     readonly grid: typeof desktop.grid;
     /** The Widget catalog: every Widget and the cells each size spans. */
     readonly widgets: typeof desktop.widgets;
-    /** The Widgets on the Desktop and where they sit. */
+    /** The visible Widgets and where they sit, in reading order. */
     layout(): readonly desktop.PlacedWidget[];
+    /** The hidden Widgets, in catalog order; Edit Mode offers to show them. */
+    hidden(): readonly desktop.WidgetId[];
+    /**
+     * Moves a Widget so its top-left cell is `column`, `row`, kept on the grid.
+     * Widgets it lands on move to the next free position, so Widgets never
+     * overlap. Resolves to whether it moved: a move that would leave a pushed
+     * Widget no room anywhere is refused, and nothing changes.
+     */
+    move(widget: desktop.WidgetId, column: number, row: number): Promise<boolean>;
+    /**
+     * Where a Widget of `size` with its top-left at `cell` would sit: the
+     * nearest cell that keeps all of it on the grid, as `move` would place it.
+     */
+    fitOnGrid(widget: desktop.WidgetId, size: desktop.WidgetSize, cell: desktop.Cell): desktop.Cell;
+    /** Resizes a Widget, pushing aside the Widgets it grows over as `move` does. Resolves to whether it was resized. */
+    resize(widget: desktop.WidgetId, size: desktop.WidgetSize): Promise<boolean>;
+    hide(widget: desktop.WidgetId): Promise<void>;
+    /**
+     * Shows a hidden Widget where it was, or at the next free position. Resolves
+     * to whether it is shown: with no room for it, it stays hidden.
+     */
+    show(widget: desktop.WidgetId): Promise<boolean>;
   };
   readonly clock: {
     /** The current time in 12-hour format, e.g. "9:05 AM". */
@@ -173,7 +195,9 @@ export interface WebOS {
  * state can't be used, without touching it.
  */
 export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS> {
-  let state = await loadState(storage);
+  /** A document with its layout made safe to use; see `desktop.normalizeLayout`. */
+  const withSafeLayout = (document: StateDocument): StateDocument => ({ ...document, layout: desktop.normalizeLayout(document.layout) });
+  let state = withSafeLayout(await loadState(storage));
   /** The Note this tab's Notes App shows; see `notes.selected`. Kept per tab, so it isn't part of `state`. */
   let shownNoteId = notes.shownNoteId(state.notes, state.apps.notes?.selectedNoteId);
   const listeners = new Set<() => void>();
@@ -206,7 +230,7 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     } catch {
       return;
     }
-    adopt(next);
+    adopt(withSafeLayout(next));
   });
 
   /** Applies a change to the Link Groups. Deleted Links leave the Dock with them. */
@@ -226,6 +250,14 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
   const commitSelection = (id: string, next: StateDocument = state) => {
     shownNoteId = id;
     return commit({ ...next, apps: { ...next.apps, notes: { ...next.apps.notes, selectedNoteId: id } } });
+  };
+
+  /** Applies a change to the Desktop layout, unless it was refused (undefined). Resolves to whether it was applied. */
+  const commitLayout = async (change: (entries: readonly desktop.LayoutEntry[]) => desktop.LayoutEntry[] | undefined) => {
+    const layout = change(state.layout);
+    if (!layout) return false;
+    await commit({ ...state, layout });
+    return true;
   };
 
   /** Applies a change to the Todos. */
@@ -311,7 +343,15 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     desktop: {
       grid: desktop.grid,
       widgets: desktop.widgets,
-      layout: desktop.layout,
+      layout: () => desktop.placedWidgets(state.layout),
+      hidden: () => desktop.hiddenWidgets(state.layout),
+      fitOnGrid: desktop.fitOnGrid,
+      move: (widget, column, row) => commitLayout((entries) => desktop.moveWidget(entries, widget, column, row)),
+      resize: (widget, size) => commitLayout((entries) => desktop.resizeWidget(entries, widget, size)),
+      hide: async (widget) => {
+        await commitLayout((entries) => desktop.hideWidget(entries, widget));
+      },
+      show: (widget) => commitLayout((entries) => desktop.showWidget(entries, widget)),
     },
     clock: {
       time: () => formatTime(clock.now()),

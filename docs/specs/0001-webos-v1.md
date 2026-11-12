@@ -214,12 +214,12 @@ Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with
   - **Links**: Link Groups, Links, Docked Links and their order; URL normalisation.
   - **Todos**: add, edit, complete, uncomplete, delete, reorder; clearing completed Todos.
   - **Notes**: create, edit, delete, list by last edit; the Pinned Note and its fallback.
-  - **Desktop**: Widget layout on the grid, sizes, visibility, Edit Mode, collision resolution.
+  - **Desktop**: Widget layout on the grid, sizes, visibility, the moves Edit Mode makes, collision resolution.
   - **Launcher**: query to ranked results; executing a result or action.
   - **Dev Utilities**: pure conversions (JSON, Base64, JWT, UUID, timestamp).
   - **Backup**: export to and import from the versioned JSON document.
   - **Data Sources** (v2): configuration, cache, freshness, refresh, aggregate status.
-- UI-only state (which App is open, the Launcher's open state and selection) lives in the Angular layer, not the core. The exception is per-App remembered state that must survive tabs, such as the selected Note, which goes in the core's storage.
+- UI-only state (which App is open, whether Edit Mode is on, the Launcher's open state and selection) lives in the Angular layer, not the core. The exception is per-App remembered state that must survive tabs, such as the selected Note, which goes in the core's storage.
 
 ### Persisted state
 

@@ -240,15 +240,25 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 03, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Right-clicking the Desktop shows a menu with "Edit Desktop". This is the only way into Edit Mode.
-- [ ] In Edit Mode, Widgets show a gentle lift and outline (no wobble) and normal Widget interactions are paused.
-- [ ] Dragging uses a framework-agnostic drag behavior built on Angular CDK drag-drop that settles onto the grid with a spring (a fade under reduced motion).
-- [ ] Dropping onto occupied cells pushes other Widgets to the next free position. Widgets never overlap.
-- [ ] Each Widget can be resized S/M/L and hidden. Hidden Widgets can be shown again from Edit Mode.
-- [ ] The Menu Bar shows "Done" during Edit Mode. "Done" and Esc both exit, and the layout persists across tabs.
-- [ ] Core tests: a move with collision resolution, a resize that causes collisions, hide/show, never more than one instance of a Widget, and persistence through the in-memory Storage.
+- [x] Right-clicking the Desktop shows a menu with "Edit Desktop". This is the only way into Edit Mode.
+- [x] In Edit Mode, Widgets show a gentle lift and outline (no wobble) and normal Widget interactions are paused.
+- [x] Dragging uses a framework-agnostic drag behavior built on Angular CDK drag-drop that settles onto the grid with a spring (a fade under reduced motion).
+- [x] Dropping onto occupied cells pushes other Widgets to the next free position. Widgets never overlap.
+- [x] Each Widget can be resized S/M/L and hidden. Hidden Widgets can be shown again from Edit Mode.
+- [x] The Menu Bar shows "Done" during Edit Mode. "Done" and Esc both exit, and the layout persists across tabs.
+- [x] Core tests: a move with collision resolution, a resize that causes collisions, hide/show, never more than one instance of a Widget, and persistence through the in-memory Storage.
+
+**Decisions made while building:**
+- The layout is stored as one entry per Widget: size, position and whether it is visible (schema v8). Every change is saved at once, so "Done" and Esc only leave Edit Mode. Edit Mode itself is UI-only state in the Angular layer, like the open Window.
+- Collision resolution: Widgets the moved or resized one doesn't touch stay put. Those it covers move, in reading order, to the next free position from where they were, wrapping round to the top. A move or resize that would leave one of them no room anywhere is refused: nothing changes, a dropped Widget springs back, and the Menu Bar says why. The user's chosen sizes are never changed by a push. (All four Widgets at L need more cells than the grid has.)
+- Showing a hidden Widget doesn't push anything aside. It goes where it was, or to the next free position. With no room for it, the Menu Bar says so.
+- A stored layout is made safe on load and when another tab's arrives: unknown and repeated entries are dropped, Widgets it doesn't mention are added hidden, and overlaps are resolved. Only here may a Widget be made smaller, or hidden, to fit.
+- The Desktop menu opens only on the empty Desktop or the wallpaper around it (or with the keyboard's menu key), so right-clicking inside a Widget keeps the browser's own menu. It closes on Esc, a click elsewhere or tabbing out, and focus goes back where it was; leaving Edit Mode does the same.
+- In Edit Mode each Widget has S/M/L and Hide controls and is keyboard-focusable: the arrow keys move it one cell. Hidden Widgets are offered back as chips in the Menu Bar, beside "Done".
+- The drag is a directive (`webosGridDrag`) on Angular CDK drag-drop that reports grid cells; the grid geometry and the settle animation are framework-agnostic helpers in `src/motion/grid.ts`. While dragging, the cell the Widget will land on is outlined. The dropped Widget springs from where it was let go (momentum preset), and Widgets pushed aside slide to their places (smooth). The drag moves the Widget's grid slot and the animations an element inside it, so a new drag never fights a slide still settling. Under reduced motion Widgets fade in at their new places, and the Edit Mode outline fades in instead of the lift.
+- Opening an App leaves Edit Mode.
 
 ---
 

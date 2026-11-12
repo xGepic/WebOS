@@ -1,5 +1,5 @@
 import type { AnimationPlaybackControls } from 'motion';
-import { prefersReducedMotion, springTo } from './springs';
+import { prefersReducedMotion, springTo, type SpringPreset } from './springs';
 
 /**
  * FLIP-style shared-element transition between a small source element (such
@@ -52,4 +52,18 @@ export function collapseInto(element: HTMLElement, source: Element): AnimationPl
 /** Springs `element` back to its laid-out place from wherever it is now, e.g. to cancel a collapse. */
 export function settle(element: HTMLElement): AnimationPlaybackControls {
   return springTo(element, { ...settled, opacity: 1 });
+}
+
+/**
+ * Springs `element` from `from` to `to`, two places on screen, after a layout
+ * change moved it, e.g. a Widget pushed aside on the Desktop. `to` is where its
+ * layout puts it now; the element is offset to `from` and springs back to none.
+ * Under reduced motion it doesn't travel: it fades in at its new place.
+ */
+export function slideBetween(element: HTMLElement, from: DOMRect, to: DOMRect, preset: SpringPreset = 'smooth'): AnimationPlaybackControls | undefined {
+  const x = from.left - to.left;
+  const y = from.top - to.top;
+  if (Math.abs(x) < 1 && Math.abs(y) < 1) return undefined;
+  if (prefersReducedMotion()) return springTo(element, { opacity: [0.3, 1] });
+  return springTo(element, { x: [x, 0], y: [y, 0] }, preset);
 }

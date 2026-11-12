@@ -35,6 +35,10 @@
   --focus-ring: rgba(110, 230, 216, 0.75);
   /* A control that is switched on, e.g. a Docked Link's Dock button */
   --selected-fill: rgba(110, 230, 216, 0.18);
+  /* The outline of a Widget in Edit Mode, and of where a dragged one will land */
+  --edit-outline: rgba(110, 230, 216, 0.55);
+  /* The deeper shadow of a Widget lifted in Edit Mode */
+  --lift-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
   --danger: #ff8a8a;
 
   /* Dims the Desktop behind the Window */

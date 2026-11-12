@@ -184,11 +184,38 @@ describe('state document', () => {
     expect(webos.notes.forWidget()?.title).toBe('Newer');
   });
 
+  it('keeps everything when migrating a v7 document (ticket 09 and 10 builds) forward, with the layout those builds had', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 7,
+      profile: { name: 'Stefan' },
+      apps: { 'dev-utilities': { activeTab: 'jwt' } },
+      linkGroups: [],
+      dockedLinkIds: [],
+      todos: [{ id: 't', text: 'Ship it', createdAt: at(8, 0).getTime(), completedAt: null }],
+      notes: [{ id: 'n', body: '# Pinned', createdAt: at(8, 0).getTime(), editedAt: at(8, 0).getTime() }],
+      pinnedNoteId: 'n',
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.profile.greeting()).toBe('Good morning, Stefan');
+    expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
+    expect(webos.notes.forWidget()?.pinned).toBe(true);
+    expect(webos.devUtilities.activeTab()).toBe('jwt');
+    expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
+      'clock M@0,0',
+      'todos M@8,0',
+      'links M@0,2',
+      'notes M@8,4',
+    ]);
+    expect(webos.desktop.hidden()).toEqual([]);
+  });
+
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 7, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null }],
+    ['at the current version but missing its profile', { schemaVersion: 8, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 
