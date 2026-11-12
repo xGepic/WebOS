@@ -28,15 +28,15 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The extension is Manifest V3, overrides the new tab, and loads unpacked in Brave without errors.
-- [ ] Angular uses standalone components, signals and zoneless change detection. The production build has critical-CSS inlining and output hashing turned off, and runs under the default extension Content Security Policy with no CSP errors in the console.
-- [ ] The webOS core contains no Angular imports. It is created with an injected Storage (local extension storage in production, in-memory in tests) and an injected Clock (real time in production, controllable in tests).
-- [ ] Persisted state is one document carrying a schema version. On load, a migration runner brings older versions forward step by step. A first test proves a v0 → v1 migration path works.
-- [ ] Vitest runs the core tests from a single command.
-- [ ] The Clock Widget shows the 12-hour time (updating every minute, on the minute), the date and a greeting: morning 05:00–11:59, afternoon 12:00–16:59, evening 17:00–21:59, night otherwise.
-- [ ] Greeting tests cover every boundary using the controllable Clock.
+- [x] The extension is Manifest V3, overrides the new tab, and loads unpacked in Brave without errors.
+- [x] Angular uses standalone components, signals and zoneless change detection. The production build has critical-CSS inlining and output hashing turned off, and runs under the default extension Content Security Policy with no CSP errors in the console.
+- [x] The webOS core contains no Angular imports. It is created with an injected Storage (local extension storage in production, in-memory in tests) and an injected Clock (real time in production, controllable in tests).
+- [x] Persisted state is one document carrying a schema version. On load, a migration runner brings older versions forward step by step. A first test proves a v0 → v1 migration path works.
+- [x] Vitest runs the core tests from a single command.
+- [x] The Clock Widget shows the 12-hour time (updating every minute, on the minute), the date and a greeting: morning 05:00–11:59, afternoon 12:00–16:59, evening 17:00–21:59, night otherwise.
+- [x] Greeting tests cover every boundary using the controllable Clock.
 
 ---
 

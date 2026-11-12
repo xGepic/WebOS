@@ -1,0 +1,9 @@
+/* Typechecks the framework-free webOS core tests, run by Vitest. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/core/**/*.ts", "vitest.config.mts"]
+}
