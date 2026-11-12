@@ -3,7 +3,7 @@ import * as desktop from './desktop';
 import type { Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
-import { loadState } from './state';
+import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
@@ -19,8 +19,12 @@ export interface WebOS {
   /** Every App, in Dock order. */
   readonly apps: typeof apps;
   readonly profile: {
-    /** The greeting for the current time of day, e.g. "Good morning". */
+    /** The greeting for the current time of day, with the name if one is set: "Good morning, Stefan". */
     greeting(): string;
+    /** The name as the user typed it; empty when not set. */
+    name(): string;
+    /** Sets the name the greeting uses, and saves it. */
+    setName(name: string): Promise<void>;
   };
   readonly desktop: {
     /** The snap grid, in cells. */
@@ -41,7 +45,7 @@ export interface WebOS {
    * including the time at the start of every minute. Returns an unsubscribe function.
    */
   subscribe(listener: () => void): () => void;
-  /** Stops the core's timers. */
+  /** Stops the core's timers and its listening for other tabs' changes. */
   dispose(): void;
 }
 
@@ -50,15 +54,35 @@ export interface WebOS {
  * state can't be used, without touching it.
  */
 export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS> {
-  await loadState(storage);
+  let state = await loadState(storage);
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((listener) => listener());
   const stopMinuteTicks = clock.onMinute(notify);
 
+  /** Replaces the state, tells subscribers, and writes it to storage right away. */
+  const commit = (next: StateDocument) => {
+    state = next;
+    notify();
+    return storage.write(next);
+  };
+
+  // Another tab saved: adopt its document, so this tab never writes back a stale copy.
+  // A document this build can't use is ignored rather than adopted.
+  const stopExternalChanges = storage.onExternalChange((document) => {
+    try {
+      state = toCurrentDocument(document);
+    } catch {
+      return;
+    }
+    notify();
+  });
+
   return {
     apps,
     profile: {
-      greeting: () => greetingFor(clock.now()),
+      name: () => state.profile.name,
+      greeting: () => greetingFor(clock.now(), state.profile.name),
+      setName: (name) => commit({ ...state, profile: { ...state.profile, name } }),
     },
     desktop: {
       grid: desktop.grid,
@@ -73,6 +97,9 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    dispose: stopMinuteTicks,
+    dispose() {
+      stopMinuteTicks();
+      stopExternalChanges();
+    },
   };
 }

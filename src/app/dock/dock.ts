@@ -2,11 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  effect,
   inject,
   viewChildren,
 } from '@angular/core';
 import { prefersReducedMotion, springTo } from '../../motion/springs';
 import { WebOSCore } from '../webos-core';
+import { WindowState } from '../window/window-state';
 import { AppIcon } from './app-icon';
 
 /** Largest extra scale, for the icon right under the pointer. Kept subtle; --dock-clearance leaves room for it. */
@@ -17,6 +19,7 @@ const MAGNIFICATION_RANGE = 150;
 /**
  * The Dock along the bottom, with an icon per App. Icons magnify on a spring
  * as the pointer moves along the Dock; under reduced motion they don't.
+ * Clicking an icon opens its App in the Window; the open App's icon has a dot under it.
  */
 @Component({
   selector: 'webos-dock',
@@ -31,9 +34,20 @@ const MAGNIFICATION_RANGE = 150;
   },
   template: `
     @for (app of webos.apps(); track app.id) {
-      <button #icon type="button" class="icon" [attr.aria-label]="app.name" [title]="app.name">
-        <webos-app-icon [app]="app.id" />
-      </button>
+      <span class="slot">
+        <button
+          #icon
+          type="button"
+          class="icon"
+          [attr.aria-label]="app.name"
+          [attr.aria-current]="window.app() === app.id ? 'true' : null"
+          [title]="app.name"
+          (click)="window.open(app.id)"
+        >
+          <webos-app-icon [app]="app.id" />
+        </button>
+        <span class="open-indicator" [class.visible]="window.app() === app.id"></span>
+      </span>
     }
   `,
   styles: `
@@ -49,6 +63,24 @@ const MAGNIFICATION_RANGE = 150;
       gap: 0.75rem;
       padding: 0.625rem 0.75rem;
       border-radius: calc(var(--dock-icon-size) * 0.42);
+    }
+    .slot {
+      position: relative;
+      display: flex;
+    }
+    .open-indicator {
+      position: absolute;
+      bottom: -0.45rem;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      margin-left: -2px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      opacity: 0;
+    }
+    .open-indicator.visible {
+      opacity: 0.85;
     }
     .icon {
       width: var(--dock-icon-size);
@@ -72,7 +104,19 @@ const MAGNIFICATION_RANGE = 150;
 })
 export class Dock {
   protected readonly webos = inject(WebOSCore);
+  protected readonly window = inject(WindowState);
   private readonly icons = viewChildren<ElementRef<HTMLButtonElement>>('icon');
+
+  constructor() {
+    // Let the Window find each App's icon to open out of and close into.
+    effect(() => {
+      const apps = this.webos.apps() ?? [];
+      this.icons().forEach((icon, index) => {
+        const app = apps[index];
+        if (app) this.window.registerDockIcon(app.id, icon.nativeElement);
+      });
+    });
+  }
 
   protected magnify(event: PointerEvent): void {
     if (prefersReducedMotion()) return this.restore();

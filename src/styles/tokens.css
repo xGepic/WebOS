@@ -24,6 +24,15 @@
   --material-highlight: rgba(255, 255, 255, 0.12);
   --material-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
 
+  /* Controls on a surface: buttons, fields */
+  --control-fill: rgba(255, 255, 255, 0.07);
+  --control-fill-hover: rgba(255, 255, 255, 0.14);
+  --control-fill-active: rgba(255, 255, 255, 0.22);
+  --focus-ring: rgba(110, 230, 216, 0.75);
+
+  /* Dims the Desktop behind the Window */
+  --scrim: rgba(4, 3, 12, 0.35);
+
   /* Corner radius */
   --radius-window: 14px;
   --radius-widget: 18px;
@@ -54,5 +63,7 @@
     --material-tint: rgba(10, 9, 24, 0.92);
     --material-border: rgba(255, 255, 255, 0.4);
     --text-secondary: rgba(245, 244, 251, 0.85);
+    --control-fill: rgba(255, 255, 255, 0.16);
+    --control-fill-hover: rgba(255, 255, 255, 0.26);
   }
 }

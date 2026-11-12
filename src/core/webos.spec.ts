@@ -74,33 +74,40 @@ describe('updates', () => {
   });
 });
 
-// The document holds no user-visible state yet, so these tests can only observe it
-// through the injected Storage edge. Once Profile and Backup land, migration tests
-// should assert through their public state instead.
+// Migrations are checked through public state: an older document must load into a
+// working core, and a name set afterwards must survive into the next tab.
 describe('state document', () => {
-  const schemaVersionOf = async (storage: { read(): Promise<unknown> }) =>
-    ((await storage.read()) as { schemaVersion?: unknown } | undefined)?.schemaVersion;
+  const clock = () => createTestClock(at(9, 0));
 
-  it('starts a fresh document at schema version 1 when nothing is stored', async () => {
-    const storage = createMemoryStorage();
+  async function loadsIntoWorkingCore(stored: unknown) {
+    const storage = createMemoryStorage(stored);
+    const webos = await createWebOS({ storage, clock: clock() });
 
-    await createWebOS({ storage, clock: createTestClock(at(9, 0)) });
+    expect(webos.profile.name()).toBe('');
+    expect(webos.profile.greeting()).toBe('Good morning');
 
-    expect(await schemaVersionOf(storage)).toBe(1);
+    await webos.profile.setName('Stefan');
+    const nextTab = await createWebOS({ storage, clock: clock() });
+    expect(nextTab.profile.greeting()).toBe('Good morning, Stefan');
+  }
+
+  it('starts a working document when nothing is stored', async () => {
+    await loadsIntoWorkingCore(undefined);
   });
 
-  it('migrates an unversioned v0 document forward to v1 on load', async () => {
-    const storage = createMemoryStorage({});
+  it('migrates an unversioned v0 document forward on load', async () => {
+    await loadsIntoWorkingCore({});
+  });
 
-    await createWebOS({ storage, clock: createTestClock(at(9, 0)) });
-
-    expect(await schemaVersionOf(storage)).toBe(1);
+  it('migrates a v1 document (ticket 01 to 03 builds) forward on load', async () => {
+    await loadsIntoWorkingCore({ schemaVersion: 1 });
   });
 
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
+    ['at the current version but missing its profile', { schemaVersion: 2, apps: {} }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

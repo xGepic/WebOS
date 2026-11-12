@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
-import { createWebOS, type WebOS } from '../core';
+import { createWebOS, type AppId, type WebOS } from '../core';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createSystemClock } from '../edges/system-clock';
 
@@ -20,6 +20,7 @@ export class WebOSCore {
   readonly apps = this.read((core) => core.apps);
   readonly grid = this.read((core) => core.desktop.grid);
   readonly layout = this.read((core) => core.desktop.layout());
+  readonly name = this.read((core) => core.profile.name());
   readonly greeting = this.read((core) => core.profile.greeting());
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
@@ -41,6 +42,15 @@ export class WebOSCore {
       console.error(error);
       this.startupError.set(error instanceof Error ? error.message : String(error));
     }
+  }
+
+  /** The display name of an App, e.g. "Dev Utilities". */
+  appName(app: AppId): string {
+    return this.apps()?.find((candidate) => candidate.id === app)?.name ?? '';
+  }
+
+  setName(name: string): void {
+    this.core()?.profile.setName(name).catch((error) => console.error('Saving the name failed', error));
   }
 
   private read<T>(selector: (core: WebOS) => T) {

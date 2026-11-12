@@ -83,16 +83,16 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A framework-agnostic FLIP-style transition makes the Window spring out of the clicked Dock icon on open and back into it on close (a fade under reduced motion).
-- [ ] Only one Window exists at a time. Opening another App replaces the open one.
-- [ ] The Window closes with Esc, its close control (original design, not traffic lights), or a click on the Desktop outside it.
-- [ ] While an App is open, the Menu Bar shows its name and its Dock icon shows an open indicator.
-- [ ] The core Profile module stores the name, and the greeting includes it when set and leaves it out when not.
-- [ ] Settings has a name field that saves as you type and persists across tabs.
-- [ ] Per-App remembered state has a home in the core's persisted state, ready for later Apps.
-- [ ] Core tests: greeting with and without a name, and the name persisting through the in-memory Storage.
+- [x] A framework-agnostic FLIP-style transition makes the Window spring out of the clicked Dock icon on open and back into it on close (a fade under reduced motion).
+- [x] Only one Window exists at a time. Opening another App replaces the open one.
+- [x] The Window closes with Esc, its close control (original design, not traffic lights), or a click on the Desktop outside it.
+- [x] While an App is open, the Menu Bar shows its name and its Dock icon shows an open indicator.
+- [x] The core Profile module stores the name, and the greeting includes it when set and leaves it out when not.
+- [x] Settings has a name field that saves as you type and persists across tabs.
+- [x] Per-App remembered state has a home in the core's persisted state, ready for later Apps.
+- [x] Core tests: greeting with and without a name, and the name persisting through the in-memory Storage.
 
 ---
 

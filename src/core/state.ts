@@ -1,23 +1,36 @@
+import type { AppId } from './apps';
 import type { Storage } from './edges';
 
 /**
- * The single persisted state document. Later tickets add profile, Links,
- * Todos, Notes, Desktop layout and per-App state here, each with a migration.
+ * The single persisted state document. Later tickets add Links, Todos, Notes
+ * and the Desktop layout here, each with a migration.
  */
 export interface StateDocument {
   schemaVersion: typeof SCHEMA_VERSION;
+  profile: {
+    /** As typed in Settings; the greeting trims it. Empty when not set. */
+    name: string;
+  };
+  /**
+   * What each App remembers between openings, such as the selected Note.
+   * Each App adds its own fields here when it needs them.
+   */
+  apps: Partial<Record<AppId, Record<string, unknown>>>;
 }
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
 /**
  * `migrations[n]` brings a version-n document to version n + 1.
  * Version 0 is any document written before documents carried a schema version.
+ * Each migration spells out its own values rather than reusing `freshDocument`,
+ * because a migration must keep producing exactly that version forever.
  */
 const migrations: Record<number, Migration> = {
   0: () => ({ schemaVersion: 1 }),
+  1: (document) => ({ ...document, schemaVersion: 2, profile: { name: '' }, apps: {} }),
 };
 
 export class StateDocumentError extends Error {
@@ -25,7 +38,7 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION };
+  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {} };
 }
 
 function versionOf(document: unknown): number {
@@ -45,15 +58,29 @@ function versionOf(document: unknown): number {
   return version as number;
 }
 
-/** Brings any older document forward to the current schema version, one step at a time. */
-function migrate(document: unknown): StateDocument {
+/** Throws unless `document` has the current schema's shape. */
+function assertCurrentShape(document: Record<string, unknown>): asserts document is Record<string, unknown> & StateDocument {
+  const profile = document['profile'] as { name?: unknown } | undefined;
+  const apps = document['apps'];
+  if (typeof profile?.name !== 'string' || typeof apps !== 'object' || apps === null || Array.isArray(apps)) {
+    throw new StateDocumentError('The stored state is damaged: its profile or per-App state is missing.');
+  }
+}
+
+/**
+ * Brings any older document forward to the current schema version, one step
+ * at a time, and checks the result. Throws a `StateDocumentError` if the
+ * document can't be used.
+ */
+export function toCurrentDocument(document: unknown): StateDocument {
   let version = versionOf(document);
   let current = document as Record<string, unknown>;
   while (version < SCHEMA_VERSION) {
     current = migrations[version](current);
     version++;
   }
-  return current as unknown as StateDocument;
+  assertCurrentShape(current);
+  return current;
 }
 
 /**
@@ -67,7 +94,7 @@ export async function loadState(storage: Storage): Promise<StateDocument> {
     await storage.write(document);
     return document;
   }
-  const document = migrate(stored);
+  const document = toCurrentDocument(stored);
   if (document !== stored) await storage.write(document);
   return document;
 }

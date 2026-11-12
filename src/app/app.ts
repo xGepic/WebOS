@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Desktop } from './desktop/desktop';
 import { Dock } from './dock/dock';
 import { MenuBar } from './menu-bar/menu-bar';
+import { AppWindow } from './window/window';
 import { WebOSCore } from './webos-core';
 
 @Component({
   selector: 'webos-root',
-  imports: [MenuBar, Desktop, Dock],
+  imports: [MenuBar, Desktop, AppWindow, Dock],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (webos.startupError(); as error) {
@@ -18,6 +19,7 @@ import { WebOSCore } from './webos-core';
     } @else {
       <webos-menu-bar />
       <webos-desktop />
+      <webos-window />
       <webos-dock />
     }
   `,

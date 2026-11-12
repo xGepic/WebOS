@@ -1,7 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { WebOSCore } from '../webos-core';
+import { WindowState } from '../window/window-state';
 
-/** The Menu Bar across the top: the webOS mark on the left, the 12-hour time on the right. */
+/**
+ * The Menu Bar across the top: the webOS mark and the open App's name on the
+ * left, the 12-hour time on the right.
+ */
 @Component({
   selector: 'webos-menu-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +19,10 @@ import { WebOSCore } from '../webos-core';
       </svg>
       webOS
     </span>
+    @if (window.app(); as app) {
+      <span class="app-name">{{ webos.appName(app) }}</span>
+    }
+    <span class="spacer"></span>
     <time class="time">{{ webos.time() }}</time>
   `,
   styles: `
@@ -25,7 +33,6 @@ import { WebOSCore } from '../webos-core';
       height: var(--menu-bar-height);
       display: flex;
       align-items: center;
-      justify-content: space-between;
       padding: 0 1rem;
       font-size: 0.8125rem;
       font-weight: 500;
@@ -38,6 +45,13 @@ import { WebOSCore } from '../webos-core';
       font-weight: 700;
       letter-spacing: var(--tracking-title);
     }
+    .app-name {
+      margin-left: 1.25rem;
+      font-weight: 600;
+    }
+    .spacer {
+      flex: 1;
+    }
     .time {
       font-variant-numeric: tabular-nums;
     }
@@ -45,4 +59,5 @@ import { WebOSCore } from '../webos-core';
 })
 export class MenuBar {
   protected readonly webos = inject(WebOSCore);
+  protected readonly window = inject(WindowState);
 }
