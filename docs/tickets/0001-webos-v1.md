@@ -46,16 +46,18 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent (needs the user to pick the wallpaper variant)
+**Status:** done
 
-- [ ] The prototype is a single throwaway page outside the app, with 2–3 wallpaper variants and sample translucent surfaces on each. The user has picked one.
-- [ ] The chosen wallpaper is original generated art (SVG/CSS), fixed, and not configurable.
-- [ ] Shared material tokens (blur, saturation, tint, border, shadow, corner radius) exist and are the only way surfaces get their translucent look.
-- [ ] Inter is bundled with the extension (no remote font loading), with the system font stack as fallback.
-- [ ] The app is dark mode only.
-- [ ] A motion baseline exists: spring presets built on Motion's framework-agnostic `animate()`, and under `prefers-reduced-motion` they fall back to short opacity fades.
-- [ ] The Clock Widget from 01 uses the material and typography and sits on the wallpaper.
-- [ ] No Apple fonts, icons or other assets are used.
+**Prototype:** branch `prototype/0002-wallpaper` holds the three variants (A Nebula, B Aurora, C Eclipse). The user picked **C · Eclipse**: near-black indigo, one large violet-into-teal bloom bottom-left, heavy vignette, heavy dark glass.
+
+- [x] The prototype is a single throwaway page outside the app, with 2–3 wallpaper variants and sample translucent surfaces on each. The user has picked one.
+- [x] The chosen wallpaper is original generated art (SVG/CSS), fixed, and not configurable.
+- [x] Shared material tokens (blur, saturation, tint, border, shadow, corner radius) exist and are the only way surfaces get their translucent look.
+- [x] Inter is bundled with the extension (no remote font loading), with the system font stack as fallback.
+- [x] The app is dark mode only.
+- [x] A motion baseline exists: spring presets built on Motion's framework-agnostic `animate()`, and under `prefers-reduced-motion` they fall back to short opacity fades.
+- [x] The Clock Widget from 01 uses the material and typography and sits on the wallpaper.
+- [x] No Apple fonts, icons or other assets are used.
 
 ---
 

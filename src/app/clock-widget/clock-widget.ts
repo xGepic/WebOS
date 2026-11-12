@@ -5,6 +5,7 @@ import { WebOSCore } from '../webos-core';
 @Component({
   selector: 'webos-clock-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'material' },
   template: `
     <p class="greeting">{{ webos.greeting() }}</p>
     <time class="time">{{ webos.time() }}</time>
@@ -14,28 +15,32 @@ import { WebOSCore } from '../webos-core';
     :host {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      text-align: center;
+      min-width: 20rem;
+      padding: 1.25rem 1.375rem;
+      border-radius: var(--radius-widget);
     }
     p {
       margin: 0;
     }
     .greeting {
-      font-size: 1.5rem;
-      font-weight: 500;
-      opacity: 0.85;
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: var(--tracking-caption);
     }
     .time {
-      font-size: 6rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
+      margin-top: 0.25rem;
+      font-size: 4rem;
+      font-weight: 650;
+      line-height: 1.02;
+      letter-spacing: var(--tracking-display);
       font-variant-numeric: tabular-nums;
-      line-height: 1;
     }
     .date {
-      font-size: 1.25rem;
-      opacity: 0.7;
+      margin-top: 0.375rem;
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      letter-spacing: var(--tracking-caption);
     }
   `,
 })

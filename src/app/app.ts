@@ -8,7 +8,7 @@ import { WebOSCore } from './webos-core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (webos.startupError(); as error) {
-      <div class="startup-error" role="alert">
+      <div class="startup-error material" role="alert">
         <h1>webOS couldn't start</h1>
         <p>{{ error }}</p>
         <p>Your data has been left untouched.</p>
@@ -25,7 +25,14 @@ import { WebOSCore } from './webos-core';
     }
     .startup-error {
       max-width: 32rem;
+      padding: 1.5rem 2rem;
+      border-radius: var(--radius-widget);
       text-align: center;
+    }
+    .startup-error h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
+      letter-spacing: var(--tracking-title);
     }
   `,
 })

@@ -1,0 +1,39 @@
+/*
+ * The one fixed webOS wallpaper ("Eclipse"): near-black indigo with a single
+ * violet-into-teal bloom off-centre, a heavy vignette and film grain.
+ * Original generated art (CSS gradients plus SVG noise), not configurable.
+ *
+ * It is painted from global CSS on the body, so it is on screen before
+ * Angular starts and a new tab never flashes an empty page.
+ */
+body {
+  position: relative;
+  isolation: isolate;
+  background: var(--wallpaper-base);
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: -2;
+  background:
+    radial-gradient(120% 90% at 50% 50%, transparent 40%, rgba(3, 3, 10, 0.85) 100%),
+    radial-gradient(38% 46% at 24% 78%, #18a3a0 0%, rgba(24, 163, 160, 0) 70%),
+    radial-gradient(52% 58% at 34% 70%, #5b35b8 0%, rgba(91, 53, 184, 0) 72%),
+    radial-gradient(70% 70% at 78% 18%, #1c1847 0%, transparent 70%),
+    var(--wallpaper-base);
+}
+
+/* Film grain: fractal noise, blended over the gradient. */
+body::after {
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  opacity: var(--grain-opacity);
+}

@@ -1,0 +1,52 @@
+/*
+ * webOS design tokens. webOS is dark mode only.
+ * Values come from the "Eclipse" variant picked in the ticket 02 prototype
+ * (branch prototype/0002-wallpaper).
+ */
+:root {
+  color-scheme: dark;
+
+  /* Text */
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --text-primary: #f5f4fb;
+  --text-secondary: rgba(245, 244, 251, 0.68);
+
+  /* Tracking is size-specific: tighten large text, keep small text near zero. */
+  --tracking-display: -0.035em;
+  --tracking-title: -0.02em;
+  --tracking-caption: 0.005em;
+
+  /* Material: the only source of the translucent look. Use the .material class. */
+  --material-blur: 22px;
+  --material-saturation: 140%;
+  --material-tint: rgba(10, 9, 24, 0.6);
+  --material-border: rgba(255, 255, 255, 0.08);
+  --material-highlight: rgba(255, 255, 255, 0.12);
+  --material-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+
+  /* Corner radius */
+  --radius-window: 14px;
+  --radius-widget: 18px;
+
+  /* Wallpaper */
+  --wallpaper-base: #09081a;
+  --grain-opacity: 0.22;
+}
+
+/* Reduced transparency: frosted becomes solid. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --material-blur: 0px;
+    --material-saturation: 100%;
+    --material-tint: rgb(20, 19, 36);
+  }
+}
+
+/* More contrast: near-solid surfaces with a clearly visible edge. */
+@media (prefers-contrast: more) {
+  :root {
+    --material-tint: rgba(10, 9, 24, 0.92);
+    --material-border: rgba(255, 255, 255, 0.4);
+    --text-secondary: rgba(245, 244, 251, 0.85);
+  }
+}
