@@ -29,6 +29,9 @@ export class WebOSCore {
   readonly notes = this.read((core) => core.notes.list());
   readonly selectedNote = this.read((core) => core.notes.selected());
   readonly widgetNote = this.read((core) => core.notes.forWidget());
+  readonly devUtilitiesTab = this.read((core) => core.devUtilities.activeTab());
+  /** The Dev Utilities conversions. They are pure, so views call them directly. */
+  readonly devUtilities = this.read((core) => core.devUtilities);
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
 

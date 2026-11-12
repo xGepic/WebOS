@@ -1,9 +1,14 @@
-/** 12-hour time, e.g. "9:05 AM". Built by hand so the space is always a plain one. */
-export function formatTime(time: Date): string {
+/** 12-hour clock time, optionally with seconds. Built by hand so the space before AM/PM is always a plain one. */
+function clockTime(time: Date, { seconds = false } = {}): string {
   const hours = time.getHours();
   const minutes = String(time.getMinutes()).padStart(2, '0');
-  const period = hours < 12 ? 'AM' : 'PM';
-  return `${hours % 12 || 12}:${minutes} ${period}`;
+  const second = seconds ? ':' + String(time.getSeconds()).padStart(2, '0') : '';
+  return `${hours % 12 || 12}:${minutes}${second} ${hours < 12 ? 'AM' : 'PM'}`;
+}
+
+/** 12-hour time, e.g. "9:05 AM". */
+export function formatTime(time: Date): string {
+  return clockTime(time);
 }
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
@@ -34,4 +39,13 @@ export function formatWhen(at: Date, now: Date): string {
   if (days <= 0) return formatTime(at);
   if (days === 1) return 'Yesterday';
   return at.getFullYear() === now.getFullYear() ? monthDay.format(at) : monthDayYear.format(at);
+}
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** A moment in local time, to the second, e.g. "Thu, Nov 12, 2026, 9:05:30 AM". */
+export function formatDateTime(date: Date): string {
+  const day = `${WEEKDAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  return `${day}, ${clockTime(date, { seconds: true })}`;
 }

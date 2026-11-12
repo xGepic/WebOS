@@ -1,18 +1,28 @@
 import { apps } from './apps';
+import * as base64 from './base64';
 import * as desktop from './desktop';
+import * as devUtilities from './dev-utilities';
 import type { Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
+import * as json from './json';
+import * as jwt from './jwt';
 import * as links from './links';
 import * as notes from './notes';
+import * as timestamp from './timestamp';
 import * as todos from './todos';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { Clock, Storage } from './edges';
+export type { Base64Result } from './base64';
+export type { DevUtilitiesTab } from './dev-utilities';
+export type { JsonError, JsonResult } from './json';
+export type { JwtResult, JwtTime, JwtValidity } from './jwt';
 export type { Link, LinkGroup, LinkInput } from './links';
 export type { ListedNote, Note } from './notes';
+export type { TimestampResult } from './timestamp';
 export type { Todo } from './todos';
 export { StateDocumentError } from './state';
 
@@ -102,6 +112,37 @@ export interface WebOS {
      * edited Note when none is pinned. Undefined when there are no Notes.
      */
     forWidget(): notes.ListedNote | undefined;
+  };
+  /** The Dev Utilities App's conversions. They run locally; nothing leaves the machine. */
+  readonly devUtilities: {
+    /** The App's tabs, in order. */
+    readonly tabs: typeof devUtilities.devUtilitiesTabs;
+    /** The tab the App shows: the one last chosen, remembered across openings and tabs. JSON at first. */
+    activeTab(): devUtilities.DevUtilitiesTab;
+    setActiveTab(tab: devUtilities.DevUtilitiesTab): Promise<void>;
+    /** Validates JSON and pretty-prints it, or says where the first syntax error is. */
+    formatJson(text: string): json.JsonResult;
+    /** Validates JSON and minifies it, or says where the first syntax error is. */
+    minifyJson(text: string): json.JsonResult;
+    /** Encodes text as UTF-8 Base64; URL-safe Base64 uses - and _ and leaves out the padding. */
+    encodeBase64(text: string, options?: { urlSafe?: boolean }): string;
+    /** Decodes standard or URL-safe Base64, padded or not, to UTF-8 text. */
+    decodeBase64(encoded: string): base64.Base64Result;
+    /**
+     * Decodes a JWT's header and payload, with its time claims as dates and
+     * whether it has expired or isn't valid yet. The signature is not verified.
+     */
+    decodeJwt(token: string): jwt.JwtResult;
+    /** Generates `count` random (v4) UUIDs, at least 1 and at most 100. */
+    uuids(count: number): string[];
+    /**
+     * Converts a Unix timestamp or a date, whichever `text` is. A timestamp is
+     * read as seconds below 100,000,000,000 and as milliseconds from there on.
+     * A date without an offset is local time.
+     */
+    convertTime(text: string): timestamp.TimestampResult;
+    /** The current moment, for the Timestamp tab's "now" button. */
+    now(): timestamp.TimestampResult;
   };
   readonly desktop: {
     /** The snap grid, in cells. */
@@ -252,6 +293,20 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       name: () => state.profile.name,
       greeting: () => greetingFor(clock.now(), state.profile.name),
       setName: (name) => commit({ ...state, profile: { ...state.profile, name } }),
+    },
+    devUtilities: {
+      tabs: devUtilities.devUtilitiesTabs,
+      activeTab: () => devUtilities.activeTab(state.apps['dev-utilities']?.activeTab),
+      setActiveTab: (tab) =>
+        commit({ ...state, apps: { ...state.apps, 'dev-utilities': { ...state.apps['dev-utilities'], activeTab: tab } } }),
+      formatJson: json.formatJson,
+      minifyJson: json.minifyJson,
+      encodeBase64: base64.encodeBase64,
+      decodeBase64: base64.decodeBase64,
+      decodeJwt: (token) => jwt.decodeJwt(token, clock.now()),
+      uuids: devUtilities.uuids,
+      convertTime: timestamp.convertTime,
+      now: () => timestamp.now(clock.now()),
     },
     desktop: {
       grid: desktop.grid,

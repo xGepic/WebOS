@@ -13,7 +13,7 @@ import {
 import type { AppId } from '../../core';
 import { collapseInto, expandFrom, settle } from '../../motion/flip';
 import { springTo } from '../../motion/springs';
-import { AppPlaceholder } from '../apps/app-placeholder';
+import { DevUtilitiesApp } from '../apps/dev-utilities/dev-utilities-app';
 import { NotesApp } from '../apps/notes/notes-app';
 import { SettingsApp } from '../apps/settings/settings-app';
 import { WebOSCore } from '../webos-core';
@@ -34,7 +34,7 @@ interface WindowElements {
  */
 @Component({
   selector: 'webos-window',
-  imports: [NotesApp, SettingsApp, AppPlaceholder],
+  imports: [NotesApp, DevUtilitiesApp, SettingsApp],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closeOnEscape()' },
   template: `
@@ -54,11 +54,11 @@ interface WindowElements {
             @case ('notes') {
               <webos-notes-app />
             }
+            @case ('dev-utilities') {
+              <webos-dev-utilities-app />
+            }
             @case ('settings') {
               <webos-settings-app />
-            }
-            @default {
-              <webos-app-placeholder [name]="webos.appName(app)" />
             }
           }
         </div>
@@ -212,9 +212,10 @@ export class AppWindow {
     afterNextRender(() => this.animate(step), { injector: this.injector });
   }
 
-  /** Moves focus into the Window: its first field if it has one, otherwise the Window itself. */
+  /** Moves focus into the Window: its first visible field if it has one, otherwise the Window itself. */
   private focusInside(frame: HTMLElement): void {
-    const field = frame.querySelector<HTMLElement>('.content input, .content textarea, .content select');
+    const fields = frame.querySelectorAll<HTMLElement>('.content input, .content textarea, .content select');
+    const field = [...fields].find((candidate) => candidate.checkVisibility());
     (field ?? frame).focus({ preventScroll: true });
   }
 }

@@ -209,16 +209,28 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] JSON: validate (showing the line and column of a syntax error), pretty-print and minify.
-- [ ] Base64: encode and decode, correct for non-ASCII (UTF-8) text, with URL-safe input and output supported.
-- [ ] JWT: decoded header and payload. `exp`, `iat` and `nbf` are shown in local time, with a clear "expired" indicator and a visible note that the signature is not verified.
-- [ ] UUID: generate one or many v4 UUIDs.
-- [ ] Timestamp: converts Unix timestamps (seconds versus milliseconds auto-detected) to local and ISO dates and back. A "now" button fills in the current time.
-- [ ] Every output has a copy button. The active tab is remembered as per-App state.
-- [ ] Conversions live in the core as pure functions with no network access.
-- [ ] Core tests: JSON error positions, Base64 Unicode and URL-safe round-trips, JWT decoding with expired and not-yet-valid tokens, the UUID v4 format, and timestamp seconds/milliseconds detection and round-trips.
+- [x] JSON: validate (showing the line and column of a syntax error), pretty-print and minify.
+- [x] Base64: encode and decode, correct for non-ASCII (UTF-8) text, with URL-safe input and output supported.
+- [x] JWT: decoded header and payload. `exp`, `iat` and `nbf` are shown in local time, with a clear "expired" indicator and a visible note that the signature is not verified.
+- [x] UUID: generate one or many v4 UUIDs.
+- [x] Timestamp: converts Unix timestamps (seconds versus milliseconds auto-detected) to local and ISO dates and back. A "now" button fills in the current time.
+- [x] Every output has a copy button. The active tab is remembered as per-App state.
+- [x] Conversions live in the core as pure functions with no network access.
+- [x] Core tests: JSON error positions, Base64 Unicode and URL-safe round-trips, JWT decoding with expired and not-yet-valid tokens, the UUID v4 format, and timestamp seconds/milliseconds detection and round-trips.
+
+**Decisions made while building:**
+- JSON is parsed by a small parser in the core, not `JSON.parse`. Error positions don't depend on the browser, and pretty-printing or minifying keeps every number and string exactly as written (`12345678901234567890` keeps its digits).
+- JSON is checked as you type. Pretty and Minified are a toggle, not one-off buttons.
+- Base64 decoding accepts standard and URL-safe input, with or without padding, and ignores line breaks. Bytes that aren't UTF-8 text are reported rather than shown garbled.
+- A JWT can be pasted with a "Bearer" prefix. It counts as expired from its `exp` second on, and the "Expired" check is re-run every minute. A time claim that is not a number of seconds, or is too far from 1970 to be a date, is shown as such rather than hidden.
+- Timestamps below 100,000,000,000 are read as seconds, at or above it as milliseconds. A date without an offset, date-only included, is read as local time, and a local time skipped by a clock change is refused. The Local form the tab shows can be typed back in. The Timestamp tab has one field that takes either.
+- JSON nested more than 1000 levels deep is reported instead of being parsed.
+- Dates are shown in English 12-hour form, like the rest of webOS.
+- Up to 100 UUIDs at a time.
+- Every tool stays rendered while the App is open, so switching tabs keeps each tool's input. Only the active tab is remembered between openings, not the inputs: they may hold tokens.
+- The `clipboardWrite` permission is added for the copy buttons. The App placeholder is removed, since every App now exists.
 
 ---
 

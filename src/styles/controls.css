@@ -127,3 +127,24 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* A choice of one, e.g. Encode / Decode, or an App's tabs: buttons on a shared track. */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: calc(var(--radius-control) + 3px);
+  background: var(--control-fill);
+}
+.segmented > .button {
+  padding: 0.3rem 0.75rem;
+  background: none;
+  font-size: 0.75rem;
+}
+.segmented > .button:hover {
+  background: var(--control-fill-hover);
+}
+.segmented > .button[aria-pressed='true'],
+.segmented > .button[aria-selected='true'] {
+  background: var(--selected-fill);
+}

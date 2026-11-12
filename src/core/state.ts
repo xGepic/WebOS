@@ -56,6 +56,10 @@ export interface AppMemory {
     /** The Note the Notes App shows. It may since have been deleted. */
     selectedNoteId?: string;
   };
+  'dev-utilities'?: {
+    /** The tab the App shows. Checked when read, since it may come from another build. */
+    activeTab?: string;
+  };
 }
 
 export class StateDocumentError extends Error {
