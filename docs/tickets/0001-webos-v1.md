@@ -268,15 +268,26 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Launcher opens with ⌘/Ctrl+K, with any printable key while the page has focus and no text field does (the key becomes the first character of the query), or with the Menu Bar Launcher button.
-- [ ] The core Launcher module turns a query into ranked results. Kinds are ordered Apps, then Links. Within a kind, case-insensitive matches rank whole-word prefix, then word-start, then substring.
-- [ ] The last result is always "Search Brave for <query>".
-- [ ] Each result shows its kind label.
-- [ ] Arrow keys move the selection and Enter confirms. ⌘/Ctrl+Enter opens Links and web results in a background tab. Esc or a click outside closes the Launcher.
-- [ ] Choosing an App opens it in the Window. Choosing a Link opens it in the current tab.
-- [ ] Core tests: ranking across kinds and match qualities, the web-search fallback always last, and an empty query.
+- [x] The Launcher opens with ⌘/Ctrl+K, with any printable key while the page has focus and no text field does (the key becomes the first character of the query), or with the Menu Bar Launcher button.
+- [x] The core Launcher module turns a query into ranked results. Kinds are ordered Apps, then Links. Within a kind, case-insensitive matches rank whole-word prefix, then word-start, then substring.
+- [x] The last result is always "Search Brave for <query>".
+- [x] Each result shows its kind label.
+- [x] Arrow keys move the selection and Enter confirms. ⌘/Ctrl+Enter opens Links and web results in a background tab. Esc or a click outside closes the Launcher.
+- [x] Choosing an App opens it in the Window. Choosing a Link opens it in the current tab.
+- [x] Core tests: ranking across kinds and match qualities, the web-search fallback always last, and an empty query.
+
+**Decisions made while building:**
+- "Whole-word prefix" means the name starts with the query; "word-start" means a later word in it does (words are split at anything that isn't a letter or digit); "substring" means the query is anywhere in it. Equal matches keep their order: Apps as in the Dock, Links as in their Link Groups.
+- Apps match on their name and Links on their title, not their URL. A Link's result shows its URL beside the title.
+- An empty or all-spaces query finds nothing, not even the web search; the Launcher shows a hint instead. Spaces around a query are ignored.
+- The Brave search is `https://search.brave.com/search?q=<query>`. Its kind label is "Web"; Apps and Links read "App" and "Link".
+- ⌘/Ctrl+K toggles the Launcher, from anywhere on the page, text fields included. Space doesn't open it (it presses the focused button), but AltGr characters such as "@" on a German keyboard do. Keys typed before the field has taken focus still land in the query.
+- The arrow keys stop at the first and last result rather than wrapping. Typing selects the first result again. Moving the pointer over a result selects it, and a click chooses it; ⌘/Ctrl+click and middle-click act like ⌘/Ctrl+Enter.
+- ⌘/Ctrl+Enter on an App just opens it. A background tab opens right beside webOS's tab, through `chrome.tabs.create`, which needs no new permission.
+- The Launcher sits above the Window and Edit Mode. Esc closes only the Launcher, not what's under it, and focus goes back where it was. Tab, and a click anywhere in the Launcher, leave focus in the field while it's open, so the keys keep working. Choosing an App replaces the open one, and leaves Edit Mode as opening any App does.
+- The Launcher springs in (a fade under reduced motion) and closes at once.
 
 ---
 

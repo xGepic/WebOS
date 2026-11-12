@@ -7,6 +7,7 @@ import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
 import * as json from './json';
 import * as jwt from './jwt';
+import * as launcher from './launcher';
 import * as links from './links';
 import * as notes from './notes';
 import * as timestamp from './timestamp';
@@ -20,6 +21,7 @@ export type { Base64Result } from './base64';
 export type { DevUtilitiesTab } from './dev-utilities';
 export type { JsonError, JsonResult } from './json';
 export type { JwtResult, JwtTime, JwtValidity } from './jwt';
+export type { LauncherResult } from './launcher';
 export type { Link, LinkGroup, LinkInput } from './links';
 export type { ListedNote, Note } from './notes';
 export type { TimestampResult } from './timestamp';
@@ -173,6 +175,13 @@ export interface WebOS {
      * to whether it is shown: with no room for it, it stays hidden.
      */
     show(widget: desktop.WidgetId): Promise<boolean>;
+  };
+  readonly launcher: {
+    /**
+     * What the Launcher finds for `query`, best first: Apps, then Links, then
+     * always a Brave search for the query last.
+     */
+    search(query: string): readonly launcher.LauncherResult[];
   };
   readonly clock: {
     /** The current time in 12-hour format, e.g. "9:05 AM". */
@@ -352,6 +361,9 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
         await commitLayout((entries) => desktop.hideWidget(entries, widget));
       },
       show: (widget) => commitLayout((entries) => desktop.showWidget(entries, widget)),
+    },
+    launcher: {
+      search: (query) => launcher.search(query, state.linkGroups),
     },
     clock: {
       time: () => formatTime(clock.now()),

@@ -1,5 +1,13 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
-import { createWebOS, type AppId, type Cell, type WebOS, type WidgetId, type WidgetSize } from '../core';
+import {
+  createWebOS,
+  type AppId,
+  type Cell,
+  type LauncherResult,
+  type WebOS,
+  type WidgetId,
+  type WidgetSize,
+} from '../core';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createSystemClock } from '../edges/system-clock';
 
@@ -71,6 +79,15 @@ export class WebOSCore {
       console.error('webOS could not save a change', error);
       return undefined;
     });
+  }
+
+  /**
+   * What the Launcher finds for `query`. Read inside a computed or template,
+   * it updates as the Apps and Links change.
+   */
+  launcherResults(query: string): readonly LauncherResult[] {
+    this.changes();
+    return this.core()?.launcher.search(query) ?? [];
   }
 
   /** Where a Widget of `size` with its top-left at `cell` would sit on the grid, as a move would place it. */
