@@ -3,6 +3,8 @@ import {
   createWebOS,
   type AppId,
   type BackupFile,
+  type CalendarDayDetails,
+  type CalendarMonth,
   type Cell,
   type LauncherResult,
   type WeatherCity,
@@ -47,7 +49,6 @@ export class WebOSCore {
   readonly devUtilities = this.read((core) => core.devUtilities);
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
-  readonly calendarMonth = this.read((core) => core.calendar.month());
   readonly weather = this.read((core) => core.weather.view());
   readonly weatherCity = this.read((core) => core.weather.city());
 
@@ -99,6 +100,19 @@ export class WebOSCore {
     return this.core()?.launcher.search(query) ?? Promise.resolve([]);
   }
 
+  /**
+   * The Calendar's calendar arithmetic. Called inside a computed, the results
+   * follow the day as it changes, like the signals above.
+   */
+  readonly calendar = {
+    month: (offset: number): CalendarMonth | undefined => this.withCore((core) => core.calendar.month(offset)),
+    describe: (date: string): CalendarDayDetails | undefined => this.withCore((core) => core.calendar.describe(date)),
+    today: (): string | undefined => this.withCore((core) => core.calendar.today()),
+    offsetOf: (date: string): number => this.withCore((core) => core.calendar.offsetOf(date)) ?? 0,
+    addDays: (date: string, days: number): string => this.withCore((core) => core.calendar.addDays(date, days)) ?? date,
+    addMonths: (date: string, months: number): string => this.withCore((core) => core.calendar.addMonths(date, months)) ?? date,
+  };
+
   /** Up to five cities matching `query`, for Settings. Rejects if the search can't be made. */
   searchCities(query: string): Promise<WeatherCity[]> {
     return this.core()?.weather.searchCities(query) ?? Promise.resolve([]);
@@ -128,6 +142,13 @@ export class WebOSCore {
   /** The display name of a Widget, e.g. "Todos". */
   widgetName(widget: WidgetId): string {
     return this.core()?.desktop.widgets[widget].name ?? '';
+  }
+
+  /** Reads from the core now, registering the read with any computed or effect that runs it. */
+  private withCore<T>(selector: (core: WebOS) => T): T | undefined {
+    this.changes();
+    const core = this.core();
+    return core ? selector(core) : undefined;
   }
 
   private read<T>(selector: (core: WebOS) => T) {

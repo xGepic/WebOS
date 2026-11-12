@@ -399,6 +399,16 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 - The Edit Mode tests' starting layout uses a small Clock, now that the Clock's M is 6 × 3, and keeps Weather and Calendar hidden.
 - The production bundle is 530 kB, still over Angular's 500 kB warning budget; left as it is.
 
+**Follow-up: an interactive Calendar** (done)
+- [x] ‹ and › browse months, and a Today button, shown under the grid only while another month is, returns to the current one. Each tab starts on the current month.
+- [x] Every month shows six weeks, so the Widget's height, and the arrows, never move while browsing.
+- [x] Each day's accessible name describes it ("Mon, Nov 30, in 18 days"). A line under the grid that showed this for the day pointed at was tried and removed at the user's request.
+- [x] Clicking a day, or Enter, copies it as `2026-11-30`, with the same toast as the "uuid" Launcher action.
+- [x] Arrow keys move by day and week, Page Up and Page Down by month; Tab lands on one day only (today, or the 1st of another month).
+- [x] A faint column of ISO week numbers on the left.
+- [x] Core tests: ISO week numbers across the turn of the year, browsing months, describing days (including across a daylight-saving change), stepping by day and by month.
+- Keys step from the active day rather than the focused button, so fast key presses don't repeat a step while focus catches up.
+
 ---
 
 # v2: tentative, don't start

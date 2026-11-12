@@ -120,70 +120,73 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 74. As a developer, I want the weather shown instantly from the last result and fetched again in the background once it is 30 minutes old, so that a new tab never waits for the network.
 75. As a developer without a network, I want the Weather Widget to keep the last weather, saying when it is from once it is over an hour old, so that a network hiccup doesn't empty it.
 76. As a developer without a city, I want the Weather Widget to offer to choose one in Settings, so that I know what it's for.
-77. As a developer, I want a Calendar Widget showing the current month in weeks starting on Monday, with today marked, so that I can see the date in context at a glance.
+77. As a developer, I want a Calendar Widget showing the current month in weeks starting on Monday, with ISO week numbers and today marked, so that I can see the date in context at a glance.
+78. As a developer, I want to browse earlier and later months with ‹ and ›, and a Today button to return to the current month while another one is shown, with every new tab starting on the current month, so that I can look ahead without losing today.
+79. As a developer, I want clicking a day to copy it as `2026-11-30`, with a brief confirmation, so that I can paste dates into tickets, configs and queries.
+80. As a developer, I want to move through the Calendar with the arrow keys (by day and week) and Page Up and Page Down (by month), and copy with Enter, so that it works without the mouse.
 
 ### Launcher
 
-78. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
-79. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
-80. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
-81. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
-82. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
-83. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
-84. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
-85. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
-86. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
-87. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
-88. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
-89. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
-90. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
-91. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
-92. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
+81. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
+82. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
+83. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
+84. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
+85. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
+86. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
+87. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
+88. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
+89. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
+90. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
+91. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
+92. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
+93. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
+94. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
+95. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
 
 ### Dev Utilities
 
-93. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
-94. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
-95. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
-96. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
-97. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
-98. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
-99. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
-100. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
-101. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
-102. As a developer, I want a copy button on every output, so that I can use the results immediately.
-103. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
+96. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
+97. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
+98. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
+99. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
+100. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
+101. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
+102. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
+103. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
+104. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
+105. As a developer, I want a copy button on every output, so that I can use the results immediately.
+106. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
 
 ### Settings
 
-104. As a developer, I want a Settings App, so that I have one place to configure webOS.
-105. As a developer, I want to set my name in Settings, so that the greeting is personal.
-106. As a developer, I want to choose or remove my weather city in Settings, so that the Weather Widget shows the right place.
-107. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
-108. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
-109. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
-110. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
-111. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
-112. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
-113. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
+107. As a developer, I want a Settings App, so that I have one place to configure webOS.
+108. As a developer, I want to set my name in Settings, so that the greeting is personal.
+109. As a developer, I want to choose or remove my weather city in Settings, so that the Weather Widget shows the right place.
+110. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
+111. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
+112. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
+113. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
+114. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
+115. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
+116. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
 
 ### Data Sources (v2, tentative)
 
-114. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
-115. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
-116. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
-117. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
-118. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
-119. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
-120. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
-121. As a developer, I want webOS to have network access only to my own domain and the weather service, so that the extension can't reach anything else.
+117. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
+118. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
+119. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
+120. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
+121. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
+122. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
+123. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
+124. As a developer, I want webOS to have network access only to my own domain and the weather service, so that the extension can't reach anything else.
 
 ### Quality and privacy
 
-122. As a developer, I want webOS to work offline-first: everything except the weather works without a network, so that it is reliable on any network.
-123. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
-124. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
-125. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
+125. As a developer, I want webOS to work offline-first: everything except the weather works without a network, so that it is reliable on any network.
+126. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
+127. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
+128. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
 
 ## Implementation Decisions
 
@@ -234,7 +237,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   - **Launcher**: query to ranked results; executing a result or action.
   - **Dev Utilities**: pure conversions (JSON, Base64, JWT, UUID, timestamp).
   - **Weather**: the chosen city, city search, the cached report, when to fetch again, what the Widget shows.
-  - **Calendar**: the current month as weeks starting on Monday.
+  - **Calendar**: months as six weeks starting on Monday with ISO week numbers; describing a day relative to today; stepping by day and by month.
   - **Backup**: export to and import from the versioned JSON document.
   - **Data Sources** (v2): configuration, cache, freshness, refresh, aggregate status.
 - UI-only state (which App is open, whether Edit Mode is on, the Launcher's open state and selection) lives in the Angular layer, not the core. The exception is per-App remembered state that must survive tabs, such as the selected Note, which goes in the core's storage.
@@ -291,7 +294,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - **Link URL normalisation**: a URL without a scheme gets `http://` for `localhost` and IP addresses, and `https://` otherwise.
 - **Link opening**: plain click opens in the current tab. ⌘/Ctrl+click, middle-click or ⌘/Ctrl+Enter in the Launcher opens in a background tab.
 - **Weather**: from Open-Meteo, in °C, for the city chosen in Settings; only its coordinates are sent. The last report is stored and shown at once. A new tab fetches it again once it is 30 minutes old (one fetch at a time), with no background polling. A failed fetch keeps the last report; once it is over an hour old the Widget says when it is from. With no report and a failed fetch, the Widget says the weather is unavailable. Changing the city drops the old city's report. WMO weather codes map to nine conditions: clear, partly cloudy, cloudy, fog, drizzle, rain, snow, showers, thunderstorm.
-- **Calendar**: the current month in local time, weeks Monday to Sunday, filled out with the neighbouring months' days, today marked. No events.
+- **Calendar**: a month in local time, always six weeks (Monday to Sunday, starting with the week of the 1st) so every month is the same height, with ISO 8601 week numbers, the neighbouring months' days faded, and today marked. No events. ‹ and › browse months; the month's name shows the year only for other months, and a Today button under the grid, shown only then, returns to the current one. Each tab starts on the current month; the month shown isn't saved. Each day's accessible name describes it relative to today ("Mon, Nov 30, in 18 days": whole calendar days, unaffected by daylight saving). Clicking a day, or Enter, copies it as `YYYY-MM-DD`. Arrow keys move by day and week and Page Up/Down by month (to the same day, or the last day of a shorter month), turning the page when they leave the month.
 
 ### Launcher
 
@@ -332,7 +335,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   - Launcher: ranking across kinds and match quality, the Brave Search fallback, each action's effect
   - Dev Utilities: JSON validation and error position, Base64 with Unicode and URL-safe input, JWT decoding and expired detection, UUID format, timestamp seconds/milliseconds detection and round-trips
   - Weather: city search, the report and its conditions, serving from the stored report, fetching again only after 30 minutes, keeping the last report on failure, changing the city, backup without the report
-  - Calendar: weeks from Monday, neighbouring months' days, today, the change of month
+  - Calendar: weeks from Monday, ISO week numbers across the turn of the year, neighbouring months' days, today, the change of month, browsing months, describing a day (including across a daylight-saving change), stepping by day and month
   - Backup: export/import round-trip, tokens and caches left out, invalid and newer-version files rejected without changes, migration of older versions
   - Data Sources (v2): serving from cache, refetch only past the maximum age, stale on failure, aggregate status
 - **Not tested automatically**: Angular components, motion, layout and visuals. These are checked by hand in Brave. There are no end-to-end browser tests in v1.

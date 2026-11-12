@@ -20,7 +20,7 @@ import { loadState, toCurrentDocument, type StateDocument } from './state';
 export type { AppId } from './apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
 export type { BrowserLookup, BrowserPage, Clock, Fetch, Storage, VisitedPage } from './edges';
-export type { CalendarDay, CalendarMonth } from './calendar';
+export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './calendar';
 export type { WeatherCity, WeatherCondition, WeatherView } from './weather';
 export { describeCity } from './weather';
 export type { Base64Result } from './base64';
@@ -216,8 +216,21 @@ export interface WebOS {
     date(): string;
   };
   readonly calendar: {
-    /** The current month for the Calendar Widget, in weeks starting on Monday, with today marked. */
-    month(): calendar.CalendarMonth;
+    /**
+     * A month for the Calendar Widget, `offset` months from the current one
+     * (0 by default), in weeks starting on Monday with ISO week numbers, today marked.
+     */
+    month(offset?: number): calendar.CalendarMonth;
+    /** A day (`2026-11-30`) for the line under the grid: "Mon, Nov 30", "in 18 days", week 49. Undefined for text that isn't a date. */
+    describe(date: string): calendar.CalendarDayDetails | undefined;
+    /** The date `days` days after `date`, for moving through the grid with the keyboard. */
+    addDays(date: string, days: number): string;
+    /** The same day `months` months after `date`, or the last day of a shorter month. */
+    addMonths(date: string, months: number): string;
+    /** How many months from the current one the month of `date` is: the `offset` that shows it. */
+    offsetOf(date: string): number;
+    /** Today, as `2026-11-12`. */
+    today(): string;
   };
   /**
    * The Weather Widget's weather for the city chosen in Settings, from
@@ -504,7 +517,12 @@ export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges
       date: () => formatDate(clock.now()),
     },
     calendar: {
-      month: () => calendar.monthView(clock.now()),
+      month: (offset = 0) => calendar.monthView(clock.now(), offset),
+      describe: (date) => calendar.describeDay(date, clock.now()),
+      addDays: calendar.addDays,
+      addMonths: calendar.addMonths,
+      offsetOf: (date) => calendar.monthOffset(date, clock.now()),
+      today: () => calendar.isoDate(clock.now()),
     },
     weather: {
       city: () => state.weather.city,

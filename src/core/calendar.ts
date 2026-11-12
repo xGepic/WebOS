@@ -1,5 +1,7 @@
 /** One day in the Calendar Widget's grid. */
 export interface CalendarDay {
+  /** The date as `2026-11-30`: how the Widget names, copies and describes a day. */
+  date: string;
   /** Day of the month, 1–31. */
   day: number;
   /** False for the days of the previous and next months that fill the first and last weeks. */
@@ -7,42 +9,128 @@ export interface CalendarDay {
   today: boolean;
 }
 
-/** The month the Calendar Widget shows: the current one, in weeks starting on Monday. */
+/** A row of the grid: Monday to Sunday, with its ISO week number. */
+export interface CalendarWeek {
+  number: number;
+  days: CalendarDay[];
+}
+
+/** A month the Calendar Widget shows, in weeks starting on Monday. */
 export interface CalendarMonth {
   /** e.g. "November" */
   month: string;
   year: number;
+  /** Whether this is the month that contains today. */
+  current: boolean;
   /** Short weekday names, Monday first. */
   weekdays: readonly string[];
-  /** Whole weeks, Monday to Sunday, covering every day of the month. */
-  weeks: CalendarDay[][];
+  /**
+   * Six weeks, Monday to Sunday, starting with the one that holds the 1st:
+   * every month the same height, so browsing doesn't move the arrows.
+   */
+  weeks: CalendarWeek[];
+}
+
+/** A day described for the line under the grid: "Mon, Nov 30 · in 18 days · week 49". */
+export interface CalendarDayDetails {
+  date: string;
+  /** e.g. "Mon, Nov 30" */
+  label: string;
+  /** "today", "tomorrow", "yesterday", "in 18 days" or "3 days ago" */
+  relative: string;
+  /** The ISO week number. */
+  week: number;
 }
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+/** Enough for any month: one that starts on a Sunday and has 31 days spans six weeks. */
+const WEEKS_SHOWN = 6;
+const DAY = 86_400_000;
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** The current month around `now`, in local time. */
-export function monthView(now: Date): CalendarMonth {
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const first = new Date(year, month, 1);
+const pad = (n: number) => String(n).padStart(2, '0');
+/** A local date as `2026-11-30`. */
+export const isoDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+/** Whole days from the epoch for a local calendar date, unaffected by daylight-saving changes. */
+const dayNumber = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY;
+
+/** The ISO 8601 week number: weeks start on Monday, and week 1 is the one with the year's first Thursday. */
+export function isoWeek(date: Date): number {
+  const weekday = (date.getDay() + 6) % 7;
+  // The Thursday of this week decides which year, and so which week, it belongs to.
+  const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - weekday + 3);
+  const firstOfYear = new Date(thursday.getFullYear(), 0, 1);
+  return Math.floor((dayNumber(thursday) - dayNumber(firstOfYear)) / 7) + 1;
+}
+
+/**
+ * The month `offset` months from the one containing `now` (0 is the current
+ * month, -1 the one before), in local time.
+ */
+export function monthView(now: Date, offset = 0): CalendarMonth {
+  const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  const year = first.getFullYear();
+  const month = first.getMonth();
   // Monday is 0 here, Sunday 6.
   const leading = (first.getDay() + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const weekCount = Math.ceil((leading + daysInMonth) / 7);
+  const today = isoDate(now);
 
-  const weeks: CalendarDay[][] = [];
-  for (let week = 0; week < weekCount; week++) {
+  const weeks: CalendarWeek[] = [];
+  for (let week = 0; week < WEEKS_SHOWN; week++) {
     const days: CalendarDay[] = [];
     for (let weekday = 0; weekday < 7; weekday++) {
       // Built from the date parts, not by adding milliseconds, so daylight-saving changes can't shift a day.
       const date = new Date(year, month, 1 - leading + week * 7 + weekday);
-      days.push({
-        day: date.getDate(),
-        inMonth: date.getMonth() === month,
-        today: date.getFullYear() === year && date.getMonth() === now.getMonth() && date.getDate() === now.getDate(),
-      });
+      days.push({ date: isoDate(date), day: date.getDate(), inMonth: date.getMonth() === month, today: isoDate(date) === today });
     }
-    weeks.push(days);
+    weeks.push({ number: isoWeek(new Date(year, month, 1 - leading + week * 7)), days });
   }
-  return { month: first.toLocaleDateString('en-US', { month: 'long' }), year, weekdays: WEEKDAYS, weeks };
+  return {
+    month: first.toLocaleDateString('en-US', { month: 'long' }),
+    year,
+    current: offset === 0,
+    weekdays: WEEKDAYS,
+    weeks,
+  };
+}
+
+/** A day as the line under the grid describes it, relative to `now`. Undefined for text that isn't a date. */
+export function describeDay(date: string, now: Date): CalendarDayDetails | undefined {
+  const match = ISO_DATE.exec(date);
+  if (!match) return undefined;
+  const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  if (isoDate(day) !== date) return undefined;
+  const away = dayNumber(day) - dayNumber(now);
+  const relative =
+    away === 0 ? 'today' : away === 1 ? 'tomorrow' : away === -1 ? 'yesterday' : away > 0 ? `in ${away} days` : `${-away} days ago`;
+  return {
+    date,
+    label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+    relative,
+    week: isoWeek(day),
+  };
+}
+
+/** The date `days` days after `date` (both as `2026-11-30`). */
+export function addDays(date: string, days: number): string {
+  const match = ISO_DATE.exec(date);
+  if (!match) return date;
+  return isoDate(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days));
+}
+
+/** The same day `months` months after `date`, or that month's last day if it is shorter: Jan 31 + 1 is Feb 28. */
+export function addMonths(date: string, months: number): string {
+  const match = ISO_DATE.exec(date);
+  if (!match) return date;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1 + months;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return isoDate(new Date(year, month, Math.min(Number(match[3]), lastDay)));
+}
+
+/** How many months after the month containing `now` the month of `date` is (negative if before). */
+export function monthOffset(date: string, now: Date): number {
+  const match = ISO_DATE.exec(date);
+  if (!match) return 0;
+  return (Number(match[1]) - now.getFullYear()) * 12 + (Number(match[2]) - 1 - now.getMonth());
 }
