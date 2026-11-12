@@ -1,0 +1,3 @@
+# Angular instead of React
+
+Most browser-extension tooling and the best-known spring/gesture library (Motion for React) assume React. We still chose Angular (standalone, signals, zoneless) because the only owner and maintainer works in Angular, not React. Using Angular doesn't mean working against the framework. The pieces React would get from a library are written as small, framework-agnostic utilities instead: a FLIP-style dock-to-Window transition and a drag directive that settles on a spring. Both use Motion's vanilla `animate()`. The only extension-specific build changes are `inlineCritical: false` (Content Security Policy) and `outputHashing: none` (stable manifest paths).
