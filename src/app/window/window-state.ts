@@ -22,6 +22,12 @@ export class WindowState {
     this.openApp.set(undefined);
   }
 
+  /** Opens the App, or closes the Window if that App is the one already open (its Dock icon clicked again). */
+  toggle(app: AppId): void {
+    if (this.openApp() === app) this.close();
+    else this.open(app);
+  }
+
   /** The Dock registers each App's icon, so the Window can open out of it and close back into it. */
   registerDockIcon(app: AppId, icon: HTMLElement): void {
     this.dockIcons.set(app, icon);

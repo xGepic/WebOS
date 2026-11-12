@@ -22,7 +22,8 @@ const MAGNIFICATION_RANGE = 150;
  * The Dock along the bottom, with an icon per App and, after a divider, the
  * Docked Links. Icons magnify on a spring as the pointer moves along the Dock;
  * under reduced motion they don't. Clicking an App icon opens the App in the
- * Window, and the open App's icon has a dot under it. Docked Links are plain
+ * Window, and clicking it again closes the Window. The open App's icon has a
+ * dot under it. Docked Links are plain
  * anchors, so they open like any Link: this tab, or a background tab on
  * ⌘/Ctrl+click or middle-click.
  */
@@ -47,7 +48,7 @@ const MAGNIFICATION_RANGE = 150;
           [attr.aria-label]="app.name"
           [attr.aria-current]="window.app() === app.id ? 'true' : null"
           [title]="app.name"
-          (click)="window.open(app.id)"
+          (click)="window.toggle(app.id)"
         >
           <webos-app-icon [app]="app.id" />
         </button>

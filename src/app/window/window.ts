@@ -29,8 +29,8 @@ interface WindowElements {
 
 /**
  * The single Window. It springs out of the open App's Dock icon and closes
- * back into it, and closes on Esc, its close control, or a click on the
- * Desktop around it. Opening another App swaps the content in place.
+ * back into it, and closes on Esc, its close control, a click on the
+ * Desktop around it, or a click on the open App's Dock icon. Opening another App swaps the content in place.
  */
 @Component({
   selector: 'webos-window',

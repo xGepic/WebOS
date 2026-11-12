@@ -50,7 +50,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 
 23. As a developer, I want an App to open in a single focused Window that springs out of its Dock icon, so that opening an App feels like an OS.
 24. As a developer, I want opening a second App to replace the current one in the Window, so that I never have to manage multiple windows.
-25. As a developer, I want to close the Window with Esc, a close control or by clicking the Desktop around it, so that I can get back to my Widgets quickly.
+25. As a developer, I want to close the Window with Esc, a close control, by clicking the Desktop around it, or by clicking the open App's Dock icon again, so that I can get back to my Widgets quickly.
 26. As a developer, I want the Window to spring back into its Dock icon when closed, so that I understand where it went.
 27. As a developer, I want the Window's controls to be webOS's own design, not copies of macOS traffic lights, so that webOS has its own identity.
 28. As a developer, I want each App to remember its internal state (for example the selected Note or the active Dev Utilities tab) between openings, so that I can pick up where I left off.
@@ -265,7 +265,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   | Settings | — | yes |
   | Sleep, Training (v2) | yes | maybe later |
 
-- The Window closes with Esc, its close control, or a click on the Desktop outside it.
+- The Window closes with Esc, its close control, a click on the Desktop outside it, or a click on the open App's Dock icon. Choosing the open App in the Launcher keeps it open.
 
 ### Rules
 
