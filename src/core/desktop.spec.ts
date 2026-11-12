@@ -41,11 +41,13 @@ describe('default Desktop layout geometry', () => {
     expect(new Set(cells).size).toBe(cells.length);
   });
 
-  it('is the Stage layout: the Clock full width on top, Links, Todos and Notes in a row beneath it', async () => {
+  it('is the Stage layout: Weather, the Clock and Calendar across the top, Links, Todos and Notes in a row beneath', async () => {
     const { desktop } = await freshWebOS();
 
     expect(desktop.layout().map((p) => `${p.widget} ${p.size} ${p.columns}×${p.rows}@${p.column},${p.row}`)).toEqual([
-      'clock L 12×3@0,0',
+      'weather S 3×3@0,0',
+      'clock M 6×3@3,0',
+      'calendar S 3×3@9,0',
       'links M 4×5@0,3',
       'todos M 4×5@4,3',
       'notes M 4×5@8,3',

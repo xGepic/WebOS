@@ -5,12 +5,14 @@ import {
   type BackupFile,
   type Cell,
   type LauncherResult,
+  type WeatherCity,
   type WebOS,
   type WidgetId,
   type WidgetSize,
 } from '../core';
 import { createBrowserLookup } from '../edges/browser-lookup';
 import { createExtensionStorage } from '../edges/extension-storage';
+import { createNetworkFetch } from '../edges/network';
 import { createSystemClock } from '../edges/system-clock';
 
 /**
@@ -45,6 +47,9 @@ export class WebOSCore {
   readonly devUtilities = this.read((core) => core.devUtilities);
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
+  readonly calendarMonth = this.read((core) => core.calendar.month());
+  readonly weather = this.read((core) => core.weather.view());
+  readonly weatherCity = this.read((core) => core.weather.city());
 
   /** Creates the core. Called once by the app initializer before the first render. */
   async start(): Promise<void> {
@@ -53,6 +58,7 @@ export class WebOSCore {
         storage: createExtensionStorage(),
         clock: createSystemClock(),
         browser: createBrowserLookup(),
+        fetch: createNetworkFetch(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {
@@ -91,6 +97,11 @@ export class WebOSCore {
   searchLauncher(query: string): Promise<readonly LauncherResult[]> {
     this.changes();
     return this.core()?.launcher.search(query) ?? Promise.resolve([]);
+  }
+
+  /** Up to five cities matching `query`, for Settings. Rejects if the search can't be made. */
+  searchCities(query: string): Promise<WeatherCity[]> {
+    return this.core()?.weather.searchCities(query) ?? Promise.resolve([]);
   }
 
   /** A backup file of all webOS data, or undefined before the core has started. */

@@ -11,7 +11,7 @@ As a developer, I open dozens of new tabs a day, and each one shows a page I nev
 
 webOS is a personal Brave extension that replaces the new tab with a Desktop that looks and feels like a desktop operating system. Its design follows Apple's principles (translucent materials, depth, spring motion, restrained typography) but has its own identity.
 
-Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanceable Widgets on a snap grid. By default they are arranged as the Stage layout: a large, thin clock and greeting across the top, and Links, Todos and a Pinned Note preview in a row beneath it. A Menu Bar runs across the top and a Dock across the bottom. The Dock opens Apps (Notes, Dev Utilities, Settings) in a single focused Window that springs out of its Dock icon. The Dock also holds Docked Links. A keyboard-driven Launcher finds and opens anything: Apps, Links, Todos, Notes, browser bookmarks and history, falling back to Brave Search. It also runs quick actions. Everything works offline and is stored locally. A later version may add Data Sources, which are the user's own APIs for sleep and training data, each shown in its own Widget.
+Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanceable Widgets on a snap grid. By default they are arranged as the Stage layout: a top band of Weather, a large thin clock with the greeting, and the month's Calendar, with Links, Todos and a Pinned Note preview in a row beneath it. A Menu Bar runs across the top and a Dock across the bottom. The Dock opens Apps (Notes, Dev Utilities, Settings) in a single focused Window that springs out of its Dock icon. The Dock also holds Docked Links. A keyboard-driven Launcher finds and opens anything: Apps, Links, Todos, Notes, browser bookmarks and history, falling back to Brave Search. It also runs quick actions. Everything except the weather works offline, and everything is stored locally. A later version may add Data Sources, which are the user's own APIs for sleep and training data, each shown in its own Widget.
 
 ## User Stories
 
@@ -66,12 +66,12 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 35. As a developer, I want at most one of each Widget on the Desktop, so that the Desktop stays simple.
 36. As a developer, I want to leave Edit Mode with Esc or the "Done" button, so that my layout is saved and the Desktop returns to normal.
 37. As a developer, I want my layout to persist across tabs and browser restarts, so that I arrange my Desktop only once.
-38. As a first-time user, I want a sensible default layout with all v1 Widgets visible (the Stage layout: the Clock across the full width at the top, Links, Todos and Notes in a row beneath it), so that webOS is useful immediately and looks calm.
-39. As a developer updating from an earlier webOS, I want my Desktop moved to the Stage layout once, with hidden Widgets kept hidden, so that I get the new design without losing anything.
+38. As a first-time user, I want a sensible default layout with all v1 Widgets visible (the Stage layout: Weather, the Clock and Calendar across the top, Links, Todos and Notes in a row beneath it), so that webOS is useful immediately and looks calm.
+39. As a developer updating from an earlier webOS, I want my Desktop moved to the newest Stage layout once, with hidden Widgets kept hidden, so that I get the new design and new Widgets without losing anything.
 
 ### Clock Widget
 
-40. As a developer, I want a Clock Widget showing the time in thin type in 12-hour format and today's date, with the time very large and centred when the Clock spans the full width, so that I can see both at a glance.
+40. As a developer, I want a Clock Widget showing the time in thin type in 12-hour format and today's date, with the greeting larger and the time very large and centred in the middle of the top band, so that I can see both at a glance.
 41. As a developer, I want the Clock Widget to greet me by name based on the time of day ("Good morning, Stefan"), so that webOS feels personal.
 42. As a developer, I want to set my name once in Settings, so that the greeting uses it.
 43. As a developer who hasn't set a name, I want a greeting without a name, so that the Widget still reads naturally.
@@ -113,74 +113,84 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 70. As a developer without a Pinned Note, I want the Notes Widget to show my most recently edited Note, so that the Widget is never empty when Notes exist.
 71. As a developer with no Notes, I want the Notes Widget to offer to create one, so that I know what it's for.
 
+### Weather and Calendar
+
+72. As a developer, I want a Weather Widget showing the current temperature in °C for my city, the condition in words with an icon, and today's high and low, so that I know what it's like outside at a glance.
+73. As a developer, I want to choose my city in Settings by searching and picking from up to five matches with their region and country, so that an ambiguous name like "Vienna" finds the right place.
+74. As a developer, I want the weather shown instantly from the last result and fetched again in the background once it is 30 minutes old, so that a new tab never waits for the network.
+75. As a developer without a network, I want the Weather Widget to keep the last weather, saying when it is from once it is over an hour old, so that a network hiccup doesn't empty it.
+76. As a developer without a city, I want the Weather Widget to offer to choose one in Settings, so that I know what it's for.
+77. As a developer, I want a Calendar Widget showing the current month in weeks starting on Monday, with today marked, so that I can see the date in context at a glance.
+
 ### Launcher
 
-72. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
-73. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
-74. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
-75. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
-76. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
-77. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
-78. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
-79. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
-80. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
-81. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
-82. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
-83. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
-84. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
-85. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
-86. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
+78. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
+79. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
+80. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
+81. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
+82. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
+83. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
+84. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
+85. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
+86. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
+87. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
+88. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
+89. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
+90. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
+91. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
+92. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
 
 ### Dev Utilities
 
-87. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
-88. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
-89. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
-90. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
-91. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
-92. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
-93. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
-94. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
-95. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
-96. As a developer, I want a copy button on every output, so that I can use the results immediately.
-97. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
+93. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
+94. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
+95. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
+96. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
+97. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
+98. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
+99. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
+100. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
+101. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
+102. As a developer, I want a copy button on every output, so that I can use the results immediately.
+103. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
 
 ### Settings
 
-98. As a developer, I want a Settings App, so that I have one place to configure webOS.
-99. As a developer, I want to set my name in Settings, so that the greeting is personal.
-100. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
-101. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
-102. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
-103. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
-104. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
-105. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
-106. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
+104. As a developer, I want a Settings App, so that I have one place to configure webOS.
+105. As a developer, I want to set my name in Settings, so that the greeting is personal.
+106. As a developer, I want to choose or remove my weather city in Settings, so that the Weather Widget shows the right place.
+107. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
+108. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
+109. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
+110. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
+111. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
+112. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
+113. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
 
 ### Data Sources (v2, tentative)
 
-107. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
-108. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
-109. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
-110. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
-111. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
-112. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
-113. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
-114. As a developer, I want webOS to have network access only to my own domain, so that the extension can't reach anything else.
+114. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
+115. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
+116. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
+117. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
+118. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
+119. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
+120. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
+121. As a developer, I want webOS to have network access only to my own domain and the weather service, so that the extension can't reach anything else.
 
 ### Quality and privacy
 
-115. As a developer, I want webOS to work fully offline in v1, so that it is reliable on any network.
-116. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
-117. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
-118. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
+122. As a developer, I want webOS to work offline-first: everything except the weather works without a network, so that it is reliable on any network.
+123. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
+124. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
+125. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
 
 ## Implementation Decisions
 
 ### Platform
 
 - webOS is a Manifest V3 extension, loaded unpacked in Brave for personal use. It replaces the new tab through the new-tab override.
-- Permissions: `storage`, `bookmarks` and `history` (Launcher search), `favicon` (Link favicons), and `clipboardWrite`. In v2, `host_permissions` covers only the user's own server domain. No other host access is requested.
+- Permissions: `storage`, `bookmarks` and `history` (Launcher search), `favicon` (Link favicons), and `clipboardWrite`. `host_permissions` covers Open-Meteo's forecast and geocoding hosts (`api.open-meteo.com`, `geocoding-api.open-meteo.com`), for the Weather Widget; in v2 it also covers the user's own server domain. No other host access is requested.
 - Known limitation, accepted: on a fresh tab the browser gives keyboard focus to the address bar, and the page doesn't try to take it. The Launcher opens with ⌘/Ctrl+K or type-to-search only after the page has focus, or with the Menu Bar Launcher button. No redirect workaround is used for focus.
 - The name "webOS" is LG's trademark. That's fine for a private unpacked extension, but would need renaming if webOS were ever published.
 
@@ -202,7 +212,8 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - One fixed wallpaper ("Midnight Deep"): an original, generated near-black with a faint blue light falling from the top centre, and subtle film grain. It is not user-configurable.
 - The palette is Midnight Deep: almost black, with only a trace of blue in the light, the glass and a muted blue accent.
 - Translucent materials (background blur) for the Menu Bar, Dock, Widgets, Window and Launcher, with a shared set of material tokens so all surfaces stay consistent. Widgets lie flat on the Desktop; the Window, the Launcher, menus and toasts cast a shadow.
-- The Clock has no surface: its thin type sits straight on the wallpaper. Every other Widget has a Title Bar: its name in small capitals above a hairline.
+- The Clock, Weather and Calendar have no surface: their type sits straight on the wallpaper, so the top band reads as one. Every other Widget has a Title Bar: its name in small capitals above a hairline.
+- Weather conditions are shown with original monochrome line icons.
 - App icons share one look (a dark navy square) and differ only by their symbol.
 - Typography: Inter, bundled with the extension so it works offline and needs no remote font loading, falling back to the system font stack.
 
@@ -212,7 +223,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - The core is created with three injected edges:
   - **Storage**: the browser's local extension storage in production, an in-memory implementation in tests.
   - **Clock**: real time in production, a controllable clock in tests.
-  - **Fetch**: the network in production, a stub in tests. Used only by Data Sources (v2).
+  - **Fetch**: the network in production, a stub in tests. Used by Weather, and by Data Sources (v2).
 - Browser-only lookups for the Launcher (bookmarks and history search) also come in through an injected edge, so that the Launcher's ranking can be tested without a browser.
 - The core is split into modules, each exposing commands and read-only state:
   - **Profile**: user name; greeting for the current time.
@@ -222,6 +233,8 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   - **Desktop**: Widget layout on the grid, sizes, visibility, the moves Edit Mode makes, collision resolution.
   - **Launcher**: query to ranked results; executing a result or action.
   - **Dev Utilities**: pure conversions (JSON, Base64, JWT, UUID, timestamp).
+  - **Weather**: the chosen city, city search, the cached report, when to fetch again, what the Widget shows.
+  - **Calendar**: the current month as weeks starting on Monday.
   - **Backup**: export to and import from the versioned JSON document.
   - **Data Sources** (v2): configuration, cache, freshness, refresh, aggregate status.
 - UI-only state (which App is open, whether Edit Mode is on, the Launcher's open state and selection) lives in the Angular layer, not the core. The exception is per-App remembered state that must survive tabs, such as the selected Note, which goes in the core's storage.
@@ -235,6 +248,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   - Todos (text, order, created time, completed time or none)
   - Notes (Markdown body, created time, last-edited time) and the Pinned Note reference
   - Desktop layout (per Widget: visible, size S/M/L, grid position)
+  - weather: the chosen city (name, region, country, coordinates) and the last report fetched for it
   - per-App remembered state
   - Data Sources (v2): ID, kind (sleep or training), URL, maximum age, token, last successful payload, last fetch time, last error
 - The document carries a **schema version**. On load, the core migrates older versions forward step by step before use.
@@ -242,13 +256,13 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 
 ### Desktop and Edit Mode
 
-- Widgets in v1: Clock, Links, Todos, Notes. At most one instance of each. v2 adds Sleep and Training.
+- Widgets in v1: Clock, Links, Todos, Notes, Weather, Calendar. At most one instance of each. v2 adds Sleep and Training.
 - The Desktop is a snap grid. Each Widget has sizes S, M and L, defined as grid spans per Widget.
 - Dropping a Widget onto occupied cells pushes the other Widgets to the next free position, so Widgets never overlap.
 - Edit Mode is entered only from the Desktop's right-click menu ("Edit Desktop"). It is left with Esc or the Menu Bar "Done" button.
-- The default layout is the **Stage** layout: the Clock at L (full width, 12 × 3 cells) on top, and Links, Todos and Notes at M (4 × 5 each) in a row beneath it. It shows all v1 Widgets and fills the grid, so in Edit Mode a Widget swaps with one of the same size dropped onto, and other moves need room made first by making a Widget smaller or hiding it.
+- The default layout is the **Stage** layout: a top band of Weather at S (3 × 3 cells), the Clock at M (6 × 3) and Calendar at S (3 × 3), and Links, Todos and Notes at M (4 × 5 each) in a row beneath it. The Clock's L is the full width (12 × 3). The layout shows all v1 Widgets and fills the grid, so in Edit Mode a Widget swaps with one of the same size dropped onto, and other moves need room made first by making a Widget smaller or hiding it.
 - The Desktop's grid is centred and at most 1180 px wide.
-- Schema version 9 moves every saved layout to the Stage layout once. Hidden Widgets stay hidden.
+- Schema version 9 moved every saved layout to the first Stage layout, and schema version 10 moves it once more, to the Stage layout with Weather and Calendar. Hidden Widgets stay hidden.
 
 ### Window and Apps
 
@@ -276,6 +290,8 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - **Pinned Note fallback**: if no Note is pinned, or the Pinned Note was deleted, the Widget shows the most recently edited Note.
 - **Link URL normalisation**: a URL without a scheme gets `http://` for `localhost` and IP addresses, and `https://` otherwise.
 - **Link opening**: plain click opens in the current tab. ⌘/Ctrl+click, middle-click or ⌘/Ctrl+Enter in the Launcher opens in a background tab.
+- **Weather**: from Open-Meteo, in °C, for the city chosen in Settings; only its coordinates are sent. The last report is stored and shown at once. A new tab fetches it again once it is 30 minutes old (one fetch at a time), with no background polling. A failed fetch keeps the last report; once it is over an hour old the Widget says when it is from. With no report and a failed fetch, the Widget says the weather is unavailable. Changing the city drops the old city's report. WMO weather codes map to nine conditions: clear, partly cloudy, cloudy, fog, drizzle, rain, snow, showers, thunderstorm.
+- **Calendar**: the current month in local time, weeks Monday to Sunday, filled out with the neighbouring months' days, today marked. No events.
 
 ### Launcher
 
@@ -287,7 +303,7 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 
 ### Backup
 
-- Export produces one JSON file containing the full state document. It **leaves out** Data Source tokens and cached Data Source payloads.
+- Export produces one JSON file containing the full state document. It **leaves out** the cached weather report (the city is kept), and Data Source tokens and cached Data Source payloads. Import drops any weather report in the file.
 - Import requires confirmation, validates the document and its schema version (migrating older versions), and replaces the current state as a whole. Files that are invalid or come from a newer version are rejected and the current state is not touched. After an import that contains Data Sources, the user is told to re-enter tokens.
 
 ### Data Sources (v2, tentative)
@@ -315,6 +331,8 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
   - Profile: greeting by time of day, with and without a name
   - Launcher: ranking across kinds and match quality, the Brave Search fallback, each action's effect
   - Dev Utilities: JSON validation and error position, Base64 with Unicode and URL-safe input, JWT decoding and expired detection, UUID format, timestamp seconds/milliseconds detection and round-trips
+  - Weather: city search, the report and its conditions, serving from the stored report, fetching again only after 30 minutes, keeping the last report on failure, changing the city, backup without the report
+  - Calendar: weeks from Monday, neighbouring months' days, today, the change of month
   - Backup: export/import round-trip, tokens and caches left out, invalid and newer-version files rejected without changes, migration of older versions
   - Data Sources (v2): serving from cache, refetch only past the maximum age, stale on failure, aggregate status
 - **Not tested automatically**: Angular components, motion, layout and visuals. These are checked by hand in Brave. There are no end-to-end browser tests in v1.
@@ -330,7 +348,9 @@ Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanc
 - Syncing across devices. Export/import is the only way to move data.
 - Publishing to the Chrome Web Store, and the rename that would require.
 - End-to-end browser tests and visual regression tests.
-- GitHub, Hacker News/RSS, weather and other third-party integrations.
+- GitHub, Hacker News/RSS and other third-party integrations, apart from the weather.
+- Calendar events and calendar accounts.
+- Hourly or multi-day forecasts, other units than °C, and detecting the location from the browser.
 - A generic Data Source contract or a generic Data Source Widget.
 - Background polling of Data Sources.
 - Workarounds for address-bar focus on new tabs.

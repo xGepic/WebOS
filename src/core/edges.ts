@@ -44,3 +44,11 @@ export interface BrowserLookup {
   bookmarks(query: string): Promise<BrowserPage[]>;
   history(query: string): Promise<VisitedPage[]>;
 }
+
+/**
+ * Fetches JSON over the network, for the Weather Widget. Rejects when the
+ * request fails, times out, or doesn't succeed.
+ */
+export interface Fetch {
+  json(url: string): Promise<unknown>;
+}

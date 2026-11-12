@@ -3,6 +3,7 @@ import type { Storage } from './edges';
 import type { LinkGroup } from './links';
 import type { Note } from './notes';
 import type { Todo } from './todos';
+import type { WeatherCity, WeatherReport } from './weather';
 
 /**
  * The single persisted state document. Later tickets add Notes and the
@@ -28,9 +29,15 @@ export interface StateDocument {
   pinnedNoteId: string | null;
   /** Every Widget once: where it sits, its size, and whether it is shown. */
   layout: LayoutEntry[];
+  weather: {
+    /** The city chosen in Settings, or null before one is chosen. */
+    city: WeatherCity | null;
+    /** The last forecast fetched for that city. A cache: backups leave it out. */
+    report: WeatherReport | null;
+  };
 }
 
-const SCHEMA_VERSION = 9;
+const SCHEMA_VERSION = 10;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -61,8 +68,7 @@ const migrations: Record<number, Migration> = {
   }),
   // The Stage design: every Desktop moves to the Stage layout once. Hidden Widgets stay hidden.
   8: (document) => {
-    const saved = Array.isArray(document['layout']) ? document['layout'] : [];
-    const hidden = new Set(saved.flatMap((entry) => (isRecord(entry) && entry['visible'] === false ? [entry['widget']] : [])));
+    const hidden = hiddenIn(document);
     const stage = [
       { widget: 'clock', size: 'L', column: 0, row: 0 },
       { widget: 'links', size: 'M', column: 0, row: 3 },
@@ -71,7 +77,32 @@ const migrations: Record<number, Migration> = {
     ];
     return { ...document, schemaVersion: 9, layout: stage.map((entry) => ({ ...entry, visible: !hidden.has(entry.widget) })) };
   },
+  // Weather and Calendar: every Desktop moves once to the Stage layout with its new top band
+  // of Weather, Clock and Calendar. Hidden Widgets stay hidden; no city is chosen yet.
+  9: (document) => {
+    const hidden = hiddenIn(document);
+    const stage = [
+      { widget: 'weather', size: 'S', column: 0, row: 0 },
+      { widget: 'clock', size: 'M', column: 3, row: 0 },
+      { widget: 'calendar', size: 'S', column: 9, row: 0 },
+      { widget: 'links', size: 'M', column: 0, row: 3 },
+      { widget: 'todos', size: 'M', column: 4, row: 3 },
+      { widget: 'notes', size: 'M', column: 8, row: 3 },
+    ];
+    return {
+      ...document,
+      schemaVersion: 10,
+      layout: stage.map((entry) => ({ ...entry, visible: !hidden.has(entry.widget) })),
+      weather: { city: null, report: null },
+    };
+  },
 };
+
+/** The Widgets a document's saved layout has hidden. */
+function hiddenIn(document: Record<string, unknown>): Set<unknown> {
+  const saved = Array.isArray(document['layout']) ? document['layout'] : [];
+  return new Set(saved.flatMap((entry) => (isRecord(entry) && entry['visible'] === false ? [entry['widget']] : [])));
+}
 
 /**
  * What each App remembers between openings, so it survives closing the App
@@ -93,7 +124,18 @@ export class StateDocumentError extends Error {
 }
 
 function freshDocument(): StateDocument {
-  return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [...defaultLayout] };
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    profile: { name: '' },
+    apps: {},
+    linkGroups: [],
+    dockedLinkIds: [],
+    todos: [],
+    notes: [],
+    pinnedNoteId: null,
+    layout: [...defaultLayout],
+    weather: { city: null, report: null },
+  };
 }
 
 /** What a StateDocumentError calls the document by default: the one in storage. */
@@ -123,6 +165,7 @@ function assertCurrentShape(
 ): asserts document is Record<string, unknown> & StateDocument {
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
+  const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -133,7 +176,10 @@ function assertCurrentShape(
     !Array.isArray(document['todos']) ||
     !Array.isArray(document['notes']) ||
     (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null) ||
-    !Array.isArray(document['layout'])
+    !Array.isArray(document['layout']) ||
+    !isRecord(weather) ||
+    !(weather.city === null || isRecord(weather.city)) ||
+    !(weather.report === null || isRecord(weather.report))
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }
@@ -176,6 +222,14 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isText = (value: unknown): value is string => typeof value === 'string';
 const isTime = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
+const isCity = (city: unknown) =>
+  isRecord(city) &&
+  isText(city['name']) &&
+  isText(city['region']) &&
+  isText(city['country']) &&
+  isTime(city['latitude']) &&
+  isTime(city['longitude']);
+
 /** Whether `list` holds only objects that each pass `check`, with no two sharing an id. */
 function allRecords(list: unknown, check: (item: Record<string, unknown>) => boolean): list is Record<string, unknown>[] {
   if (!Array.isArray(list) || !list.every((item) => isRecord(item) && isText(item['id']) && check(item))) return false;
@@ -201,6 +255,7 @@ export function assertValidContents(document: StateDocument, subject: string): v
       document.todos,
       (todo) => isText(todo['text']) && isTime(todo['createdAt']) && (todo['completedAt'] === null || isTime(todo['completedAt'])),
     ) &&
-    allRecords(document.notes, (note) => isText(note['body']) && isTime(note['createdAt']) && isTime(note['editedAt']));
+    allRecords(document.notes, (note) => isText(note['body']) && isTime(note['createdAt']) && isTime(note['editedAt'])) &&
+    (document.weather.city === null || isCity(document.weather.city));
   if (!valid) throw new StateDocumentError(`${subject} is damaged: some of its data isn't what webOS expects.`);
 }

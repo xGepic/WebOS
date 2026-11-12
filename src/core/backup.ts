@@ -10,12 +10,15 @@ export interface BackupFile {
   text: string;
 }
 
-/** A backup file of `document`, named after the local date `now`: `webos-backup-2026-11-12.json`. */
+/**
+ * A backup file of `document`, named after the local date `now`: `webos-backup-2026-11-12.json`.
+ * The cached weather is left out: it is stale by the time the file is used.
+ */
 export function exportFile(document: StateDocument, now: Date): BackupFile {
   const pad = (n: number) => String(n).padStart(2, '0');
   return {
     fileName: `webos-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`,
-    text: JSON.stringify(document, null, 2),
+    text: JSON.stringify({ ...document, weather: { ...document.weather, report: null } }, null, 2),
   };
 }
 
@@ -42,6 +45,8 @@ export function importDocument(text: string): StateDocument {
   assertValidContents(document, BACKUP_FILE);
   return {
     ...document,
+    // Any weather in the file is stale; the next refresh fetches it fresh.
+    weather: { ...document.weather, report: null },
     linkGroups: document.linkGroups.map((group) => ({
       ...group,
       links: group.links.map((link) => ({ ...link, url: normalizeUrl(link.url) })),

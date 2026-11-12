@@ -69,5 +69,5 @@ _Avoid_: Task, item, ticket
 ## Data
 
 **Data Source**:
-An external API that supplies personal data to webOS, such as sleep data or a training plan.
+An external API that supplies personal data to webOS, such as sleep data or a training plan. The weather is not a Data Source: it is public data, not the user's own.
 _Avoid_: Integration, plugin, connector, feed

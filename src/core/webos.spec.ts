@@ -203,7 +203,9 @@ describe('state document', () => {
     expect(webos.notes.forWidget()?.pinned).toBe(true);
     expect(webos.devUtilities.activeTab()).toBe('jwt');
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
-      'clock L@0,0',
+      'weather S@0,0',
+      'clock M@3,0',
+      'calendar S@9,0',
       'links M@0,3',
       'todos M@4,3',
       'notes M@8,3',
@@ -211,7 +213,7 @@ describe('state document', () => {
     expect(webos.desktop.hidden()).toEqual([]);
   });
 
-  it('moves a v8 layout (ticket 11 to 14 builds) to the Stage layout once, keeping hidden Widgets hidden', async () => {
+  it('moves a v8 layout (ticket 11 to 14 builds) to the Stage layout, with Weather and Calendar, once, keeping hidden Widgets hidden', async () => {
     const storage = createMemoryStorage({
       schemaVersion: 8,
       profile: { name: 'Stefan' },
@@ -232,25 +234,58 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
-      'clock L@0,0',
+      'weather S@0,0',
+      'clock M@3,0',
+      'calendar S@9,0',
       'links M@0,3',
       'todos M@4,3',
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 9 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 10, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
-    await webos.desktop.resize('clock', 'M');
+    await webos.desktop.resize('clock', 'S');
     const nextTab = await createWebOS({ storage, clock: clock() });
-    expect(nextTab.desktop.layout()[0]).toMatchObject({ widget: 'clock', size: 'M' });
+    expect(nextTab.desktop.layout().find((p) => p.widget === 'clock')).toMatchObject({ size: 'S' });
+  });
+
+  it('moves a v9 Stage layout (ticket 15 builds) to the Stage layout with Weather and Calendar, keeping hidden Widgets hidden', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 9,
+      profile: { name: 'Stefan' },
+      apps: {},
+      linkGroups: [],
+      dockedLinkIds: [],
+      todos: [],
+      notes: [],
+      pinnedNoteId: null,
+      layout: [
+        { widget: 'clock', size: 'L', column: 0, row: 0, visible: true },
+        { widget: 'links', size: 'M', column: 0, row: 3, visible: false },
+        { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
+        { widget: 'notes', size: 'M', column: 8, row: 3, visible: true },
+      ],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
+      'weather S@0,0',
+      'clock M@3,0',
+      'calendar S@9,0',
+      'todos M@4,3',
+      'notes M@8,3',
+    ]);
+    expect(webos.desktop.hidden()).toEqual(['links']);
+    expect(webos.weather.city()).toBeNull();
   });
 
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 9, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [] }],
+    ['at the current version but missing its profile', { schemaVersion: 10, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 

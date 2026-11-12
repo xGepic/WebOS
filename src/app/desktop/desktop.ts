@@ -12,10 +12,12 @@ import {
 import type { Cell, PlacedWidget, Span, WebOS, WidgetId, WidgetSize } from '../../core';
 import { capturePlaces, slideToNewPlaces, type GridCell, type GridItem } from '../../motion/grid';
 import { springTo } from '../../motion/springs';
+import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { LinksWidget } from '../links-widget/links-widget';
 import { NotesWidget } from '../notes-widget/notes-widget';
 import { TodosWidget } from '../todos-widget/todos-widget';
+import { WeatherWidget } from '../weather-widget/weather-widget';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 import { DesktopEditor } from './desktop-editor';
@@ -42,7 +44,7 @@ const MENU_MARGIN = 8;
  */
 @Component({
   selector: 'webos-desktop',
-  imports: [GridDrag, ClockWidget, LinksWidget, TodosWidget, NotesWidget],
+  imports: [GridDrag, ClockWidget, LinksWidget, TodosWidget, NotesWidget, WeatherWidget, CalendarWidget],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.editing]': 'editor.editing()',
@@ -83,6 +85,12 @@ const MENU_MARGIN = 8;
                 }
                 @case ('notes') {
                   <webos-notes-widget />
+                }
+                @case ('weather') {
+                  <webos-weather-widget />
+                }
+                @case ('calendar') {
+                  <webos-calendar-widget />
                 }
               }
             </div>

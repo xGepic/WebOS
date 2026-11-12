@@ -1,9 +1,10 @@
 import { apps } from './apps';
 import * as backup from './backup';
 import * as base64 from './base64';
+import * as calendar from './calendar';
 import * as desktop from './desktop';
 import * as devUtilities from './dev-utilities';
-import type { BrowserLookup, Clock, Storage } from './edges';
+import type { BrowserLookup, Clock, Fetch, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
 import * as json from './json';
@@ -13,11 +14,15 @@ import * as links from './links';
 import * as notes from './notes';
 import * as timestamp from './timestamp';
 import * as todos from './todos';
+import * as weather from './weather';
 import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
-export type { BrowserLookup, BrowserPage, Clock, Storage, VisitedPage } from './edges';
+export type { BrowserLookup, BrowserPage, Clock, Fetch, Storage, VisitedPage } from './edges';
+export type { CalendarDay, CalendarMonth } from './calendar';
+export type { WeatherCity, WeatherCondition, WeatherView } from './weather';
+export { describeCity } from './weather';
 export type { Base64Result } from './base64';
 export type { DevUtilitiesTab } from './dev-utilities';
 export type { JsonError, JsonResult } from './json';
@@ -35,6 +40,8 @@ export interface WebOSEdges {
   clock: Clock;
   /** The browser's bookmarks and history, for the Launcher. Without it, the Launcher finds none. */
   browser?: BrowserLookup;
+  /** The network, for the Weather Widget. Without it, no weather is fetched. */
+  fetch?: Fetch;
 }
 
 export interface WebOS {
@@ -208,6 +215,31 @@ export interface WebOS {
     /** Today's date, e.g. "Thursday, November 12". */
     date(): string;
   };
+  readonly calendar: {
+    /** The current month for the Calendar Widget, in weeks starting on Monday, with today marked. */
+    month(): calendar.CalendarMonth;
+  };
+  /**
+   * The Weather Widget's weather for the city chosen in Settings, from
+   * Open-Meteo. The last forecast is stored, so a new tab shows it at once; a
+   * new tab fetches it again once it is 30 minutes old.
+   */
+  readonly weather: {
+    /** The chosen city, or null before one is chosen. */
+    city(): weather.WeatherCity | null;
+    /** What the Weather Widget shows. */
+    view(): weather.WeatherView;
+    /** Up to five cities matching `query`, best first. Rejects if the search can't be made. */
+    searchCities(query: string): Promise<weather.WeatherCity[]>;
+    /** Chooses the city (or none, with null), drops the old city's weather, and fetches the new city's. */
+    setCity(city: weather.WeatherCity | null): Promise<void>;
+    /**
+     * Fetches the weather if the stored forecast is 30 minutes old or there is
+     * none, unless a fetch is already under way. Resolves when it is done; a
+     * failed fetch keeps the last forecast and doesn't reject.
+     */
+    refresh(): Promise<void>;
+  };
   /**
    * Calls `listener` whenever anything readable from the core may have changed,
    * including the time at the start of every minute. Returns an unsubscribe function.
@@ -222,7 +254,7 @@ export interface WebOS {
  * to be cleared are cleared now. Rejects with a `StateDocumentError` if the stored
  * state can't be used, without touching it.
  */
-export async function createWebOS({ storage, clock, browser }: WebOSEdges): Promise<WebOS> {
+export async function createWebOS({ storage, clock, browser, fetch }: WebOSEdges): Promise<WebOS> {
   /** A document with its layout made safe to use; see `desktop.normalizeLayout`. */
   const withSafeLayout = (document: StateDocument): StateDocument => ({ ...document, layout: desktop.normalizeLayout(document.layout) });
   let state = withSafeLayout(await loadState(storage));
@@ -306,6 +338,43 @@ export async function createWebOS({ storage, clock, browser }: WebOSEdges): Prom
     await commitSelection(id, { ...state, notes: notes.createNote(state.notes, { id, body }, clock.now().getTime()) });
     return id;
   };
+
+  /** The weather fetch under way in this tab, if any. */
+  let weatherFetch: Promise<void> | undefined;
+  /** Whether this tab's last weather fetch failed. Per tab, so it isn't part of `state`. */
+  let weatherFailed = false;
+
+  /** Fetches the chosen city's weather if it is due, or if `force`d. See `weather.refresh`. */
+  const refreshWeather = (force = false): Promise<void> => {
+    const city = state.weather.city;
+    if (!city || !fetch) return Promise.resolve();
+    if (weatherFetch) return weatherFetch;
+    if (!force && !weather.isDue(state.weather.report, clock.now().getTime())) return Promise.resolve();
+    // The city may be changed while its weather is on the way; then the answer is ignored.
+    const stillChosen = () => weather.sameCity(state.weather.city, city);
+    weatherFetch = (async () => {
+      try {
+        const report = weather.parseForecast(await fetch.json(weather.forecastUrl(city)), clock.now().getTime());
+        if (stillChosen()) {
+          weatherFailed = false;
+          await commit({ ...state, weather: { ...state.weather, report } });
+        }
+      } catch {
+        if (stillChosen()) {
+          weatherFailed = true;
+          notify();
+        }
+      } finally {
+        weatherFetch = undefined;
+      }
+      // The city changed while this fetch was under way: fetch the new city's weather now.
+      if (!stillChosen()) await refreshWeather();
+    })();
+    return weatherFetch;
+  };
+
+  // The Desktop is loading: fetch the weather in the background if it is due.
+  void refreshWeather();
 
   return {
     apps,
@@ -433,6 +502,23 @@ export async function createWebOS({ storage, clock, browser }: WebOSEdges): Prom
     clock: {
       time: () => formatTime(clock.now()),
       date: () => formatDate(clock.now()),
+    },
+    calendar: {
+      month: () => calendar.monthView(clock.now()),
+    },
+    weather: {
+      city: () => state.weather.city,
+      view: () => weather.weatherView(state.weather.city, state.weather.report, { failed: weatherFailed, now: clock.now() }),
+      async searchCities(query) {
+        if (!query.trim() || !fetch) return [];
+        return weather.parseCities(await fetch.json(weather.citySearchUrl(query)));
+      },
+      async setCity(city) {
+        weatherFailed = false;
+        await commit({ ...state, weather: { city, report: null } });
+        void refreshWeather(true);
+      },
+      refresh: () => refreshWeather(),
     },
     subscribe(listener) {
       listeners.add(listener);

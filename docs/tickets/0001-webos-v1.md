@@ -15,7 +15,7 @@ Each ticket is a tracer-bullet vertical slice: core logic, tests through the web
               │      ├─ 10         │
               │      └─ 14         │
               ├─ 07 ───────────────┘
-              └─ 11 (also needs 07) ─ 15
+              └─ 11 (also needs 07) ─ 15 ─ 16
 ```
 
 After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
@@ -328,13 +328,13 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** done (the Data Source parts are carried to ticket 16)
+**Status:** done (the Data Source parts are carried to ticket 17)
 
-- [x] Export downloads one JSON file containing the full state document. (There are no Data Sources yet, so no tokens or cached payloads to leave out; ticket 16 adds that.)
+- [x] Export downloads one JSON file containing the full state document. (There are no Data Sources yet, so no tokens or cached payloads to leave out; ticket 17 adds that.)
 - [x] Import asks for confirmation, validates the document, migrates older schema versions, and replaces the current state as a whole.
 - [x] Invalid files and files from a newer schema version are rejected with a clear message, and the current state is not touched.
-- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens. Carried to ticket 16: v1 has no Data Sources.
-- [x] Core tests: an export/import round-trip preserves state, invalid and newer-version files are rejected without changes, and older versions are migrated on import. (Tokens and caches being left out is carried to ticket 16.)
+- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens. Carried to ticket 17: v1 has no Data Sources.
+- [x] Core tests: an export/import round-trip preserves state, invalid and newer-version files are rejected without changes, and older versions are migrated on import. (Tokens and caches being left out is carried to ticket 17.)
 
 **Decisions made while building:**
 - The backup file is the state document itself, as indented JSON, named `webos-backup-YYYY-MM-DD.json` after the local date. It downloads through the browser, so no `downloads` permission is needed.
@@ -374,11 +374,38 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 ---
 
+# 16: Weather and Calendar Widgets
+
+**What to build:** Two new Widgets join the Stage layout's top band, either side of the Clock: Weather (the current temperature in °C for a city chosen in Settings, the condition with an icon, today's high and low) and Calendar (the current month, weeks starting Monday, today marked). Existing Desktops move to the new layout once.
+
+**Blocked by:** 15
+
+**Status:** done
+
+- [x] The core gains its injected Fetch edge (the network in production, a stub in tests), first used by Weather.
+- [x] Weather comes from Open-Meteo directly: the forecast for the chosen city's coordinates, and geocoding for the city search. `host_permissions` covers those two hosts only. Weather is not a Data Source.
+- [x] Settings › Weather: search for a city, pick one of up to five matches (with region and country), or remove it.
+- [x] The last report is stored and shown at once; a new tab fetches it again once it is 30 minutes old. A failed fetch keeps the last report, and says when it is from once it is over an hour old.
+- [x] The Calendar Widget shows the current month, filled out with the neighbouring months' days, and moves on at midnight.
+- [x] The Stage layout's top band is Weather (S, 3 × 3), the Clock (M, now 6 × 3) and Calendar (S, 3 × 3). All three have no surface and no Title Bar. Schema version 10 moves every Desktop to it once, keeping hidden Widgets hidden, and adds the weather to the state document.
+- [x] Backup keeps the city and leaves out the cached report; an import drops any report in the file.
+- [x] Core tests: city search, the report and its conditions, the 30-minute rule, one fetch at a time, keeping the last report on failure, an unreadable response, changing and removing the city, weather from another tab, backup; the Calendar's weeks, neighbouring days, today and the change of month; the new default layout and the v9 → v10 migration.
+
+**Decisions made while building:**
+- The Clock is centred at M and L, and left-aligned only at S.
+- When the city changes while the old city's forecast is still on its way, the old answer is ignored and the new city's weather is fetched as soon as it arrives, without waiting for another tab.
+- Requests time out after 10 seconds and send no cookies. Coordinates are sent to 4 decimal places.
+- A clear night shows a moon, using the forecast's day/night flag.
+- The Edit Mode tests' starting layout uses a small Clock, now that the Clock's M is 6 × 3, and keeps Weather and Calendar hidden.
+- The production bundle is 530 kB, still over Angular's 500 kB warning budget; left as it is.
+
+---
+
 # v2: tentative, don't start
 
 These depend on the user deciding to build the sleep and training APIs. Spec 0001 lists the open questions, including whether the training plan comes from Strava.
 
-## 16: Data Source settings and Sleep Widget
+## 17: Data Source settings and Sleep Widget
 
 **What to build:** The user adds their Sleep Data Source in Settings (HTTPS URL on their own domain, a bearer token and a maximum age). A Sleep Widget shows last night's sleep immediately from cache and refreshes in the background when the cache is older than the maximum age. The Menu Bar status dot shows whether data is fresh.
 
@@ -395,11 +422,11 @@ These depend on the user deciding to build the sleep and training APIs. Spec 000
 - [ ] Core tests: serving from cache, refetching only past the maximum age, stale on failure, and the aggregate status.
 - [ ] Carried from ticket 14: a backup export leaves out Data Source tokens and cached payloads, and after importing a document that contains Data Sources the user is told to re-enter their tokens. Core tests for both.
 
-## 17: Training Widget
+## 18: Training Widget
 
 **What to build:** A Training Widget shows the next training session from the user's Training Data Source, refreshed on every new tab.
 
-**Blocked by:** 16
+**Blocked by:** 17
 
 **Status:** tentative
 

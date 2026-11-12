@@ -1,4 +1,4 @@
-import type { BrowserLookup, BrowserPage, Clock, Storage, VisitedPage } from './edges';
+import type { BrowserLookup, BrowserPage, Clock, Fetch, Storage, VisitedPage } from './edges';
 
 const MINUTE = 60_000;
 
@@ -80,5 +80,26 @@ export function createTestBrowser({
   return {
     bookmarks: async (query) => structuredClone(matching(bookmarks, query)),
     history: async (query) => structuredClone(matching(history, query)),
+  };
+}
+
+/** A Fetch that answers from the test, and records every URL it was asked for. */
+export interface TestFetch extends Fetch {
+  readonly requests: URL[];
+}
+
+/**
+ * A Fetch whose answer to each request is `respond(url)`. A thrown error, or
+ * a rejected promise, becomes a failed request.
+ */
+export function createTestFetch(respond: (url: URL) => unknown): TestFetch {
+  const requests: URL[] = [];
+  return {
+    requests,
+    async json(url) {
+      const parsed = new URL(url);
+      requests.push(parsed);
+      return structuredClone(await respond(parsed));
+    },
   };
 }

@@ -4,13 +4,14 @@ import { WebOSCore } from '../webos-core';
 
 /**
  * The Clock Widget: 12-hour time, today's date and a greeting by time of day.
- * It has no surface: thin type straight on the wallpaper. At its large size it
- * spans the Desktop's width and centres a very large time, as in the Stage layout.
+ * It has no surface: thin type straight on the wallpaper. At its medium and
+ * large sizes (the middle of the Stage layout's top band, or its full width)
+ * it centres a larger greeting and a very large time.
  */
 @Component({
   selector: 'webos-clock-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.full-width]': "size() === 'L'" },
+  host: { '[class.centred]': "size() !== 'S'" },
   template: `
     <p class="greeting">{{ webos.greeting() }}</p>
     <time class="time">{{ webos.time() }}</time>
@@ -27,7 +28,7 @@ import { WebOSCore } from '../webos-core';
       padding: 1rem 1.375rem;
       border-radius: var(--radius-widget);
     }
-    :host(.full-width) {
+    :host(.centred) {
       align-items: center;
       text-align: center;
     }
@@ -48,12 +49,12 @@ import { WebOSCore } from '../webos-core';
       letter-spacing: var(--tracking-display);
       font-variant-numeric: tabular-nums;
     }
-    :host(.full-width) .greeting {
+    :host(.centred) .greeting {
       font-size: clamp(1.25rem, 10cqh, 1.625rem);
       font-weight: 400;
       letter-spacing: -0.01em;
     }
-    :host(.full-width) .time {
+    :host(.centred) .time {
       margin-top: 0.125rem;
       font-size: min(44cqh, 16cqi);
       line-height: 1;

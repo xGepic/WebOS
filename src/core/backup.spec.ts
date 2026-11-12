@@ -83,7 +83,7 @@ describe('Backup', () => {
   /** A valid current backup with one part replaced. */
   const backupWith = (change: Record<string, unknown>) =>
     JSON.stringify({
-      schemaVersion: 9,
+      schemaVersion: 10,
       profile: { name: '' },
       apps: {},
       linkGroups: [],
@@ -92,6 +92,7 @@ describe('Backup', () => {
       notes: [],
       pinnedNoteId: null,
       layout: [],
+      weather: { city: null, report: null },
       ...change,
     });
 
@@ -137,9 +138,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 10 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 11 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 10, this build knows 9).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 11, this build knows 10).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -185,6 +186,6 @@ describe('Backup', () => {
     expect(webos.profile.name()).toBe('Stefan');
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.forWidget()?.title).toBe('Old Note');
-    expect(webos.desktop.layout().map((placed) => placed.widget)).toEqual(['clock', 'links', 'todos', 'notes']);
+    expect(webos.desktop.layout().map((placed) => placed.widget)).toEqual(['weather', 'clock', 'calendar', 'links', 'todos', 'notes']);
   });
 });
