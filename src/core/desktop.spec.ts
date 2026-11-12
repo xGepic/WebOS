@@ -41,11 +41,20 @@ describe('default Desktop layout geometry', () => {
     expect(new Set(cells).size).toBe(cells.length);
   });
 
-  it('places the Clock at medium size, spanning 4 × 2 cells', async () => {
+  it('is the Stage layout: the Clock full width on top, Links, Todos and Notes in a row beneath it', async () => {
     const { desktop } = await freshWebOS();
 
-    const clock = desktop.layout().find((p) => p.widget === 'clock');
+    expect(desktop.layout().map((p) => `${p.widget} ${p.size} ${p.columns}×${p.rows}@${p.column},${p.row}`)).toEqual([
+      'clock L 12×3@0,0',
+      'links M 4×5@0,3',
+      'todos M 4×5@4,3',
+      'notes M 4×5@8,3',
+    ]);
+  });
 
-    expect(clock).toMatchObject({ size: 'M', columns: 4, rows: 2 });
+  it('fills every cell of the grid', async () => {
+    const { desktop } = await freshWebOS();
+
+    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows);
   });
 });

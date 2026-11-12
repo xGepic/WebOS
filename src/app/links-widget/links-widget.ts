@@ -14,6 +14,7 @@ import { LinkIcon } from './link-icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'material' },
   template: `
+    <h2 class="title-bar">{{ webos.widgetName('links') }}</h2>
     @for (group of webos.linkGroups(); track group.id) {
       <section [attr.aria-labelledby]="'link-group-' + group.id">
         <h3 [id]="'link-group-' + group.id">{{ group.name }}</h3>
@@ -39,7 +40,7 @@ import { LinkIcon } from './link-icon';
     :host {
       display: flex;
       flex-direction: column;
-      gap: 0.875rem;
+      gap: 0.75rem;
       overflow: auto;
       padding: 1rem 0.75rem;
       border-radius: var(--radius-widget);
@@ -63,7 +64,7 @@ import { LinkIcon } from './link-icon';
       display: flex;
       align-items: center;
       gap: 0.625rem;
-      padding: 0.375rem 0.5rem;
+      padding: 0.3rem 0.5rem;
       border-radius: var(--radius-control);
       color: var(--text-primary);
       font-size: 0.875rem;

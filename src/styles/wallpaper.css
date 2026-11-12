@@ -1,6 +1,6 @@
 /*
- * The one fixed webOS wallpaper ("Eclipse"): near-black indigo with a single
- * violet-into-teal bloom off-centre, a heavy vignette and film grain.
+ * The one fixed webOS wallpaper ("Midnight Deep"): almost black, with a faint
+ * blue light falling from the top centre, and film grain.
  * Original generated art (CSS gradients plus SVG noise), not configurable.
  *
  * It is painted from global CSS on the body, so it is on screen before
@@ -23,10 +23,7 @@ body::after {
 body::before {
   z-index: -2;
   background:
-    radial-gradient(120% 90% at 50% 50%, transparent 40%, rgba(3, 3, 10, 0.85) 100%),
-    radial-gradient(38% 46% at 24% 78%, #18a3a0 0%, rgba(24, 163, 160, 0) 70%),
-    radial-gradient(52% 58% at 34% 70%, #5b35b8 0%, rgba(91, 53, 184, 0) 72%),
-    radial-gradient(70% 70% at 78% 18%, #1c1847 0%, transparent 70%),
+    radial-gradient(50% 45% at 50% 0%, var(--wallpaper-light) 0%, transparent 100%),
     var(--wallpaper-base);
 }
 

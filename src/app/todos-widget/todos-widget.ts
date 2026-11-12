@@ -34,6 +34,7 @@ const HIGHLIGHT_MS = 2400;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'material' },
   template: `
+    <h2 class="title-bar">{{ webos.widgetName('todos') }}</h2>
     <form class="quick-add" (submit)="add(newTodo, $event)">
       <input #newTodo class="text-field" placeholder="Add a Todo" aria-label="New Todo" autocomplete="off" maxlength="200" />
     </form>
@@ -110,7 +111,7 @@ const HIGHLIGHT_MS = 2400;
       flex-direction: column;
       gap: 0.5rem;
       overflow: auto;
-      padding: 0.875rem 0.75rem;
+      padding: 1rem 0.75rem;
       border-radius: var(--radius-widget);
       scrollbar-width: thin;
     }
@@ -225,7 +226,7 @@ const HIGHLIGHT_MS = 2400;
   `,
 })
 export class TodosWidget {
-  private readonly webos = inject(WebOSCore);
+  protected readonly webos = inject(WebOSCore);
   private readonly highlight = inject(TodoHighlight);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

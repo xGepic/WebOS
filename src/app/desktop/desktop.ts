@@ -73,7 +73,7 @@ const MENU_MARGIN = 8;
             <div class="widget" [attr.inert]="editor.editing() ? '' : null">
               @switch (placed.widget) {
                 @case ('clock') {
-                  <webos-clock-widget />
+                  <webos-clock-widget [size]="placed.size" />
                 }
                 @case ('links') {
                   <webos-links-widget />
@@ -132,7 +132,7 @@ const MENU_MARGIN = 8;
     @if (menu(); as at) {
       <div
         #menu
-        class="context-menu material"
+        class="context-menu material material-raised"
         role="menu"
         aria-label="Desktop"
         [style.left.px]="at.x"
@@ -150,8 +150,9 @@ const MENU_MARGIN = 8;
       display: grid;
       grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
       grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
-      gap: 1rem;
-      padding: 1.25rem 1.5rem 0;
+      gap: 1.25rem;
+      /* Centred, never wider than --desktop-max-width. */
+      padding: 1.25rem max(1.5rem, calc((100vw - var(--desktop-max-width)) / 2)) 0;
     }
     .placement,
     .slide,

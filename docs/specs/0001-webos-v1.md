@@ -11,7 +11,7 @@ As a developer, I open dozens of new tabs a day, and each one shows a page I nev
 
 webOS is a personal Brave extension that replaces the new tab with a Desktop that looks and feels like a desktop operating system. Its design follows Apple's principles (translucent materials, depth, spring motion, restrained typography) but has its own identity.
 
-Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with glanceable Widgets on a snap grid (Clock and greeting, Links, Todos, a Pinned Note preview). A Menu Bar runs across the top and a Dock across the bottom. The Dock opens Apps (Notes, Dev Utilities, Settings) in a single focused Window that springs out of its Dock icon. The Dock also holds Docked Links. A keyboard-driven Launcher finds and opens anything: Apps, Links, Todos, Notes, browser bookmarks and history, falling back to Brave Search. It also runs quick actions. Everything works offline and is stored locally. A later version may add Data Sources, which are the user's own APIs for sleep and training data, each shown in its own Widget.
+Every new tab opens on the Desktop: one fixed, almost black wallpaper with glanceable Widgets on a snap grid. By default they are arranged as the Stage layout: a large, thin clock and greeting across the top, and Links, Todos and a Pinned Note preview in a row beneath it. A Menu Bar runs across the top and a Dock across the bottom. The Dock opens Apps (Notes, Dev Utilities, Settings) in a single focused Window that springs out of its Dock icon. The Dock also holds Docked Links. A keyboard-driven Launcher finds and opens anything: Apps, Links, Todos, Notes, browser bookmarks and history, falling back to Brave Search. It also runs quick actions. Everything works offline and is stored locally. A later version may add Data Sources, which are the user's own APIs for sleep and training data, each shown in its own Widget.
 
 ## User Stories
 
@@ -19,159 +19,161 @@ Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with
 
 1. As a developer, I want every new tab to open on the webOS Desktop, so that my tools are one keystroke away all day.
 2. As a developer, I want the Desktop to appear instantly from local data, so that opening a tab never feels slower than the browser's default.
-3. As a developer, I want one fixed dark mesh-gradient wallpaper (indigo into teal, with subtle grain), so that webOS has a calm, consistent identity.
+3. As a developer, I want one fixed, almost black wallpaper with a faint blue light from the top and subtle grain ("Midnight Deep"), so that webOS is calm and my content stands out.
 4. As a developer, I want Widgets, the Menu Bar, the Dock and the Window to use translucent materials tinted by the wallpaper, so that the interface has depth and feels like an OS.
 5. As a developer, I want webOS to be dark mode only, so that it is consistent and easy on the eyes.
 6. As a developer, I want motion to use interruptible springs, so that interactions feel physical and responsive rather than scripted.
 7. As a developer who has turned on reduced motion, I want springs replaced by simple fades, so that the interface respects my accessibility settings.
 8. As a developer, I want the layout to use the full browser viewport without page scrolling, so that the Desktop feels like a screen and not a web page.
+9. As a developer, I want every Widget except the Clock to show a thin Title Bar with its name, so that I can tell the Widgets apart at a glance.
 
 ### Menu Bar
 
-9. As a developer, I want a Menu Bar across the top of the Desktop, so that the interface reads as an operating system.
-10. As a developer, I want the Menu Bar to show the webOS mark and the name of the currently open App, so that I always know where I am.
-11. As a developer, I want a Launcher button in the Menu Bar, so that I can open the Launcher with the mouse, including on a fresh tab where the address bar has focus.
-12. As a developer, I want a small 12-hour time readout in the Menu Bar, so that I can see the time even when a Window covers the Clock Widget.
-13. As a developer, I want a Data Source status dot in the Menu Bar, green when all Data Sources are fresh and amber when any is stale or failing, so that I know whether the data I see can be trusted (v2; hidden when no Data Sources exist).
-14. As a developer in Edit Mode, I want a "Done" button in the Menu Bar, so that I can leave Edit Mode with the mouse.
+10. As a developer, I want a Menu Bar across the top of the Desktop, so that the interface reads as an operating system.
+11. As a developer, I want the Menu Bar to show the webOS mark and the name of the currently open App, so that I always know where I am.
+12. As a developer, I want a Launcher button in the Menu Bar, so that I can open the Launcher with the mouse, including on a fresh tab where the address bar has focus.
+13. As a developer, I want a small 12-hour time readout in the Menu Bar, so that I can see the time even when a Window covers the Clock Widget.
+14. As a developer, I want a Data Source status dot in the Menu Bar, green when all Data Sources are fresh and amber when any is stale or failing, so that I know whether the data I see can be trusted (v2; hidden when no Data Sources exist).
+15. As a developer in Edit Mode, I want a "Done" button in the Menu Bar, so that I can leave Edit Mode with the mouse.
 
 ### Dock
 
-15. As a developer, I want a Dock at the bottom of the Desktop with an icon for each App, so that I can open Apps with one click.
-16. As a developer, I want Docked Links shown after a divider in the Dock, so that my most-used sites are always one click away.
-17. As a developer, I want Docked Links to show their site's favicon, so that I can recognise them at a glance.
-18. As a developer, I want the Dock icons to magnify subtly as my pointer moves over them, with spring motion, so that the Dock feels alive.
-19. As a developer, I want the Dock icon of the open App to show an indicator, so that I can see which App is open.
-20. As a developer, I want to choose which Links are Docked and in what order, so that the Dock reflects my habits.
-21. As a developer, I want clicking a Docked Link to open it in the current tab, and ⌘/Ctrl+click or middle-click to open it in a background tab, so that it behaves like any link in the browser.
+16. As a developer, I want a Dock at the bottom of the Desktop with an icon for each App, so that I can open Apps with one click.
+17. As a developer, I want Docked Links shown after a divider in the Dock, so that my most-used sites are always one click away.
+18. As a developer, I want Docked Links to show their site's favicon, so that I can recognise them at a glance.
+19. As a developer, I want the Dock icons to magnify subtly as my pointer moves over them, with spring motion, so that the Dock feels alive.
+20. As a developer, I want the Dock icon of the open App to show an indicator, so that I can see which App is open.
+21. As a developer, I want to choose which Links are Docked and in what order, so that the Dock reflects my habits.
+22. As a developer, I want clicking a Docked Link to open it in the current tab, and ⌘/Ctrl+click or middle-click to open it in a background tab, so that it behaves like any link in the browser.
 
 ### Window and Apps
 
-22. As a developer, I want an App to open in a single focused Window that springs out of its Dock icon, so that opening an App feels like an OS.
-23. As a developer, I want opening a second App to replace the current one in the Window, so that I never have to manage multiple windows.
-24. As a developer, I want to close the Window with Esc, a close control or by clicking the Desktop around it, so that I can get back to my Widgets quickly.
-25. As a developer, I want the Window to spring back into its Dock icon when closed, so that I understand where it went.
-26. As a developer, I want the Window's controls to be webOS's own design, not copies of macOS traffic lights, so that webOS has its own identity.
-27. As a developer, I want each App to remember its internal state (for example the selected Note or the active Dev Utilities tab) between openings, so that I can pick up where I left off.
+23. As a developer, I want an App to open in a single focused Window that springs out of its Dock icon, so that opening an App feels like an OS.
+24. As a developer, I want opening a second App to replace the current one in the Window, so that I never have to manage multiple windows.
+25. As a developer, I want to close the Window with Esc, a close control or by clicking the Desktop around it, so that I can get back to my Widgets quickly.
+26. As a developer, I want the Window to spring back into its Dock icon when closed, so that I understand where it went.
+27. As a developer, I want the Window's controls to be webOS's own design, not copies of macOS traffic lights, so that webOS has its own identity.
+28. As a developer, I want each App to remember its internal state (for example the selected Note or the active Dev Utilities tab) between openings, so that I can pick up where I left off.
 
 ### Edit Mode
 
-28. As a developer, I want to enter Edit Mode by right-clicking the Desktop and choosing "Edit Desktop", so that I can rearrange my Desktop without changing anything by accident during normal use.
-29. As a developer in Edit Mode, I want Widgets to lift slightly and show an outline, so that I can see they are editable without a tiring wobble.
-30. As a developer in Edit Mode, I want to drag Widgets around a snap grid, settling into place on a spring, so that the Desktop stays tidy.
-31. As a developer in Edit Mode, I want other Widgets to move aside when I drop a Widget onto an occupied area, so that Widgets never overlap.
-32. As a developer in Edit Mode, I want to resize each Widget between small, medium and large, so that more important Widgets can take more space.
-33. As a developer in Edit Mode, I want to hide a Widget and show it again later, so that the Desktop only shows what I care about.
-34. As a developer, I want at most one of each Widget on the Desktop, so that the Desktop stays simple.
-35. As a developer, I want to leave Edit Mode with Esc or the "Done" button, so that my layout is saved and the Desktop returns to normal.
-36. As a developer, I want my layout to persist across tabs and browser restarts, so that I arrange my Desktop only once.
-37. As a first-time user, I want a sensible default layout with all v1 Widgets visible, so that webOS is useful immediately.
+29. As a developer, I want to enter Edit Mode by right-clicking the Desktop and choosing "Edit Desktop", so that I can rearrange my Desktop without changing anything by accident during normal use.
+30. As a developer in Edit Mode, I want Widgets to lift slightly and show an outline, so that I can see they are editable without a tiring wobble.
+31. As a developer in Edit Mode, I want to drag Widgets around a snap grid, settling into place on a spring, so that the Desktop stays tidy.
+32. As a developer in Edit Mode, I want other Widgets to move aside when I drop a Widget onto an occupied area, so that Widgets never overlap.
+33. As a developer in Edit Mode, I want to resize each Widget between small, medium and large, so that more important Widgets can take more space.
+34. As a developer in Edit Mode, I want to hide a Widget and show it again later, so that the Desktop only shows what I care about.
+35. As a developer, I want at most one of each Widget on the Desktop, so that the Desktop stays simple.
+36. As a developer, I want to leave Edit Mode with Esc or the "Done" button, so that my layout is saved and the Desktop returns to normal.
+37. As a developer, I want my layout to persist across tabs and browser restarts, so that I arrange my Desktop only once.
+38. As a first-time user, I want a sensible default layout with all v1 Widgets visible (the Stage layout: the Clock across the full width at the top, Links, Todos and Notes in a row beneath it), so that webOS is useful immediately and looks calm.
+39. As a developer updating from an earlier webOS, I want my Desktop moved to the Stage layout once, with hidden Widgets kept hidden, so that I get the new design without losing anything.
 
 ### Clock Widget
 
-38. As a developer, I want a Clock Widget showing the time in 12-hour format and today's date, so that I can see both at a glance.
-39. As a developer, I want the Clock Widget to greet me by name based on the time of day ("Good morning, Stefan"), so that webOS feels personal.
-40. As a developer, I want to set my name once in Settings, so that the greeting uses it.
-41. As a developer who hasn't set a name, I want a greeting without a name, so that the Widget still reads naturally.
+40. As a developer, I want a Clock Widget showing the time in thin type in 12-hour format and today's date, with the time very large and centred when the Clock spans the full width, so that I can see both at a glance.
+41. As a developer, I want the Clock Widget to greet me by name based on the time of day ("Good morning, Stefan"), so that webOS feels personal.
+42. As a developer, I want to set my name once in Settings, so that the greeting uses it.
+43. As a developer who hasn't set a name, I want a greeting without a name, so that the Widget still reads naturally.
 
 ### Links
 
-42. As a developer, I want to save Links with a title and URL, so that my dev URLs (localhost ports, dashboards, docs) are in one place.
-43. As a developer, I want to organise Links into named Link Groups, so that related Links appear together.
-44. As a developer, I want the Links Widget to show each Link Group as a section, so that I can scan them quickly.
-45. As a developer, I want to add, edit, reorder and delete Links and Link Groups in the Settings App, so that the Links Widget stays clean.
-46. As a developer, I want Links to show their site's favicon, so that I can recognise them.
-47. As a developer, I want Links to `localhost` and other non-public URLs to work, so that I can reach my local dev servers.
-48. As a developer, I want clicking a Link to open it in the current tab, and ⌘/Ctrl+click or middle-click to open it in a background tab, so that it behaves like a normal link.
-49. As a developer, I want to mark a Link as Docked, so that it also appears in the Dock.
-50. As a developer, I want a URL without a scheme to be saved with `https://`, or `http://` for `localhost` and IP addresses, so that quick entries just work.
+44. As a developer, I want to save Links with a title and URL, so that my dev URLs (localhost ports, dashboards, docs) are in one place.
+45. As a developer, I want to organise Links into named Link Groups, so that related Links appear together.
+46. As a developer, I want the Links Widget to show each Link Group as a section, so that I can scan them quickly.
+47. As a developer, I want to add, edit, reorder and delete Links and Link Groups in the Settings App, so that the Links Widget stays clean.
+48. As a developer, I want Links to show their site's favicon, so that I can recognise them.
+49. As a developer, I want Links to `localhost` and other non-public URLs to work, so that I can reach my local dev servers.
+50. As a developer, I want clicking a Link to open it in the current tab, and ⌘/Ctrl+click or middle-click to open it in a background tab, so that it behaves like a normal link.
+51. As a developer, I want to mark a Link as Docked, so that it also appears in the Dock.
+52. As a developer, I want a URL without a scheme to be saved with `https://`, or `http://` for `localhost` and IP addresses, so that quick entries just work.
 
 ### Todos
 
-51. As a developer, I want a Todos Widget with one flat list, so that I can keep track of today's small tasks without a task manager.
-52. As a developer, I want to add a Todo by typing in the Widget and pressing Enter, so that capturing a task takes a second.
-53. As a developer, I want to complete a Todo by checking it off, so that I can see my progress.
-54. As a developer, I want to uncheck a completed Todo, so that I can undo a mistake.
-55. As a developer, I want to delete a Todo, so that the list holds only real tasks.
-56. As a developer, I want to reorder Todos by dragging, so that the most important one is on top.
-57. As a developer, I want completed Todos collapsed into a "completed" section, so that the open list stays focused.
-58. As a developer, I want completed Todos cleared automatically 3 days after completion, so that the list never grows forever.
-59. As a developer, I want to edit a Todo's text in place, so that I can fix typos.
+53. As a developer, I want a Todos Widget with one flat list, so that I can keep track of today's small tasks without a task manager.
+54. As a developer, I want to add a Todo by typing in the Widget and pressing Enter, so that capturing a task takes a second.
+55. As a developer, I want to complete a Todo by checking it off, so that I can see my progress.
+56. As a developer, I want to uncheck a completed Todo, so that I can undo a mistake.
+57. As a developer, I want to delete a Todo, so that the list holds only real tasks.
+58. As a developer, I want to reorder Todos by dragging, so that the most important one is on top.
+59. As a developer, I want completed Todos collapsed into a "completed" section, so that the open list stays focused.
+60. As a developer, I want completed Todos cleared automatically 3 days after completion, so that the list never grows forever.
+61. As a developer, I want to edit a Todo's text in place, so that I can fix typos.
 
 ### Notes
 
-60. As a developer, I want a Notes App where I can write multiple Notes in Markdown, so that I have a scratchpad for ideas, snippets and meeting notes.
-61. As a developer, I want a sidebar listing my Notes, most recently edited first, so that I can switch between them quickly.
-62. As a developer, I want a Note's title taken from its first line, so that I never have to name Notes separately.
-63. As a developer, I want a live Markdown preview, so that code blocks, lists and headings read nicely.
-64. As a developer, I want Notes to save automatically as I type, so that I never lose anything.
-65. As a developer, I want to create and delete Notes, so that I can manage my scratchpad.
-66. As a developer, I want to choose one Pinned Note, so that its preview appears on the Notes Widget.
-67. As a developer, I want the Notes Widget to show a preview of the Pinned Note, and to open it in the Notes App on click, so that my most important Note is always visible.
-68. As a developer without a Pinned Note, I want the Notes Widget to show my most recently edited Note, so that the Widget is never empty when Notes exist.
-69. As a developer with no Notes, I want the Notes Widget to offer to create one, so that I know what it's for.
+62. As a developer, I want a Notes App where I can write multiple Notes in Markdown, so that I have a scratchpad for ideas, snippets and meeting notes.
+63. As a developer, I want a sidebar listing my Notes, most recently edited first, so that I can switch between them quickly.
+64. As a developer, I want a Note's title taken from its first line, so that I never have to name Notes separately.
+65. As a developer, I want a live Markdown preview, so that code blocks, lists and headings read nicely.
+66. As a developer, I want Notes to save automatically as I type, so that I never lose anything.
+67. As a developer, I want to create and delete Notes, so that I can manage my scratchpad.
+68. As a developer, I want to choose one Pinned Note, so that its preview appears on the Notes Widget.
+69. As a developer, I want the Notes Widget to show a preview of the Pinned Note, and to open it in the Notes App on click, so that my most important Note is always visible.
+70. As a developer without a Pinned Note, I want the Notes Widget to show my most recently edited Note, so that the Widget is never empty when Notes exist.
+71. As a developer with no Notes, I want the Notes Widget to offer to create one, so that I know what it's for.
 
 ### Launcher
 
-70. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
-71. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
-72. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
-73. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
-74. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
-75. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
-76. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
-77. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
-78. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
-79. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
-80. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
-81. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
-82. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
-83. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
-84. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
+72. As a developer, I want to open the Launcher with ⌘/Ctrl+K once the Desktop has focus, so that everything is reachable from the keyboard.
+73. As a developer, I want typing a printable character while the Desktop has focus (and no text field does) to open the Launcher with that character, so that I can just start typing.
+74. As a developer, I want the Launcher to search Apps, then Links, then Todos and Notes, then browser bookmarks and history, so that my own things come first.
+75. As a developer, I want the last Launcher result to always be "Search Brave for …", so that the Launcher never dead-ends.
+76. As a developer, I want matching to be case-insensitive and to favour matches at the start of a word, so that short queries find what I mean.
+77. As a developer, I want to move through results with the arrow keys and confirm with Enter, so that I never have to touch the mouse.
+78. As a developer, I want ⌘/Ctrl+Enter on a Link, bookmark or history result to open it in a background tab, so that the Launcher matches normal link behavior.
+79. As a developer, I want selecting an App result to open that App, so that the Launcher can replace the Dock.
+80. As a developer, I want selecting a Note result to open it in the Notes App, so that I can jump straight into a Note.
+81. As a developer, I want selecting a Todo result to show the Todos Widget with that Todo highlighted, so that I can act on it.
+82. As a developer, I want a "new todo <text>" action that adds a Todo directly, so that I can capture tasks from anywhere.
+83. As a developer, I want a "new note <text>" action that creates a Note starting with that text and opens it, so that I can capture ideas instantly.
+84. As a developer, I want a "uuid" action that copies a new UUID to the clipboard and confirms it briefly, so that I can get an ID in one step.
+85. As a developer, I want Esc or clicking outside to close the Launcher, so that it gets out of the way.
+86. As a developer, I want each result to show its kind (App, Link, Todo, Note, Bookmark, History, Action, Web), so that I know what selecting it will do.
 
 ### Dev Utilities
 
-85. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
-86. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
-87. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
-88. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
-89. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
-90. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
-91. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
-92. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
-93. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
-94. As a developer, I want a copy button on every output, so that I can use the results immediately.
-95. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
+87. As a developer, I want a Dev Utilities App with tabs for JSON, Base64, JWT, UUID and Timestamp, so that common conversions are always at hand offline.
+88. As a developer, I want to paste JSON and get it validated, pretty-printed or minified, with the location of any syntax error, so that I can inspect API responses.
+89. As a developer, I want to encode and decode Base64, including non-ASCII text and URL-safe Base64, so that I can inspect encoded values correctly.
+90. As a developer, I want to paste a JWT and see its decoded header and payload, so that I can debug authentication.
+91. As a developer, I want a JWT's time claims (`exp`, `iat`, `nbf`) shown in my local time, with a clear "expired" indicator, so that I can spot token problems quickly.
+92. As a developer, I want it made clear that the JWT signature is not verified, so that I don't mistake decoding for validation.
+93. As a developer, I want to generate one or many v4 UUIDs and copy them, so that I can seed data quickly.
+94. As a developer, I want to convert between Unix timestamps (seconds and milliseconds, auto-detected) and human-readable local and ISO dates in both directions, so that I can read logs and databases.
+95. As a developer, I want a "now" button in the Timestamp tab, so that I can get the current timestamp instantly.
+96. As a developer, I want a copy button on every output, so that I can use the results immediately.
+97. As a developer, I want everything in Dev Utilities processed locally, so that tokens and data never leave my machine.
 
 ### Settings
 
-96. As a developer, I want a Settings App, so that I have one place to configure webOS.
-97. As a developer, I want to set my name in Settings, so that the greeting is personal.
-98. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
-99. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
-100. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
-101. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
-102. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
-103. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
-104. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
+98. As a developer, I want a Settings App, so that I have one place to configure webOS.
+99. As a developer, I want to set my name in Settings, so that the greeting is personal.
+100. As a developer, I want to manage Links, Link Groups and Docked Links in Settings, so that Link management is separate from the Desktop.
+101. As a developer, I want to manage Data Sources (URL, token, maximum age) in Settings, so that I can connect my own APIs (v2).
+102. As a developer, I want to export all my webOS data to a JSON file, so that I have a backup.
+103. As a developer, I want the export to leave out Data Source tokens, so that no secret sits in plain text in my Downloads or backups.
+104. As a developer, I want to import an export file after a confirmation, replacing my current data, so that I can restore a backup or move to another machine.
+105. As a developer, I want an import of an invalid or newer-version file to be rejected with a clear message and my data left untouched, so that a bad file can't corrupt webOS.
+106. As a developer, I want to be reminded to re-enter Data Source tokens after an import, so that my Data Sources start working again.
 
 ### Data Sources (v2, tentative)
 
-105. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
-106. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
-107. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
-108. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
-109. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
-110. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
-111. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
-112. As a developer, I want webOS to have network access only to my own domain, so that the extension can't reach anything else.
+107. As a developer, I want a Sleep Widget showing last night's sleep at a glance, fed by my own API, so that I see how I slept when I open a tab.
+108. As a marathon runner, I want a Training Widget showing my next training session, fed by my own API, so that I know what's planned without opening another app.
+109. As a developer, I want each Data Source configured as an HTTPS URL plus an optional bearer token, so that my personal data is protected on my public server.
+110. As a developer, I want Data Source Widgets to show cached data immediately and refresh in the background only when it is older than that Data Source's maximum age, so that the Desktop stays instant.
+111. As a developer, I want the sleep data refreshed at most once an hour and the training data refreshed on every new tab, so that each Data Source is as fresh as it needs to be.
+112. As a developer, I want a failed refresh to keep showing the last cached data, marked as stale, so that one network hiccup doesn't empty my Desktop.
+113. As a developer, I want a Data Source Widget that has never loaded successfully to show a clear "not connected" state linking to Settings, so that I know how to fix it.
+114. As a developer, I want webOS to have network access only to my own domain, so that the extension can't reach anything else.
 
 ### Quality and privacy
 
-113. As a developer, I want webOS to work fully offline in v1, so that it is reliable on any network.
-114. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
-115. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
-116. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
+115. As a developer, I want webOS to work fully offline in v1, so that it is reliable on any network.
+116. As a developer, I want all data stored locally on this machine, so that nothing personal leaves my browser.
+117. As a developer, I want Markdown preview output sanitised, so that pasted content can't run scripts on my new tab.
+118. As a developer, I want webOS to keep working after updates that change how data is stored, with my existing data migrated automatically, so that updates never lose my Notes or Todos.
 
 ## Implementation Decisions
 
@@ -197,8 +199,11 @@ Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with
 
 - Apple design principles with webOS's own identity: no Apple fonts, icons or assets, and no copied macOS window controls.
 - Dark mode only.
-- One fixed wallpaper: an original, generated dark mesh gradient, deep indigo/violet into teal, with subtle film grain. It is not user-configurable.
-- Translucent materials (background blur plus saturation) for the Menu Bar, Dock, Widgets, Window and Launcher, with a shared set of material tokens so all surfaces stay consistent.
+- One fixed wallpaper ("Midnight Deep"): an original, generated near-black with a faint blue light falling from the top centre, and subtle film grain. It is not user-configurable.
+- The palette is Midnight Deep: almost black, with only a trace of blue in the light, the glass and a muted blue accent.
+- Translucent materials (background blur) for the Menu Bar, Dock, Widgets, Window and Launcher, with a shared set of material tokens so all surfaces stay consistent. Widgets lie flat on the Desktop; the Window, the Launcher, menus and toasts cast a shadow.
+- The Clock has no surface: its thin type sits straight on the wallpaper. Every other Widget has a Title Bar: its name in small capitals above a hairline.
+- App icons share one look (a dark navy square) and differ only by their symbol.
 - Typography: Inter, bundled with the extension so it works offline and needs no remote font loading, falling back to the system font stack.
 
 ### Architecture: the webOS core
@@ -241,7 +246,9 @@ Every new tab opens on the Desktop: one fixed, dark mesh-gradient wallpaper with
 - The Desktop is a snap grid. Each Widget has sizes S, M and L, defined as grid spans per Widget.
 - Dropping a Widget onto occupied cells pushes the other Widgets to the next free position, so Widgets never overlap.
 - Edit Mode is entered only from the Desktop's right-click menu ("Edit Desktop"). It is left with Esc or the Menu Bar "Done" button.
-- The default layout shows all v1 Widgets.
+- The default layout is the **Stage** layout: the Clock at L (full width, 12 × 3 cells) on top, and Links, Todos and Notes at M (4 × 5 each) in a row beneath it. It shows all v1 Widgets and fills the grid, so in Edit Mode a Widget swaps with one of the same size dropped onto, and other moves need room made first by making a Widget smaller or hiding it.
+- The Desktop's grid is centred and at most 1180 px wide.
+- Schema version 9 moves every saved layout to the Stage layout once. Hidden Widgets stay hidden.
 
 ### Window and Apps
 

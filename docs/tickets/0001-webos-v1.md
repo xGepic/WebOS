@@ -15,7 +15,7 @@ Each ticket is a tracer-bullet vertical slice: core logic, tests through the web
               │      ├─ 10         │
               │      └─ 14         │
               ├─ 07 ───────────────┘
-              └─ 11 (also needs 07)
+              └─ 11 (also needs 07) ─ 15
 ```
 
 After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
@@ -328,13 +328,13 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** done (the Data Source parts are carried to ticket 15)
+**Status:** done (the Data Source parts are carried to ticket 16)
 
-- [x] Export downloads one JSON file containing the full state document. (There are no Data Sources yet, so no tokens or cached payloads to leave out; ticket 15 adds that.)
+- [x] Export downloads one JSON file containing the full state document. (There are no Data Sources yet, so no tokens or cached payloads to leave out; ticket 16 adds that.)
 - [x] Import asks for confirmation, validates the document, migrates older schema versions, and replaces the current state as a whole.
 - [x] Invalid files and files from a newer schema version are rejected with a clear message, and the current state is not touched.
-- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens. Carried to ticket 15: v1 has no Data Sources.
-- [x] Core tests: an export/import round-trip preserves state, invalid and newer-version files are rejected without changes, and older versions are migrated on import. (Tokens and caches being left out is carried to ticket 15.)
+- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens. Carried to ticket 16: v1 has no Data Sources.
+- [x] Core tests: an export/import round-trip preserves state, invalid and newer-version files are rejected without changes, and older versions are migrated on import. (Tokens and caches being left out is carried to ticket 16.)
 
 **Decisions made while building:**
 - The backup file is the state document itself, as indented JSON, named `webos-backup-YYYY-MM-DD.json` after the local date. It downloads through the browser, so no `downloads` permission is needed.
@@ -348,11 +348,37 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 ---
 
+# 15: Stage layout, Midnight Deep and Title Bars
+
+**What to build:** webOS gets a calmer, darker and centred design. A new tab opens on the Stage layout: a very large, thin clock and greeting across the top, and Links, Todos and Notes as three equal Widgets in a row beneath it. Everything uses the Midnight Deep palette, and every Widget except the Clock has a Title Bar with its name. Existing Desktops move to the Stage layout once.
+
+**Blocked by:** 11
+
+**Status:** done
+
+**Prototype:** built inside the app (variants switched in place, the saved layout untouched) and not kept. It went through black-and-white looks, then whole designs with different arrangements (Stage, Rail, Bento, Split), then palettes on Stage. The user picked **Stage** in **Midnight Deep**, with a thin clock and a Title Bar on each Widget (rather than a coloured bar on each Dock icon). This replaces ticket 02's Eclipse wallpaper.
+
+- [x] Midnight Deep replaces Eclipse: the design tokens, the wallpaper (near-black, a faint blue light from the top, film grain) and the App icons, which now share one look and differ by their symbol.
+- [x] The Clock's L size is the full width (12 × 3); M for Links, Todos and Notes is 4 × 5. The default layout is Stage, which fills the grid.
+- [x] The Clock has no surface and a thin time; at L it centres a very large time.
+- [x] Links, Todos and Notes have a Title Bar.
+- [x] The Desktop's grid is centred and at most 1180 px wide.
+- [x] Schema version 9 moves every saved layout to Stage once, keeping hidden Widgets hidden.
+- [x] Core tests: the default layout is Stage and fills the grid; on the full Desktop, Widgets of the same size swap, and a move or resize with no room is refused; a v8 layout moves to Stage once. The Edit Mode tests start from a layout with free cells, since the default no longer has any.
+
+**Decisions made while building:**
+- Widgets lie flat (no shadow). The Window, the Launcher, the Desktop menu and toasts use `.material-raised`, which casts `--raised-shadow`, so they still lift off the Desktop.
+- The Clock never has a surface or a Title Bar, at any size.
+- Link rows are slightly tighter, so ten Links in three Link Groups fit under the Title Bar at 1440 × 900. Longer lists scroll, as before.
+- The production bundle is 514 kB, still just over Angular's 500 kB warning budget; left as it is, as in ticket 13.
+
+---
+
 # v2: tentative, don't start
 
 These depend on the user deciding to build the sleep and training APIs. Spec 0001 lists the open questions, including whether the training plan comes from Strava.
 
-## 15: Data Source settings and Sleep Widget
+## 16: Data Source settings and Sleep Widget
 
 **What to build:** The user adds their Sleep Data Source in Settings (HTTPS URL on their own domain, a bearer token and a maximum age). A Sleep Widget shows last night's sleep immediately from cache and refreshes in the background when the cache is older than the maximum age. The Menu Bar status dot shows whether data is fresh.
 
@@ -369,11 +395,11 @@ These depend on the user deciding to build the sleep and training APIs. Spec 000
 - [ ] Core tests: serving from cache, refetching only past the maximum age, stale on failure, and the aggregate status.
 - [ ] Carried from ticket 14: a backup export leaves out Data Source tokens and cached payloads, and after importing a document that contains Data Sources the user is told to re-enter their tokens. Core tests for both.
 
-## 16: Training Widget
+## 17: Training Widget
 
 **What to build:** A Training Widget shows the next training session from the user's Training Data Source, refreshed on every new tab.
 
-**Blocked by:** 15
+**Blocked by:** 16
 
 **Status:** tentative
 

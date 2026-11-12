@@ -30,7 +30,7 @@ export interface StateDocument {
   layout: LayoutEntry[];
 }
 
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 9;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -59,6 +59,18 @@ const migrations: Record<number, Migration> = {
       { widget: 'notes', size: 'M', column: 8, row: 4, visible: true },
     ],
   }),
+  // The Stage design: every Desktop moves to the Stage layout once. Hidden Widgets stay hidden.
+  8: (document) => {
+    const saved = Array.isArray(document['layout']) ? document['layout'] : [];
+    const hidden = new Set(saved.flatMap((entry) => (isRecord(entry) && entry['visible'] === false ? [entry['widget']] : [])));
+    const stage = [
+      { widget: 'clock', size: 'L', column: 0, row: 0 },
+      { widget: 'links', size: 'M', column: 0, row: 3 },
+      { widget: 'todos', size: 'M', column: 4, row: 3 },
+      { widget: 'notes', size: 'M', column: 8, row: 3 },
+    ];
+    return { ...document, schemaVersion: 9, layout: stage.map((entry) => ({ ...entry, visible: !hidden.has(entry.widget) })) };
+  },
 };
 
 /**

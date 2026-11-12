@@ -22,7 +22,7 @@ import { Toasts } from './toasts';
   host: { role: 'status', 'aria-live': 'polite' },
   template: `
     @if (toasts.toast(); as toast) {
-      <div #pill class="pill material">{{ toast.message }}</div>
+      <div #pill class="pill material material-raised">{{ toast.message }}</div>
     }
   `,
   styles: `

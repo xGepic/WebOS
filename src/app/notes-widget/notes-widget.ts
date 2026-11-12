@@ -16,6 +16,7 @@ import { WindowState } from '../window/window-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'material' },
   template: `
+    <h2 class="title-bar">{{ webos.widgetName('notes') }}</h2>
     @if (webos.widgetNote(); as note) {
       <!-- One control covers the Widget, so a click anywhere opens the Note. -->
       <button type="button" class="open" [attr.aria-label]="'Open “' + note.title + '” in Notes'" (click)="open(note)"></button>
@@ -36,6 +37,10 @@ import { WindowState } from '../window/window-state';
     }
   `,
   styles: `
+    /* The Note's content isn't inset, so neither is the name above it. */
+    .title-bar {
+      padding-inline: 0;
+    }
     :host {
       position: relative;
       display: flex;

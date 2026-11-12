@@ -20,3 +20,10 @@
   border-width: 0 0 1px;
   box-shadow: none;
 }
+
+/* A surface floating above the Desktop (the Window, the Launcher, menus, toasts) casts a shadow. */
+.material.material-raised {
+  box-shadow:
+    inset 0 1px 0 var(--material-highlight),
+    var(--raised-shadow);
+}

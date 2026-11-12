@@ -21,14 +21,15 @@ export const widgets = {
     sizes: {
       S: { columns: 3, rows: 2 },
       M: { columns: 4, rows: 2 },
-      L: { columns: 6, rows: 3 },
+      // The full width of the Desktop, as in the Stage layout.
+      L: { columns: 12, rows: 3 },
     },
   },
   todos: {
     name: 'Todos',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 4 },
+      M: { columns: 4, rows: 5 },
       L: { columns: 4, rows: 6 },
     },
   },
@@ -36,7 +37,7 @@ export const widgets = {
     name: 'Links',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 4 },
+      M: { columns: 4, rows: 5 },
       L: { columns: 6, rows: 5 },
     },
   },
@@ -44,7 +45,7 @@ export const widgets = {
     name: 'Notes',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 4 },
+      M: { columns: 4, rows: 5 },
       L: { columns: 6, rows: 5 },
     },
   },
@@ -72,12 +73,16 @@ export interface LayoutEntry extends Placement {
   visible: boolean;
 }
 
-/** Where each Widget sits on a fresh Desktop. Every Widget is visible. */
+/**
+ * Where each Widget sits on a fresh Desktop: the Stage layout. The Clock spans
+ * the full width at the top, with Links, Todos and Notes in a row beneath it.
+ * Every Widget is visible, and together they fill the grid.
+ */
 export const defaultLayout: readonly LayoutEntry[] = [
-  { widget: 'clock', size: 'M', column: 0, row: 0, visible: true },
-  { widget: 'links', size: 'M', column: 0, row: 2, visible: true },
-  { widget: 'todos', size: 'M', column: 8, row: 0, visible: true },
-  { widget: 'notes', size: 'M', column: 8, row: 4, visible: true },
+  { widget: 'clock', size: 'L', column: 0, row: 0, visible: true },
+  { widget: 'links', size: 'M', column: 0, row: 3, visible: true },
+  { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
+  { widget: 'notes', size: 'M', column: 8, row: 3, visible: true },
 ];
 
 /** The sizes, largest first: a Widget that has to shrink tries them in this order. */

@@ -40,7 +40,7 @@ interface WindowElements {
   template: `
     @if (renderedApp(); as app) {
       <div #backdrop class="backdrop" (click)="close()"></div>
-      <section #frame class="frame material" role="dialog" aria-labelledby="window-title" tabindex="-1">
+      <section #frame class="frame material material-raised" role="dialog" aria-labelledby="window-title" tabindex="-1">
         <header>
           <h2 id="window-title">{{ webos.appName(app) }}</h2>
           <button type="button" class="close" aria-label="Close" (click)="close()">

@@ -34,6 +34,10 @@ _Avoid_: Jiggle mode, customize mode, layout mode
 A glanceable tile that lives on the Desktop and shows information without being opened.
 _Avoid_: Card, panel, tile
 
+**Title Bar**:
+The thin strip across the top of a Widget that shows the Widget's name.
+_Avoid_: Task bar, header
+
 **App**:
 A tool you open from the Dock into the Window for focused work.
 _Avoid_: Program, tool, module

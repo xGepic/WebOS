@@ -1,7 +1,7 @@
 /*
  * webOS design tokens. webOS is dark mode only.
- * Values come from the "Eclipse" variant picked in the ticket 02 prototype
- * (branch prototype/0002-wallpaper).
+ * The palette is "Midnight Deep", picked for ticket 15 (Stage): almost
+ * black, with only a trace of blue in the light, the glass and the accent.
  */
 :root {
   color-scheme: dark;
@@ -10,39 +10,48 @@
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   /* Code and the Notes editor */
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
-  --text-primary: #f5f4fb;
-  --text-secondary: rgba(245, 244, 251, 0.68);
+  --text-primary: #e4e8f5;
+  --text-secondary: rgba(228, 232, 245, 0.48);
 
   /* Tracking is size-specific: tighten large text, keep small text near zero. */
-  --tracking-display: -0.035em;
+  --tracking-display: -0.055em;
   --tracking-title: -0.02em;
   --tracking-caption: 0.005em;
 
   /* Material: the only source of the translucent look. Use the .material class. */
-  --material-blur: 22px;
-  --material-saturation: 140%;
-  --material-tint: rgba(10, 9, 24, 0.6);
-  --material-border: rgba(255, 255, 255, 0.08);
-  --material-highlight: rgba(255, 255, 255, 0.12);
-  --material-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --material-blur: 24px;
+  --material-saturation: 100%;
+  --material-tint: rgba(110, 140, 235, 0.025);
+  --material-border: rgba(150, 175, 250, 0.075);
+  --material-highlight: rgba(180, 200, 255, 0.04);
+  /* Surfaces lie flat on the Desktop; the Window and the Launcher lift off it with their own shadow. */
+  --material-shadow: none;
+  --raised-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.5);
 
   /* Controls on a surface: buttons, fields */
-  --control-fill: rgba(255, 255, 255, 0.07);
-  --control-fill-hover: rgba(255, 255, 255, 0.14);
-  --control-fill-active: rgba(255, 255, 255, 0.22);
-  --accent: #5fd9cb;
-  --on-accent: #07141a;
-  --focus-ring: rgba(110, 230, 216, 0.75);
+  --control-fill: rgba(150, 175, 250, 0.045);
+  --control-fill-hover: rgba(150, 175, 250, 0.09);
+  --control-fill-active: rgba(150, 175, 250, 0.14);
+  --accent: #6f8fdc;
+  --on-accent: #010208;
+  --focus-ring: rgba(111, 143, 220, 0.6);
   /* A control that is switched on, e.g. a Docked Link's Dock button */
-  --selected-fill: rgba(110, 230, 216, 0.18);
+  --selected-fill: rgba(111, 143, 220, 0.1);
   /* The outline of a Widget in Edit Mode, and of where a dragged one will land */
-  --edit-outline: rgba(110, 230, 216, 0.55);
+  --edit-outline: rgba(111, 143, 220, 0.45);
   /* The deeper shadow of a Widget lifted in Edit Mode */
   --lift-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
   --danger: #ff8a8a;
 
   /* Dims the Desktop behind the Window and the Launcher */
-  --scrim: rgba(4, 3, 12, 0.35);
+  --scrim: rgba(0, 1, 5, 0.65);
+
+  /* App icons in the Dock: all Apps share one look and differ by their symbol. */
+  --icon-top: #111933;
+  --icon-bottom: #040814;
+  --icon-glyph: #e4e8f5;
+  --icon-glyph-muted: #52659a;
+  --icon-edge: rgba(150, 175, 250, 0.12);
 
   /* Corner radius */
   --radius-control: 8px;
@@ -50,7 +59,7 @@
   --radius-inline: 4px;
   /* A grouping drawn inside a surface, such as a Link Group in Settings */
   --radius-inset: 12px;
-  --radius-window: 14px;
+  --radius-window: 16px;
   --radius-widget: 18px;
   /* Fully rounded ends, e.g. a toast */
   --radius-pill: 999px;
@@ -60,10 +69,13 @@
   --dock-icon-size: 52px;
   /* Space the Desktop leaves at the bottom for the Dock, including icons magnified by MAX_MAGNIFICATION (dock.ts). */
   --dock-clearance: 104px;
+  /* The Desktop's grid is centred and never wider than this. */
+  --desktop-max-width: 1180px;
 
   /* Wallpaper */
-  --wallpaper-base: #09081a;
-  --grain-opacity: 0.22;
+  --wallpaper-base: #010208;
+  --wallpaper-light: rgba(70, 110, 230, 0.09);
+  --grain-opacity: 0.08;
 }
 
 /* Reduced transparency: frosted becomes solid. */
@@ -71,17 +83,17 @@
   :root {
     --material-blur: 0px;
     --material-saturation: 100%;
-    --material-tint: rgb(20, 19, 36);
+    --material-tint: rgb(9, 11, 22);
   }
 }
 
 /* More contrast: near-solid surfaces with a clearly visible edge. */
 @media (prefers-contrast: more) {
   :root {
-    --material-tint: rgba(10, 9, 24, 0.92);
-    --material-border: rgba(255, 255, 255, 0.4);
-    --text-secondary: rgba(245, 244, 251, 0.85);
-    --control-fill: rgba(255, 255, 255, 0.16);
-    --control-fill-hover: rgba(255, 255, 255, 0.26);
+    --material-tint: rgba(4, 6, 16, 0.92);
+    --material-border: rgba(200, 215, 255, 0.4);
+    --text-secondary: rgba(228, 232, 245, 0.85);
+    --control-fill: rgba(200, 215, 255, 0.16);
+    --control-fill-hover: rgba(200, 215, 255, 0.26);
   }
 }

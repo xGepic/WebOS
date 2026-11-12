@@ -3,8 +3,33 @@ import { createMemoryStorage, createTestClock } from './testing';
 
 const clock = () => createTestClock(new Date(2026, 10, 12, 9, 0));
 
-async function webosWith(storage = createMemoryStorage()) {
+async function webosWith(storage = roomyStorage()) {
   return createWebOS({ storage, clock: clock() });
+}
+
+/**
+ * The default (Stage) layout fills the whole grid, so most tests start from
+ * this one instead, which leaves room to move into:
+ * Clock M (4×2) at 0,0; Links M (4×5) at 0,2; Todos M (4×5) at 8,0; Notes S (3×3) at 8,5.
+ * Free: columns 4–7 on every row, column 11 on rows 5–7, and row 7 under Links.
+ */
+function roomyStorage() {
+  return createMemoryStorage({
+    schemaVersion: 9,
+    profile: { name: '' },
+    apps: {},
+    linkGroups: [],
+    dockedLinkIds: [],
+    todos: [],
+    notes: [],
+    pinnedNoteId: null,
+    layout: [
+      { widget: 'clock', size: 'M', column: 0, row: 0, visible: true },
+      { widget: 'links', size: 'M', column: 0, row: 2, visible: true },
+      { widget: 'todos', size: 'M', column: 8, row: 0, visible: true },
+      { widget: 'notes', size: 'S', column: 8, row: 5, visible: true },
+    ],
+  });
 }
 
 /** Each visible Widget as "size@column,row", the way a test reads a layout. */
@@ -30,15 +55,13 @@ function expectValidLayout(webos: WebOS) {
   expect([...all].sort()).toEqual(Object.keys(webos.desktop.widgets).sort());
 }
 
-// The default layout: Clock M (4×2) at 0,0; Links M (4×4) at 0,2; Todos M (4×4) at 8,0; Notes M (4×4) at 8,4.
-
 describe('moving a Widget', () => {
   it('moves it to free cells, leaving the others where they are', async () => {
     const webos = await webosWith();
 
     await webos.desktop.move('clock', 4, 3);
 
-    expect(where(webos)).toEqual({ clock: 'M@4,3', links: 'M@0,2', todos: 'M@8,0', notes: 'M@8,4' });
+    expect(where(webos)).toEqual({ clock: 'M@4,3', links: 'M@0,2', todos: 'M@8,0', notes: 'S@8,5' });
   });
 
   it('pushes a Widget it lands on to the next free position', async () => {
@@ -47,7 +70,7 @@ describe('moving a Widget', () => {
     await webos.desktop.move('clock', 0, 2);
 
     // Links no longer fits at 0,2; reading on from there, the first place it fits is 4,2.
-    expect(where(webos)).toEqual({ clock: 'M@0,2', links: 'M@4,2', todos: 'M@8,0', notes: 'M@8,4' });
+    expect(where(webos)).toEqual({ clock: 'M@0,2', links: 'M@4,2', todos: 'M@8,0', notes: 'S@8,5' });
     expectValidLayout(webos);
   });
 
@@ -61,14 +84,22 @@ describe('moving a Widget', () => {
   });
 
   it('is refused when a Widget it would push has no room anywhere', async () => {
-    const webos = await webosWith();
-    await webos.desktop.resize('links', 'L');
+    const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // Links at L (6 × 5) over Todos and Notes: Todos finds room, then Notes fits nowhere.
-    expect(await webos.desktop.move('links', 6, 3)).toBe(false);
+    // On the full Stage Desktop, Links one column right covers Todos, which then fits nowhere.
+    expect(await webos.desktop.move('links', 1, 3)).toBe(false);
 
     expect(where(webos)).toEqual(before);
+  });
+
+  it('swaps two Widgets of the same size on the full Stage Desktop', async () => {
+    const webos = await webosWith(createMemoryStorage());
+
+    expect(await webos.desktop.move('todos', 0, 3)).toBe(true);
+
+    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@0,3', links: 'M@4,3', notes: 'M@8,3' });
+    expectValidLayout(webos);
   });
 
   it('says it was applied when it was', async () => {
@@ -81,10 +112,10 @@ describe('moving a Widget', () => {
   it('wraps around to the top when nothing is free further on', async () => {
     const webos = await webosWith();
 
-    await webos.desktop.move('links', 8, 4);
+    await webos.desktop.move('links', 8, 3);
 
-    // Notes is pushed; nothing after 8,4 fits a 4 × 4 Widget, so it wraps and lands at 4,0.
-    expect(where(webos)).toEqual({ clock: 'M@0,0', links: 'M@8,4', todos: 'M@8,0', notes: 'M@4,0' });
+    // Todos is pushed to 4,1. Then Notes: nothing after 8,5 fits a 3 × 3 Widget, so it wraps and lands at 8,0.
+    expect(where(webos)).toEqual({ clock: 'M@0,0', links: 'M@8,3', todos: 'M@4,1', notes: 'S@8,0' });
     expectValidLayout(webos);
   });
 });
@@ -95,7 +126,8 @@ describe('resizing a Widget', () => {
 
     await webos.desktop.resize('clock', 'L');
 
-    expect(where(webos)).toEqual({ clock: 'L@0,0', links: 'M@0,3', todos: 'M@8,0', notes: 'M@8,4' });
+    // The full-width Clock covers Todos and Links; in reading order they move to the first free places under it.
+    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@0,3', links: 'M@4,3', notes: 'S@8,5' });
     expectValidLayout(webos);
   });
 
@@ -110,12 +142,11 @@ describe('resizing a Widget', () => {
   });
 
   it('is refused when a Widget it would push has no room anywhere, leaving every size as chosen', async () => {
-    const webos = await webosWith();
-    await webos.desktop.resize('links', 'L');
+    const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // Notes at L would cover Todos, and Todos (4 × 4) fits nowhere else.
-    expect(await webos.desktop.resize('notes', 'L')).toBe(false);
+    // On the full Stage Desktop, Links at L (6 × 5) would cover Todos, which fits nowhere else.
+    expect(await webos.desktop.resize('links', 'L')).toBe(false);
 
     expect(where(webos)).toEqual(before);
   });
@@ -130,19 +161,19 @@ describe('hiding and showing Widgets', () => {
     expect(webos.desktop.hidden()).toEqual(['notes']);
 
     expect(await webos.desktop.show('notes')).toBe(true);
-    expect(where(webos).notes).toBe('M@8,4');
+    expect(where(webos).notes).toBe('S@8,5');
     expect(webos.desktop.hidden()).toEqual([]);
   });
 
   it('shows a Widget at the next free position when its place was taken meanwhile', async () => {
     const webos = await webosWith();
     await webos.desktop.hide('notes');
-    await webos.desktop.move('links', 8, 4);
+    await webos.desktop.move('links', 8, 3);
 
     await webos.desktop.show('notes');
 
-    // Reading on from 8,4 wraps to the top, where 4,0 is the first place a 4 × 4 Widget fits.
-    expect(where(webos).notes).toBe('M@4,0');
+    // Links took 8,5; reading on from there wraps to the top, where 8,0 is the first place a 3 × 3 Widget fits.
+    expect(where(webos).notes).toBe('S@8,0');
     expectValidLayout(webos);
   });
 });
@@ -157,7 +188,7 @@ describe('one instance of each Widget', () => {
   });
 
   it('keeps one instance when the stored layout lists a Widget twice', async () => {
-    const storage = createMemoryStorage();
+    const storage = roomyStorage();
     const first = await webosWith(storage);
     await first.desktop.move('clock', 4, 3);
     const stored = (await storage.read()) as { layout: unknown[] };
@@ -194,7 +225,7 @@ describe('one instance of each Widget', () => {
 
 describe('the saved layout', () => {
   it('follows changes made in another open tab', async () => {
-    const storage = createMemoryStorage();
+    const storage = roomyStorage();
     const webos = await webosWith(storage);
     const otherTab = await webosWith(storage.openTab());
 
@@ -227,7 +258,7 @@ describe('the saved layout', () => {
   });
 
   it('is the same in the next tab', async () => {
-    const storage = createMemoryStorage();
+    const storage = roomyStorage();
     const webos = await webosWith(storage);
     await webos.desktop.move('clock', 0, 2);
     await webos.desktop.resize('todos', 'S');

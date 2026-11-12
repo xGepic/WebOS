@@ -95,7 +95,7 @@ function isPrintable(event: KeyboardEvent): boolean {
   template: `
     @if (state.isOpen()) {
       <div #backdrop class="backdrop" (pointerdown)="close({ restoreFocus: true })"></div>
-      <div #sheet class="sheet material" role="dialog" aria-label="Launcher" (mousedown)="keepFocusInField($event)">
+      <div #sheet class="sheet material material-raised" role="dialog" aria-label="Launcher" (mousedown)="keepFocusInField($event)">
         <div class="field">
           <svg class="search-icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
             <circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.6" />

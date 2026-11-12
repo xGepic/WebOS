@@ -184,7 +184,7 @@ describe('state document', () => {
     expect(webos.notes.forWidget()?.title).toBe('Newer');
   });
 
-  it('keeps everything when migrating a v7 document (ticket 09 and 10 builds) forward, with the layout those builds had', async () => {
+  it('keeps everything when migrating a v7 document (ticket 09 and 10 builds) forward, ending on the Stage layout', async () => {
     const storage = createMemoryStorage({
       schemaVersion: 7,
       profile: { name: 'Stefan' },
@@ -203,19 +203,54 @@ describe('state document', () => {
     expect(webos.notes.forWidget()?.pinned).toBe(true);
     expect(webos.devUtilities.activeTab()).toBe('jwt');
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
-      'clock M@0,0',
-      'todos M@8,0',
-      'links M@0,2',
-      'notes M@8,4',
+      'clock L@0,0',
+      'links M@0,3',
+      'todos M@4,3',
+      'notes M@8,3',
     ]);
     expect(webos.desktop.hidden()).toEqual([]);
+  });
+
+  it('moves a v8 layout (ticket 11 to 14 builds) to the Stage layout once, keeping hidden Widgets hidden', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 8,
+      profile: { name: 'Stefan' },
+      apps: {},
+      linkGroups: [],
+      dockedLinkIds: [],
+      todos: [{ id: 't', text: 'Ship it', createdAt: at(8, 0).getTime(), completedAt: null }],
+      notes: [],
+      pinnedNoteId: null,
+      layout: [
+        { widget: 'clock', size: 'S', column: 9, row: 6, visible: true },
+        { widget: 'links', size: 'L', column: 0, row: 0, visible: true },
+        { widget: 'todos', size: 'M', column: 6, row: 0, visible: true },
+        { widget: 'notes', size: 'M', column: 8, row: 4, visible: false },
+      ],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
+      'clock L@0,0',
+      'links M@0,3',
+      'todos M@4,3',
+    ]);
+    expect(webos.desktop.hidden()).toEqual(['notes']);
+    expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
+    expect(await storage.read()).toMatchObject({ schemaVersion: 9 });
+
+    // Once only: a layout changed after the migration stays as it is in the next tab.
+    await webos.desktop.resize('clock', 'M');
+    const nextTab = await createWebOS({ storage, clock: clock() });
+    expect(nextTab.desktop.layout()[0]).toMatchObject({ widget: 'clock', size: 'M' });
   });
 
   it.each([
     ['from a newer schema version', { schemaVersion: 99 }],
     ['that is not an object', 'garbage'],
     ['with a non-numeric schema version', { schemaVersion: 'one' }],
-    ['at the current version but missing its profile', { schemaVersion: 8, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [] }],
+    ['at the current version but missing its profile', { schemaVersion: 9, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [] }],
   ])('refuses a document %s and leaves it untouched', async (_, stored) => {
     const storage = createMemoryStorage(stored);
 
