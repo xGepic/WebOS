@@ -17,6 +17,9 @@ export class WebOSCore {
   /** Why the core couldn't start, if it couldn't. */
   readonly startupError = signal<string | undefined>(undefined);
 
+  readonly apps = this.read((core) => core.apps);
+  readonly grid = this.read((core) => core.desktop.grid);
+  readonly layout = this.read((core) => core.desktop.layout());
   readonly greeting = this.read((core) => core.profile.greeting());
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());

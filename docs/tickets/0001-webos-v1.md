@@ -67,13 +67,13 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The core Desktop module defines the grid, the Widget catalog (Clock for now) with S/M/L sizes as grid spans, and a default layout with every Widget visible.
-- [ ] The Desktop fills the viewport with no page scrolling and renders Widgets at their layout positions.
-- [ ] The Menu Bar shows the webOS mark on the left and the 12-hour time on the right, using the shared material.
-- [ ] The Dock shows the three App icons (original designs) with spring magnification on hover, and no magnification under reduced motion.
-- [ ] Core tests: the default layout contains each Widget exactly once and nothing overlaps.
+- [x] The core Desktop module defines the grid, the Widget catalog (Clock for now) with S/M/L sizes as grid spans, and a default layout with every Widget visible.
+- [x] The Desktop fills the viewport with no page scrolling and renders Widgets at their layout positions.
+- [x] The Menu Bar shows the webOS mark on the left and the 12-hour time on the right, using the shared material.
+- [x] The Dock shows the three App icons (original designs) with spring magnification on hover, and no magnification under reduced motion.
+- [x] Core tests: the default layout contains each Widget exactly once and nothing overlaps.
 
 ---
 

@@ -1,7 +1,8 @@
 /*
  * The translucent material shared by every webOS surface: Menu Bar, Dock,
  * Widgets, Window and Launcher. Surfaces add `class="material"` and set only
- * their own corner radius from the --radius-* tokens.
+ * their own corner radius from the --radius-* tokens. Variants for particular
+ * surface shapes live in this file too.
  */
 .material {
   background: var(--material-tint);
@@ -12,4 +13,10 @@
   box-shadow:
     inset 0 1px 0 var(--material-highlight),
     var(--material-shadow);
+}
+
+/* A full-width bar (the Menu Bar): only its bottom edge shows, and it casts no shadow. */
+.material.material-bar {
+  border-width: 0 0 1px;
+  box-shadow: none;
 }

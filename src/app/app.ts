@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ClockWidget } from './clock-widget/clock-widget';
+import { Desktop } from './desktop/desktop';
+import { Dock } from './dock/dock';
+import { MenuBar } from './menu-bar/menu-bar';
 import { WebOSCore } from './webos-core';
 
 @Component({
   selector: 'webos-root',
-  imports: [ClockWidget],
+  imports: [MenuBar, Desktop, Dock],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (webos.startupError(); as error) {
@@ -14,7 +16,9 @@ import { WebOSCore } from './webos-core';
         <p>Your data has been left untouched.</p>
       </div>
     } @else {
-      <webos-clock-widget />
+      <webos-menu-bar />
+      <webos-desktop />
+      <webos-dock />
     }
   `,
   styles: `

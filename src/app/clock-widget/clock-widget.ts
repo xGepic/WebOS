@@ -12,11 +12,14 @@ import { WebOSCore } from '../webos-core';
     <p class="date">{{ webos.date() }}</p>
   `,
   styles: `
+    /* Fills its grid placement; the time scales with the space the Widget's size gives it. */
     :host {
+      container-type: size;
       display: flex;
       flex-direction: column;
-      min-width: 20rem;
-      padding: 1.25rem 1.375rem;
+      justify-content: center;
+      overflow: hidden;
+      padding: 1rem 1.375rem;
       border-radius: var(--radius-widget);
     }
     p {
@@ -30,7 +33,7 @@ import { WebOSCore } from '../webos-core';
     }
     .time {
       margin-top: 0.25rem;
-      font-size: 4rem;
+      font-size: clamp(2rem, min(36cqh, 18cqi), 6rem);
       font-weight: 650;
       line-height: 1.02;
       letter-spacing: var(--tracking-display);

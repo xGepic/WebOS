@@ -28,6 +28,12 @@
   --radius-window: 14px;
   --radius-widget: 18px;
 
+  /* Shell metrics */
+  --menu-bar-height: 30px;
+  --dock-icon-size: 52px;
+  /* Space the Desktop leaves at the bottom for the Dock, including icons magnified by MAX_MAGNIFICATION (dock.ts). */
+  --dock-clearance: 104px;
+
   /* Wallpaper */
   --wallpaper-base: #09081a;
   --grain-opacity: 0.22;
