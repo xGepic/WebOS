@@ -2,7 +2,7 @@ import { apps } from './apps';
 import * as base64 from './base64';
 import * as desktop from './desktop';
 import * as devUtilities from './dev-utilities';
-import type { Clock, Storage } from './edges';
+import type { BrowserLookup, Clock, Storage } from './edges';
 import { formatDate, formatTime } from './format';
 import { greetingFor } from './greeting';
 import * as json from './json';
@@ -16,12 +16,12 @@ import { loadState, toCurrentDocument, type StateDocument } from './state';
 
 export type { AppId } from './apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop';
-export type { Clock, Storage } from './edges';
+export type { BrowserLookup, BrowserPage, Clock, Storage, VisitedPage } from './edges';
 export type { Base64Result } from './base64';
 export type { DevUtilitiesTab } from './dev-utilities';
 export type { JsonError, JsonResult } from './json';
 export type { JwtResult, JwtTime, JwtValidity } from './jwt';
-export type { LauncherResult } from './launcher';
+export type { ActionOutcome, ActionResult, LauncherResult } from './launcher';
 export type { Link, LinkGroup, LinkInput } from './links';
 export type { ListedNote, Note } from './notes';
 export type { TimestampResult } from './timestamp';
@@ -31,6 +31,8 @@ export { StateDocumentError } from './state';
 export interface WebOSEdges {
   storage: Storage;
   clock: Clock;
+  /** The browser's bookmarks and history, for the Launcher. Without it, the Launcher finds none. */
+  browser?: BrowserLookup;
 }
 
 export interface WebOS {
@@ -178,10 +180,13 @@ export interface WebOS {
   };
   readonly launcher: {
     /**
-     * What the Launcher finds for `query`, best first: Apps, then Links, then
-     * always a Brave search for the query last.
+     * What the Launcher finds for `query`, best first: Apps, Links, Todos and
+     * Notes, a few bookmarks, a few history entries, and always a Brave search
+     * for the query last.
      */
-    search(query: string): readonly launcher.LauncherResult[];
+    search(query: string): Promise<readonly launcher.LauncherResult[]>;
+    /** Runs a quick action the Launcher found, and says what it did. A suggestion still to be finished does nothing. */
+    run(action: launcher.ActionResult): Promise<launcher.ActionOutcome | undefined>;
   };
   readonly clock: {
     /** The current time in 12-hour format, e.g. "9:05 AM". */
@@ -203,7 +208,7 @@ export interface WebOS {
  * to be cleared are cleared now. Rejects with a `StateDocumentError` if the stored
  * state can't be used, without touching it.
  */
-export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS> {
+export async function createWebOS({ storage, clock, browser }: WebOSEdges): Promise<WebOS> {
   /** A document with its layout made safe to use; see `desktop.normalizeLayout`. */
   const withSafeLayout = (document: StateDocument): StateDocument => ({ ...document, layout: desktop.normalizeLayout(document.layout) });
   let state = withSafeLayout(await loadState(storage));
@@ -273,17 +278,27 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
   const commitTodos = (change: (list: readonly todos.Todo[]) => todos.Todo[]) =>
     commit({ ...state, todos: change(state.todos) });
 
+  /** Adds a Todo at the end of the list. Resolves to its id, or undefined if the text is blank. */
+  const addTodo = async (text: string) => {
+    if (!text.trim()) return undefined;
+    const id = crypto.randomUUID();
+    await commitTodos((list) => todos.addTodo(list, { id, text, createdAt: clock.now().getTime() }));
+    return id;
+  };
+
+  /** Creates a Note with `body` and selects it. Resolves to its id. */
+  const createNote = async (body = '') => {
+    const id = crypto.randomUUID();
+    await commitSelection(id, { ...state, notes: notes.createNote(state.notes, { id, body }, clock.now().getTime()) });
+    return id;
+  };
+
   return {
     apps,
     todos: {
       open: () => todos.openTodos(state.todos),
       completed: () => todos.completedTodos(state.todos),
-      async add(text) {
-        if (!text.trim()) return undefined;
-        const id = crypto.randomUUID();
-        await commitTodos((list) => todos.addTodo(list, { id, text, createdAt: clock.now().getTime() }));
-        return id;
-      },
+      add: addTodo,
       complete: (id) => commitTodos((list) => todos.setCompleted(list, id, clock.now().getTime())),
       uncomplete: (id) => commitTodos((list) => todos.setCompleted(list, id, null)),
       editText: (id, text) => commitTodos((list) => todos.editText(list, id, text)),
@@ -292,11 +307,7 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
     },
     notes: {
       list: () => notes.listNotes(state, clock.now()),
-      async create(body = '') {
-        const id = crypto.randomUUID();
-        await commitSelection(id, { ...state, notes: notes.createNote(state.notes, { id, body }, clock.now().getTime()) });
-        return id;
-      },
+      create: createNote,
       edit: (id, body) => commitNotes((list) => notes.editNote(list, id, body, clock.now().getTime())),
       delete: (id) => commitNotes((list) => notes.deleteNote(list, id)),
       selected: () => notes.listedNote(state, shownNoteId, clock.now()),
@@ -363,7 +374,36 @@ export async function createWebOS({ storage, clock }: WebOSEdges): Promise<WebOS
       show: (widget) => commitLayout((entries) => desktop.showWidget(entries, widget)),
     },
     launcher: {
-      search: (query) => launcher.search(query, state.linkGroups),
+      async search(query) {
+        const typed = query.trim();
+        // The browser's pages are a bonus: if it can't look them up, the Launcher still finds everything else.
+        const lookUp = <T>(find: (browser: BrowserLookup) => Promise<T[]>) =>
+          typed && browser ? find(browser).catch(() => []) : Promise.resolve([]);
+        const [bookmarks, history] = await Promise.all([
+          lookUp((browser) => browser.bookmarks(typed)),
+          lookUp((browser) => browser.history(typed)),
+        ]);
+        return launcher.search(query, {
+          linkGroups: state.linkGroups,
+          todos: todos.openTodos(state.todos),
+          notes: notes.listNotes(state, clock.now()),
+          bookmarks,
+          history,
+        });
+      },
+      async run(action) {
+        if (action.queryToFill !== undefined) return undefined;
+        switch (action.action) {
+          case 'new-todo': {
+            const todoId = await addTodo(action.text);
+            return todoId && { kind: 'todo-added', todoId };
+          }
+          case 'new-note':
+            return { kind: 'note-created', noteId: await createNote(action.text) };
+          case 'uuid':
+            return { kind: 'copy', text: devUtilities.uuids(1)[0] };
+        }
+      },
     },
     clock: {
       time: () => formatTime(clock.now()),

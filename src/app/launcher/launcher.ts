@@ -8,24 +8,47 @@ import {
   effect,
   inject,
   linkedSignal,
+  signal,
   untracked,
   viewChild,
 } from '@angular/core';
-import type { LauncherResult } from '../../core';
+import type { ActionResult, AppId, LauncherResult } from '../../core';
 import { openInBackgroundTab, openInThisTab } from '../../edges/tabs';
 import { springTo } from '../../motion/springs';
+import { DesktopEditor } from '../desktop/desktop-editor';
 import { AppIcon } from '../dock/app-icon';
 import { LinkIcon } from '../links-widget/link-icon';
+import { Toasts } from '../toast/toasts';
+import { TodoHighlight } from '../todos-widget/todo-highlight';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 import { LauncherState } from './launcher-state';
 
 /** The label each kind of result shows, so it's clear what choosing it does. */
 const KIND_LABELS: Record<LauncherResult['kind'], string> = {
+  action: 'Action',
   app: 'App',
   link: 'Link',
+  todo: 'Todo',
+  note: 'Note',
+  bookmark: 'Bookmark',
+  history: 'History',
   web: 'Web',
 };
+
+/** The secondary text beside a result's title: where a page leads, or when a Note was edited. */
+function detailOf(result: LauncherResult): string | undefined {
+  switch (result.kind) {
+    case 'link':
+    case 'bookmark':
+    case 'history':
+      return result.url;
+    case 'note':
+      return result.detail;
+    default:
+      return undefined;
+  }
+}
 
 /** Input types that take typed text; the others (checkboxes, buttons…) don't. */
 const TEXT_FIELDS =
@@ -52,15 +75,17 @@ function isPrintable(event: KeyboardEvent): boolean {
 }
 
 /**
- * The Launcher: a search field over the Desktop that finds Apps and Links as
- * you type, and always offers a Brave search last.
+ * The Launcher: a search field over the Desktop that finds Apps, Links, Todos,
+ * Notes, bookmarks and history as you type, runs quick actions ("new todo …",
+ * "new note …", "uuid"), and always offers a Brave search last.
  *
  * It opens with ⌘/Ctrl+K, the Menu Bar button, or by typing a character while
  * no text field has focus (that character starts the query). It's driven
  * from the keyboard: the arrow keys move the selection, Enter chooses,
  * ⌘/Ctrl+Enter opens a Link or the web search in a background tab, and Esc or
  * a click outside closes it. An App opens in the Window; a Link or the web
- * search opens in this tab.
+ * search opens in this tab. A Note opens in the Notes App, and a Todo is
+ * highlighted on the Todos Widget.
  */
 @Component({
   selector: 'webos-launcher',
@@ -81,12 +106,12 @@ function isPrintable(event: KeyboardEvent): boolean {
             class="query"
             type="text"
             role="combobox"
-            aria-label="Search Apps, Links and the web"
+            aria-label="Search webOS, your bookmarks and history, and the web"
             aria-autocomplete="list"
             aria-controls="launcher-results"
             [attr.aria-expanded]="results().length > 0"
             [attr.aria-activedescendant]="selected() ? 'launcher-result-' + selectedIndex() : null"
-            placeholder="Search Apps, Links and the web"
+            placeholder="Search, or type “new todo”, “new note” or “uuid”"
             autocomplete="off"
             spellcheck="false"
             [value]="state.query()"
@@ -115,6 +140,29 @@ function isPrintable(event: KeyboardEvent): boolean {
                     @case ('link') {
                       <webos-link-icon class="link-icon" [link]="result" />
                     }
+                    @case ('bookmark') {
+                      <webos-link-icon class="link-icon" [link]="result" />
+                    }
+                    @case ('history') {
+                      <webos-link-icon class="link-icon" [link]="result" />
+                    }
+                    @case ('action') {
+                      <!-- A spark: something happens -->
+                      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                        <path d="M9 1.5L3.5 9H8l-1 5.5L12.5 7H8z" fill="currentColor" />
+                      </svg>
+                    }
+                    @case ('todo') {
+                      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+                      </svg>
+                    }
+                    @case ('note') {
+                      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                        <path d="M4 2h5.5L12 4.5V14H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                        <path d="M6 8h4M6 10.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+                      </svg>
+                    }
                     @case ('web') {
                       <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
                         <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4" />
@@ -125,8 +173,8 @@ function isPrintable(event: KeyboardEvent): boolean {
                 </span>
                 <span class="text">
                   <span class="title">{{ result.title }}</span>
-                  @if (result.kind === 'link') {
-                    <span class="detail">{{ result.url }}</span>
+                  @if (detailOf(result); as detail) {
+                    <span class="detail">{{ detail }}</span>
                   }
                 </span>
                 <span class="kind">{{ kindLabels[result.kind] }}</span>
@@ -134,7 +182,7 @@ function isPrintable(event: KeyboardEvent): boolean {
             }
           </ul>
         } @else {
-          <p class="hint launcher-hint">Type to find an App or a Link, or to search the web.</p>
+          <p class="hint launcher-hint">Find Apps, Links, Todos, Notes, bookmarks and history, or search the web.</p>
         }
       </div>
     }
@@ -258,13 +306,23 @@ export class Launcher {
   protected readonly state = inject(LauncherState);
   private readonly webos = inject(WebOSCore);
   private readonly window = inject(WindowState);
+  private readonly editor = inject(DesktopEditor);
+  private readonly todoHighlight = inject(TodoHighlight);
+  private readonly toasts = inject(Toasts);
   private readonly injector = inject(Injector);
   private readonly input = viewChild<ElementRef<HTMLInputElement>>('input');
   private readonly sheet = viewChild<ElementRef<HTMLElement>>('sheet');
   private readonly backdrop = viewChild<ElementRef<HTMLElement>>('backdrop');
 
   protected readonly kindLabels = KIND_LABELS;
-  protected readonly results = computed(() => this.webos.launcherResults(this.state.query()));
+  protected readonly detailOf = detailOf;
+  /** What the Launcher found for the query in `resultsFor`. Searching is async: bookmarks and history come from the browser. */
+  protected readonly results = signal<readonly LauncherResult[]>([]);
+  private readonly resultsFor = signal('');
+  /** Bumped on every search, so a slower, older search never replaces a newer one's results. */
+  private searches = 0;
+  /** Enter pressed before the results for `query` arrived: chosen once they do, unless more is typed first. */
+  private pendingChoice: { query: string; inBackground: boolean } | undefined;
   /** Where the arrow keys or the pointer put the selection. Typing selects the first result again. */
   protected readonly chosenIndex = linkedSignal({ source: this.state.query, computation: () => 0 });
   /** The selected result's place in the list, kept on it when another tab's change shortens the list. */
@@ -274,6 +332,27 @@ export class Launcher {
   private focusBefore: HTMLElement | undefined;
 
   constructor() {
+    // Search as the query changes, and again when what can be found changes.
+    effect(() => {
+      const query = this.state.query();
+      const search = ++this.searches;
+      if (!this.state.isOpen()) {
+        this.pendingChoice = undefined;
+        this.results.set([]);
+        this.resultsFor.set('');
+        return;
+      }
+      this.webos.searchLauncher(query).then((results) => {
+        if (search !== this.searches) return;
+        this.results.set(results);
+        this.resultsFor.set(query);
+        const pending = this.pendingChoice;
+        if (pending?.query !== query) return;
+        this.pendingChoice = undefined;
+        const selected = this.selected();
+        if (selected) this.choose(selected, pending.inBackground);
+      });
+    });
     // Keep the selected result in view as the arrow keys move through a long list.
     effect(() => {
       const index = this.selectedIndex();
@@ -326,8 +405,11 @@ export class Launcher {
         break;
       case 'Enter': {
         event.preventDefault();
+        const inBackground = event.metaKey || event.ctrlKey;
         const result = this.selected();
-        if (result) this.choose(result, event.metaKey || event.ctrlKey);
+        // Typed faster than the search: choose from what this query finds, not the last one.
+        if (this.resultsFor() !== this.state.query()) this.pendingChoice = { query: this.state.query(), inBackground };
+        else if (result) this.choose(result, inBackground);
         break;
       }
       case 'Escape':
@@ -344,20 +426,96 @@ export class Launcher {
   }
 
   /**
-   * Does what a result is for: an App opens in the Window; a Link or the web
-   * search opens in this tab, or in a background tab when `inBackground`.
+   * Does what a result is for. An action runs; an App opens in the Window; a
+   * Note opens in the Notes App; a Todo is highlighted on the Todos Widget. A
+   * Link, bookmark, history entry or the web search opens in this tab, or in a
+   * background tab when `inBackground`.
    */
   protected choose(result: LauncherResult, inBackground: boolean): void {
-    if (result.kind === 'app') {
-      // A Window that opens takes focus itself; one already showing this App gets it back.
-      this.close({ restoreFocus: this.window.app() === result.app });
-      this.window.open(result.app);
-    } else if (inBackground) {
-      this.close({ restoreFocus: true });
-      openInBackgroundTab(result.url).catch((error) => console.error('webOS could not open a tab', error));
-    } else {
-      this.close();
-      openInThisTab(result.url);
+    switch (result.kind) {
+      case 'action':
+        this.run(result);
+        break;
+      case 'app':
+        this.openApp(result.app);
+        break;
+      case 'note':
+        this.openNote(result.noteId);
+        break;
+      case 'todo':
+        this.showTodo(result.todoId);
+        break;
+      default:
+        if (inBackground) {
+          this.close({ restoreFocus: true });
+          openInBackgroundTab(result.url).catch((error) => console.error('webOS could not open a tab', error));
+        } else {
+          this.close();
+          openInThisTab(result.url);
+        }
+    }
+  }
+
+  /** Opens the Notes App on a Note, once it is selected, so the Window never shows the one before. */
+  private async openNote(noteId: string): Promise<void> {
+    this.close({ restoreFocus: this.window.app() === 'notes' });
+    await this.webos.send((core) => core.notes.select(noteId));
+    this.window.open('notes');
+  }
+
+  private openApp(app: AppId): void {
+    // A Window that opens takes focus itself; one already showing this App gets it back.
+    this.close({ restoreFocus: this.window.app() === app });
+    this.window.open(app);
+  }
+
+  /** Brings the Todos Widget into view, shown if it was hidden, with the Todo highlighted. */
+  private async showTodo(todoId: string): Promise<void> {
+    this.close();
+    this.window.close();
+    this.editor.exit();
+    if (this.webos.hiddenWidgets()?.includes('todos')) {
+      const shown = await this.webos.send((core) => core.desktop.show('todos'));
+      if (!shown) return this.toasts.show('No room on the Desktop to show the Todos Widget');
+    }
+    this.todoHighlight.highlight(todoId);
+  }
+
+  /**
+   * Runs an action, or fills in a command still missing its text so it can be
+   * typed. The Launcher closes first, so a second Enter can't run it again.
+   */
+  private async run(action: ActionResult): Promise<void> {
+    if (action.queryToFill !== undefined) {
+      this.state.setQuery(action.queryToFill);
+      afterNextRender(
+        () => {
+          const input = this.input()?.nativeElement;
+          input?.setSelectionRange(input.value.length, input.value.length);
+        },
+        { injector: this.injector },
+      );
+      return;
+    }
+    // A new Note opens in the Window, which takes focus; anything else gives focus back.
+    this.close({ restoreFocus: action.action !== 'new-note' || this.window.app() === 'notes' });
+    const outcome = await this.webos.send((core) => core.launcher.run(action));
+    switch (outcome?.kind) {
+      case 'todo-added':
+        this.toasts.show(`Added “${action.text}” to Todos`);
+        break;
+      case 'note-created':
+        this.window.open('notes');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(outcome.text).then(
+          () => this.toasts.show('UUID copied'),
+          (error) => {
+            console.error('webOS could not copy to the clipboard', error);
+            this.toasts.show('Couldn’t copy the UUID');
+          },
+        );
+        break;
     }
   }
 
@@ -366,7 +524,7 @@ export class Launcher {
     if (event.target !== this.input()?.nativeElement) event.preventDefault();
   }
 
-  /** A middle-click opens a Link or the web search in a background tab, as it would on a link. */
+  /** A middle-click opens a Link, bookmark, history entry or the web search in a background tab, as it would on a link. */
   protected chooseWithMiddleButton(result: LauncherResult, event: MouseEvent): void {
     if (event.button !== 1) return;
     event.preventDefault();

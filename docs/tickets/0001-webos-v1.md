@@ -297,14 +297,28 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 12, 07, 08
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Result kind order becomes: matching actions, Apps, Links, Todos and Notes, bookmarks, history, then web search.
-- [ ] Notes rank by recency within equal match quality. Choosing a Note opens it in the Notes App.
-- [ ] Choosing a Todo shows the Todos Widget with that Todo highlighted.
-- [ ] Bookmarks and history come through an injected browser-lookup edge (real `bookmarks`/`history` APIs in production, a stub in tests) and are capped to a few results each.
-- [ ] "new todo <text>" adds a Todo. "new note <text>" creates a Note starting with that text and opens it. "uuid" copies a v4 UUID to the clipboard and shows a brief confirmation.
-- [ ] Core tests: the full kind order, the bookmark/history caps, recency tie-breaking, and each action's effect on state.
+- [x] Result kind order becomes: matching actions, Apps, Links, Todos and Notes, bookmarks, history, then web search.
+- [x] Notes rank by recency within equal match quality. Choosing a Note opens it in the Notes App.
+- [x] Choosing a Todo shows the Todos Widget with that Todo highlighted.
+- [x] Bookmarks and history come through an injected browser-lookup edge (real `bookmarks`/`history` APIs in production, a stub in tests) and are capped to a few results each.
+- [x] "new todo <text>" adds a Todo. "new note <text>" creates a Note starting with that text and opens it. "uuid" copies a v4 UUID to the clipboard and shows a brief confirmation.
+- [x] Core tests: the full kind order, the bookmark/history caps, recency tie-breaking, and each action's effect on state.
+
+**Decisions made while building:**
+- `launcher.search` is async now: the core asks the injected `BrowserLookup` edge (`browser` in the core's edges, optional so a core without it finds no pages) for bookmarks and history. If the lookup fails, the Launcher still finds everything else. `launcher.run` runs an action and says what it did; opening Apps, Notes, Todos and pages stays in the Angular layer.
+- Todos and Notes are one kind, ranked together by match. Between equal matches, Todos come first in list order, then Notes, most recently edited first. Only open Todos are found. A Note is found by its title, or, ranked below every title match, by text anywhere in it. A Note's result shows when it was last edited.
+- Bookmarks and history are capped at 3 each. They rank by their title's match, and a page the browser found only by its URL ranks below those. History breaks ties by the most recent visit. An untitled page is titled by its URL. A page already shown, as a Link or a bookmark, isn't shown again (URLs are compared in their normalised form, so `github.com` matches `https://github.com/`). Bookmarklets are left out. History is searched over all time, not the browser's default last 24 hours.
+- Actions: "new todo <text>" ("Add Todo "…""), "new note <text>" ("New Note "…""; on its own it makes an empty Note) and "uuid" ("Copy a new UUID"). Command words ignore case and runs of spaces; the text keeps its case. "uuid" followed by more text is a search, not the action.
+- An action appears only once its whole command word is typed, so "new" still finds a Link called "News" first. "new todo" with no text yet is offered as "new todo …"; choosing it fills in the command for the text to be typed, and doesn't run. The Launcher's placeholder names the three commands, so they can be found.
+- Choosing a Todo closes the Window, leaves Edit Mode, shows the Todos Widget if it was hidden (or says there's no room for it), then scrolls the Todo into view, focuses it and highlights it for 2.4 seconds.
+- Confirmations are a toast under the Menu Bar: "UUID copied" (or that copying failed), and "Added "…" to Todos", so a Todo added while the Todos Widget is hidden or covered isn't silent.
+- Enter pressed before the search for what was just typed has finished waits for it, so a fast "new todo milk⏎" adds the Todo instead of choosing a result for an earlier query. Typing more before the results arrive cancels that Enter. Running an action closes the Launcher first, so a second Enter can't run it twice.
+- A chosen Note is selected before the Notes App opens on it. A Todo highlight the Todos Widget doesn't take within a second is dropped.
+- "uuid" generates its UUID with the Dev Utilities' UUID generator.
+- Result kind labels: Action, App, Link, Todo, Note, Bookmark, History, Web. Bookmarks and history show favicons and their URL.
+- The `bookmarks` and `history` permissions are added to the manifest. The production bundle is now 507 kB, just over Angular's 500 kB warning budget; it loads from disk, so the budget was left as it is.
 
 ---
 

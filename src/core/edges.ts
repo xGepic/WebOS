@@ -24,3 +24,23 @@ export interface Clock {
   /** Calls `listener` at the start of every minute. Returns a function that stops it. */
   onMinute(listener: () => void): () => void;
 }
+
+/** A page the browser knows, from its bookmarks or history. */
+export interface BrowserPage {
+  title: string;
+  url: string;
+}
+
+/** A page from the browser's history, with when it was last visited (epoch milliseconds). */
+export interface VisitedPage extends BrowserPage {
+  visitedAt: number;
+}
+
+/**
+ * Looks up the browser's bookmarks and history for the Launcher. Like the
+ * browser, it finds pages whose title or URL contains what was typed.
+ */
+export interface BrowserLookup {
+  bookmarks(query: string): Promise<BrowserPage[]>;
+  history(query: string): Promise<VisitedPage[]>;
+}

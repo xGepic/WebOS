@@ -52,6 +52,8 @@
   --radius-inset: 12px;
   --radius-window: 14px;
   --radius-widget: 18px;
+  /* Fully rounded ends, e.g. a toast */
+  --radius-pill: 999px;
 
   /* Shell metrics */
   --menu-bar-height: 30px;

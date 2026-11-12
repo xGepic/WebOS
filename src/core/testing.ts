@@ -1,4 +1,4 @@
-import type { Clock, Storage } from './edges';
+import type { BrowserLookup, BrowserPage, Clock, Storage, VisitedPage } from './edges';
 
 const MINUTE = 60_000;
 
@@ -65,4 +65,20 @@ export function createMemoryStorage(initial?: unknown): MemoryStorage {
   }
 
   return openTab();
+}
+
+/**
+ * A BrowserLookup over the given bookmarks and history. Like the browser, it
+ * finds pages whose title or URL contains the query, ignoring case.
+ */
+export function createTestBrowser({
+  bookmarks = [],
+  history = [],
+}: { bookmarks?: BrowserPage[]; history?: VisitedPage[] } = {}): BrowserLookup {
+  const matching = <T extends BrowserPage>(pages: T[], query: string) =>
+    pages.filter((page) => `${page.title} ${page.url}`.toLowerCase().includes(query.toLowerCase()));
+  return {
+    bookmarks: async (query) => structuredClone(matching(bookmarks, query)),
+    history: async (query) => structuredClone(matching(history, query)),
+  };
 }

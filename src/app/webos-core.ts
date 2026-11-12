@@ -8,6 +8,7 @@ import {
   type WidgetId,
   type WidgetSize,
 } from '../core';
+import { createBrowserLookup } from '../edges/browser-lookup';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createSystemClock } from '../edges/system-clock';
 
@@ -50,6 +51,7 @@ export class WebOSCore {
       const core = await createWebOS({
         storage: createExtensionStorage(),
         clock: createSystemClock(),
+        browser: createBrowserLookup(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {
@@ -82,12 +84,12 @@ export class WebOSCore {
   }
 
   /**
-   * What the Launcher finds for `query`. Read inside a computed or template,
-   * it updates as the Apps and Links change.
+   * What the Launcher finds for `query`. Called inside an effect, the effect
+   * runs again whenever what it could find changes.
    */
-  launcherResults(query: string): readonly LauncherResult[] {
+  searchLauncher(query: string): Promise<readonly LauncherResult[]> {
     this.changes();
-    return this.core()?.launcher.search(query) ?? [];
+    return this.core()?.launcher.search(query) ?? Promise.resolve([]);
   }
 
   /** Where a Widget of `size` with its top-left at `cell` would sit on the grid, as a move would place it. */
