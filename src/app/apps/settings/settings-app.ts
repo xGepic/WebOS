@@ -1,15 +1,17 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BackupSettings } from './backup-settings';
 import { LinksSettings } from './links-settings';
 import { ProfileSettings } from './profile-settings';
 
 /** The Settings App: one place to configure webOS, one section per topic. */
 @Component({
   selector: 'webos-settings-app',
-  imports: [ProfileSettings, LinksSettings],
+  imports: [ProfileSettings, LinksSettings, BackupSettings],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <webos-profile-settings />
     <webos-links-settings />
+    <webos-backup-settings />
   `,
   styles: `
     :host {

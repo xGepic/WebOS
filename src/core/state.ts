@@ -84,25 +84,31 @@ function freshDocument(): StateDocument {
   return { schemaVersion: SCHEMA_VERSION, profile: { name: '' }, apps: {}, linkGroups: [], dockedLinkIds: [], todos: [], notes: [], pinnedNoteId: null, layout: [...defaultLayout] };
 }
 
-function versionOf(document: unknown): number {
+/** What a StateDocumentError calls the document by default: the one in storage. */
+const STORED_STATE = 'The stored state';
+
+function versionOf(document: unknown, subject: string): number {
   if (typeof document !== 'object' || document === null || Array.isArray(document)) {
-    throw new StateDocumentError('The stored state is not a webOS state document.');
+    throw new StateDocumentError(`${subject} is not a webOS state document.`);
   }
   const version = (document as { schemaVersion?: unknown }).schemaVersion;
   if (version === undefined) return 0;
   if (!Number.isInteger(version) || (version as number) < 0) {
-    throw new StateDocumentError(`The stored state has an invalid schema version: ${String(version)}.`);
+    throw new StateDocumentError(`${subject} has an invalid schema version: ${String(version)}.`);
   }
   if ((version as number) > SCHEMA_VERSION) {
     throw new StateDocumentError(
-      `The stored state comes from a newer webOS (schema version ${version}, this build knows ${SCHEMA_VERSION}).`,
+      `${subject} comes from a newer webOS (schema version ${version}, this build knows ${SCHEMA_VERSION}).`,
     );
   }
   return version as number;
 }
 
 /** Throws unless `document` has the current schema's shape. */
-function assertCurrentShape(document: Record<string, unknown>): asserts document is Record<string, unknown> & StateDocument {
+function assertCurrentShape(
+  document: Record<string, unknown>,
+  subject: string,
+): asserts document is Record<string, unknown> & StateDocument {
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
   if (
@@ -117,23 +123,23 @@ function assertCurrentShape(document: Record<string, unknown>): asserts document
     (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null) ||
     !Array.isArray(document['layout'])
   ) {
-    throw new StateDocumentError('The stored state is damaged: part of it is missing.');
+    throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }
 }
 
 /**
  * Brings any older document forward to the current schema version, one step
  * at a time, and checks the result. Throws a `StateDocumentError` if the
- * document can't be used.
+ * document can't be used, calling it `subject` ("The stored state" by default).
  */
-export function toCurrentDocument(document: unknown): StateDocument {
-  let version = versionOf(document);
+export function toCurrentDocument(document: unknown, subject = STORED_STATE): StateDocument {
+  let version = versionOf(document, subject);
   let current = document as Record<string, unknown>;
   while (version < SCHEMA_VERSION) {
     current = migrations[version](current);
     version++;
   }
-  assertCurrentShape(current);
+  assertCurrentShape(current, subject);
   return current;
 }
 
@@ -151,4 +157,38 @@ export async function loadState(storage: Storage): Promise<StateDocument> {
   const document = toCurrentDocument(stored);
   if (document !== stored) await storage.write(document);
   return document;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isText = (value: unknown): value is string => typeof value === 'string';
+const isTime = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+/** Whether `list` holds only objects that each pass `check`, with no two sharing an id. */
+function allRecords(list: unknown, check: (item: Record<string, unknown>) => boolean): list is Record<string, unknown>[] {
+  if (!Array.isArray(list) || !list.every((item) => isRecord(item) && isText(item['id']) && check(item))) return false;
+  return new Set(list.map((item) => item['id'])).size === list.length;
+}
+
+/**
+ * Throws unless every Link Group, Link, Docked Link, Todo and Note in a
+ * current-shape document has the fields webOS reads, and no two of a kind share
+ * an id. Checked for documents from outside, such as a backup file; the layout
+ * needs no check, as it is made safe whenever it is read.
+ */
+export function assertValidContents(document: StateDocument, subject: string): void {
+  const valid =
+    allRecords(document.linkGroups, (group) => isText(group['name']) && Array.isArray(group['links'])) &&
+    // Link ids are unique across all Link Groups, as the Dock refers to them by id alone.
+    allRecords(
+      document.linkGroups.flatMap((group) => group.links),
+      (link) => isText(link['title']) && isText(link['url']),
+    ) &&
+    document.dockedLinkIds.every(isText) &&
+    allRecords(
+      document.todos,
+      (todo) => isText(todo['text']) && isTime(todo['createdAt']) && (todo['completedAt'] === null || isTime(todo['completedAt'])),
+    ) &&
+    allRecords(document.notes, (note) => isText(note['body']) && isTime(note['createdAt']) && isTime(note['editedAt']));
+  if (!valid) throw new StateDocumentError(`${subject} is damaged: some of its data isn't what webOS expects.`);
 }

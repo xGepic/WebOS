@@ -1,4 +1,5 @@
 import { apps } from './apps';
+import * as backup from './backup';
 import * as base64 from './base64';
 import * as desktop from './desktop';
 import * as devUtilities from './dev-utilities';
@@ -22,6 +23,7 @@ export type { DevUtilitiesTab } from './dev-utilities';
 export type { JsonError, JsonResult } from './json';
 export type { JwtResult, JwtTime, JwtValidity } from './jwt';
 export type { ActionOutcome, ActionResult, LauncherResult } from './launcher';
+export type { BackupFile } from './backup';
 export type { Link, LinkGroup, LinkInput } from './links';
 export type { ListedNote, Note } from './notes';
 export type { TimestampResult } from './timestamp';
@@ -187,6 +189,18 @@ export interface WebOS {
     search(query: string): Promise<readonly launcher.LauncherResult[]>;
     /** Runs a quick action the Launcher found, and says what it did. A suggestion still to be finished does nothing. */
     run(action: launcher.ActionResult): Promise<launcher.ActionOutcome | undefined>;
+  };
+  /** Export to, and import from, a backup file holding all webOS data. */
+  readonly backup: {
+    /** A backup file of all webOS data: its suggested file name and its JSON text. */
+    export(): backup.BackupFile;
+    /**
+     * Replaces all webOS data with a backup file's, as a whole, bringing an
+     * older backup forward to this build's schema. Rejects with a
+     * `StateDocumentError` saying what is wrong, without touching anything, if
+     * the file isn't a backup this build can use.
+     */
+    import(text: string): Promise<void>;
   };
   readonly clock: {
     /** The current time in 12-hour format, e.g. "9:05 AM". */
@@ -403,6 +417,17 @@ export async function createWebOS({ storage, clock, browser }: WebOSEdges): Prom
           case 'uuid':
             return { kind: 'copy', text: devUtilities.uuids(1)[0] };
         }
+      },
+    },
+    backup: {
+      export: () => backup.exportFile(state, clock.now()),
+      async import(text) {
+        const next = withSafeLayout(backup.importDocument(text));
+        // Saved before this tab takes it on: if saving fails, nothing here has changed either.
+        await storage.write(next);
+        // This tab shows the Note the backup remembers, like a tab that has just opened.
+        shownNoteId = notes.shownNoteId(next.notes, next.apps.notes?.selectedNoteId);
+        adopt(next);
       },
     },
     clock: {

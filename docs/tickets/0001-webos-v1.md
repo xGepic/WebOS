@@ -328,13 +328,23 @@ After 04, tickets 05, 07, 08, 10 and 14 can run in parallel.
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done (the Data Source parts are carried to ticket 15)
 
-- [ ] Export downloads one JSON file containing the full state document, leaving out Data Source tokens and cached Data Source payloads.
-- [ ] Import asks for confirmation, validates the document, migrates older schema versions, and replaces the current state as a whole.
-- [ ] Invalid files and files from a newer schema version are rejected with a clear message, and the current state is not touched.
-- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens.
-- [ ] Core tests: an export/import round-trip preserves state, tokens and caches are left out, invalid and newer-version files are rejected without changes, and older versions are migrated on import.
+- [x] Export downloads one JSON file containing the full state document. (There are no Data Sources yet, so no tokens or cached payloads to leave out; ticket 15 adds that.)
+- [x] Import asks for confirmation, validates the document, migrates older schema versions, and replaces the current state as a whole.
+- [x] Invalid files and files from a newer schema version are rejected with a clear message, and the current state is not touched.
+- [ ] After importing a document that contains Data Sources, the user is told to re-enter their tokens. Carried to ticket 15: v1 has no Data Sources.
+- [x] Core tests: an export/import round-trip preserves state, invalid and newer-version files are rejected without changes, and older versions are migrated on import. (Tokens and caches being left out is carried to ticket 15.)
+
+**Decisions made while building:**
+- The backup file is the state document itself, as indented JSON, named `webos-backup-YYYY-MM-DD.json` after the local date. It downloads through the browser, so no `downloads` permission is needed.
+- Import asks first, after the file is chosen: "Replace all your webOS data with "…"? … export first if you might want what you have now." The file is checked when the import runs; a file that can't be used says why ("Nothing was imported. This file …"), and nothing changes.
+- A file is rejected when it isn't JSON, isn't a JSON object, has no schema version or version 0, has an invalid or newer schema version, is missing part of the document, has a Link Group, Link, Docked Link, Todo or Note without the fields webOS reads, or has two Link Groups, Links, Todos or Notes with the same id. Stored state from before schema versions counts as version 0 and migrates to empty data, so a file is never read that way: it would wipe everything. The layout isn't checked item by item: it is made safe on import, as on every load.
+- Imported Link URLs are normalised as if typed in Settings, so a hand-edited `example.com` still opens.
+- Errors about a backup say "This file …"; errors about stored state still say "The stored state …".
+- An imported layout is made safe like any other: overlapping Widgets are resolved. A pin or Docked Link pointing at nothing is left as it is, since reads already skip it. Completed Todos older than 3 days are cleared on the next load, as usual.
+- The import is saved before the tab takes it on, so if saving fails nothing changes, here or in storage.
+- The importing tab, and any tab opened afterwards, shows the Note the backup remembers. A tab already open shows the most recently edited Note, as after any deletion of the Note it was showing. The import saves at once, so other open tabs take it on like any other change. Text another tab was still typing into a Note is saved after the import arrives, as the Notes App always saves it: into that Note, or as a new Note if the backup doesn't have it.
 
 ---
 
@@ -357,6 +367,7 @@ These depend on the user deciding to build the sleep and training APIs. Spec 000
 - [ ] The Sleep Widget has a typed adapter and shows a "not connected" state linking to Settings until its first successful load.
 - [ ] Menu Bar status dot: hidden with no Data Sources, green when all are fresh, amber when any is stale or failing.
 - [ ] Core tests: serving from cache, refetching only past the maximum age, stale on failure, and the aggregate status.
+- [ ] Carried from ticket 14: a backup export leaves out Data Source tokens and cached payloads, and after importing a document that contains Data Sources the user is told to re-enter their tokens. Core tests for both.
 
 ## 16: Training Widget
 

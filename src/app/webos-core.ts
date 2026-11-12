@@ -2,6 +2,7 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import {
   createWebOS,
   type AppId,
+  type BackupFile,
   type Cell,
   type LauncherResult,
   type WebOS,
@@ -90,6 +91,22 @@ export class WebOSCore {
   searchLauncher(query: string): Promise<readonly LauncherResult[]> {
     this.changes();
     return this.core()?.launcher.search(query) ?? Promise.resolve([]);
+  }
+
+  /** A backup file of all webOS data, or undefined before the core has started. */
+  exportBackup(): BackupFile | undefined {
+    return this.core()?.backup.export();
+  }
+
+  /**
+   * Replaces all webOS data with a backup file's. Unlike `send`, it rejects
+   * when the import fails, so the caller can say why: with a
+   * `StateDocumentError` when the file can't be used, and nothing has changed.
+   */
+  async importBackup(text: string): Promise<void> {
+    const core = this.core();
+    if (!core) throw new Error('webOS has not started.');
+    await core.backup.import(text);
   }
 
   /** Where a Widget of `size` with its top-left at `cell` would sit on the grid, as a move would place it. */
