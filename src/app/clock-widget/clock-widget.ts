@@ -48,9 +48,14 @@ import { WebOSCore } from '../webos-core';
       letter-spacing: var(--tracking-display);
       font-variant-numeric: tabular-nums;
     }
+    :host(.full-width) .greeting {
+      font-size: clamp(1.25rem, 10cqh, 1.625rem);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
     :host(.full-width) .time {
-      margin-top: 0;
-      font-size: min(60cqh, 22cqi);
+      margin-top: 0.125rem;
+      font-size: min(44cqh, 16cqi);
       line-height: 1;
     }
     .date {
