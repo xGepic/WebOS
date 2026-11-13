@@ -1,7 +1,10 @@
 # Typechecks, tests and builds webOS on every push to main and every pull request,
-# and uploads the built extension as a downloadable artifact. To install it, download
-# the artifact from the run's Summary page, unzip it, and load the folder unpacked
-# (brave://extensions, Developer mode, Load unpacked).
+# and uploads the built extension as a downloadable artifact on the run's Summary page.
+# Every push to main also replaces the rolling "latest" GitHub Release with a fresh
+# webos.zip, always at
+#   https://github.com/xGepic/WebOS/releases/latest/download/webos.zip
+# To install it, unzip it and load the folder unpacked (brave://extensions,
+# Developer mode, Load unpacked).
 name: CI
 
 on:
@@ -50,3 +53,33 @@ jobs:
           path: dist/webos/browser/
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Publish the latest Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: webos-${{ github.sha }}
+          path: webos
+
+      - name: Zip the extension
+        run: cd webos && zip -r ../webos.zip .
+
+      # Deletes the previous "latest" Release and its tag, then recreates both on this commit.
+      - name: Replace the latest Release
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest webos.zip \
+            --target "$GITHUB_SHA" \
+            --title "webOS (latest)" \
+            --latest \
+            --notes "Built from ${GITHUB_SHA::7} on main. Unzip webos.zip and load the folder unpacked (brave://extensions, Developer mode, Load unpacked)."
