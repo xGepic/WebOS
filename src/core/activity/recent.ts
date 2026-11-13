@@ -12,7 +12,7 @@ export interface RecentPage {
 }
 
 /** The most pages the Recent Widget lists, and so the most it asks the browser for (with some to spare for repeats). */
-export const RECENT_PAGES = 12;
+export const RECENT_PAGES = 10;
 const MINUTE = 60_000;
 
 /** Pages on the web: the new tab itself, settings and extension pages aren't worth going back to. */

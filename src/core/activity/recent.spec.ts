@@ -36,7 +36,7 @@ describe('the Recent Widget', () => {
     ]);
   });
 
-  it('leaves out pages that aren’t on the web, and lists each page once, at most twelve', async () => {
+  it('leaves out pages that aren’t on the web, and lists each page once, at most ten', async () => {
     const history = [
       page('New Tab', 'chrome-extension://abc/index.html', 0),
       page('Settings', 'chrome://settings/', 1),
@@ -49,7 +49,7 @@ describe('the Recent Widget', () => {
     await webos.recent.refresh();
 
     const pages = webos.recent.pages();
-    expect(pages).toHaveLength(12);
+    expect(pages).toHaveLength(10);
     expect(pages.slice(0, 2).map((shown) => shown.title)).toEqual(['Docs', 'Page 0']);
   });
 
