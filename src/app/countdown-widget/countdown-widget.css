@@ -1,5 +1,6 @@
 :host {
   container-type: size;
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -78,4 +79,33 @@ li.first .unit {
   font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: 0;
+}
+/*
+ * The control across the whole Widget that opens the Countdowns App. The list
+ * sits above it so it can still scroll; the hover shade shows on either.
+ */
+.open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+}
+.open ~ ol {
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+:host(:hover) .open {
+  background: var(--control-fill);
+}
+:host(:active) .open {
+  background: var(--control-fill-hover);
+}
+.open:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
 }

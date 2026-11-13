@@ -25,6 +25,20 @@ import type { AppId } from '../../core';
           <path d="M38 14v6a3 3 0 0 0 3 3h6z" class="notes-fold" />
           <path d="M22 30h20M22 37h20M22 44h13" class="notes-lines" stroke-width="3" stroke-linecap="round" />
         }
+        @case ('countdowns') {
+          <!-- An hourglass with sand settled in its lower bulb -->
+          <path d="M20 14h24M20 50h24" class="glyph-stroke" stroke-width="4" stroke-linecap="round" />
+          <path
+            d="M24 14c0 10 8 12 8 18s-8 8-8 18M40 14c0 10-8 12-8 18s8 8 8 18"
+            fill="none"
+            class="glyph-stroke"
+            stroke-opacity="0.55"
+            stroke-width="3.5"
+            stroke-linecap="round"
+          />
+          <path d="M26.5 47c1.5-6 4-8 5.5-8s4 2 5.5 8z" class="glyph-fill" />
+          <path d="M28 21h8l-4 5z" class="glyph-fill" fill-opacity="0.8" />
+        }
         @case ('dev-utilities') {
           <!-- Angle brackets around a slash -->
           <path

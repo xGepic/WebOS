@@ -3,57 +3,67 @@ import type { Countdown } from '../../../core';
 import { WebOSCore } from '../../webos-core';
 
 /**
- * Settings › Countdowns: the days the Countdown Widget counts down to. Each
- * has a title and a day; one can be changed by editing it in the form.
+ * The Countdowns App, opened from the Countdown Widget: the days the Widget
+ * counts down to, soonest first with the days to go, and a form to add one or
+ * change one picked with Edit.
  */
 @Component({
-  selector: 'webos-countdown-settings',
+  selector: 'webos-countdowns-app',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section aria-labelledby="settings-countdowns">
-      <h3 id="settings-countdowns" class="section-heading">Countdowns</h3>
-      @if (webos.countdowns()?.length) {
-        <ul class="list">
-          @for (countdown of webos.countdowns(); track countdown.id) {
-            <li [class.editing]="editing() === countdown.id">
+    @if (webos.upcomingCountdowns()?.length) {
+      <ul class="list" aria-label="Countdowns">
+        @for (countdown of webos.upcomingCountdowns(); track countdown.id) {
+          <li [class.editing]="editing() === countdown.id">
+            <span class="what">
               <span class="title">{{ countdown.title }}</span>
-              <span class="date">{{ countdown.date }}</span>
-              <button type="button" class="button" (click)="edit(countdown, title, date)">Edit</button>
-              <button type="button" class="button danger" (click)="remove(countdown)">Delete</button>
-            </li>
-          }
-        </ul>
-      }
-      <form (submit)="save(title, date, $event)">
-        <div class="row">
-          <label class="field">
-            <span>{{ editing() ? 'Title' : 'New Countdown' }}</span>
-            <input #title class="text-field" type="text" maxlength="80" placeholder="e.g. Vienna City Marathon" autocomplete="off" />
-          </label>
-          <label class="field day">
-            <span>Day</span>
-            <input #date class="text-field" type="date" />
-          </label>
-        </div>
-        <div class="actions">
-          <button type="submit" class="button">{{ editing() ? 'Save' : 'Add' }}</button>
-          @if (editing()) {
-            <button type="button" class="button" (click)="cancel(title, date)">Cancel</button>
-          }
-        </div>
-      </form>
+              <span class="date">{{ countdown.label }}</span>
+            </span>
+            <span class="relative">{{ countdown.relative }}</span>
+            <button type="button" class="button" (click)="edit(countdown, title, date)">Edit</button>
+            <button type="button" class="button danger" (click)="remove(countdown)">Delete</button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="hint empty">No Countdowns yet. Add a race, a release or a holiday below.</p>
+    }
+
+    <form (submit)="save(title, date, $event)">
+      <h3 class="section-heading">{{ editing() ? 'Change Countdown' : 'New Countdown' }}</h3>
+      <div class="row">
+        <label class="field">
+          <span>Title</span>
+          <input #title class="text-field" type="text" maxlength="80" placeholder="e.g. Vienna City Marathon" autocomplete="off" />
+        </label>
+        <label class="field day">
+          <span>Day</span>
+          <input #date class="text-field" type="date" />
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="button">{{ editing() ? 'Save' : 'Add' }}</button>
+        @if (editing()) {
+          <button type="button" class="button" (click)="cancel(title, date)">Cancel</button>
+        }
+      </div>
       @if (message(); as message) {
         <p class="hint" role="status">{{ message }}</p>
       }
-      <p class="hint">The Countdown Widget shows the days to go, soonest first. A Countdown is cleared once its day has passed.</p>
-    </section>
+    </form>
+
+    <p class="hint">The Countdown Widget shows the days to go, soonest first. A Countdown is cleared once its day has passed.</p>
   `,
   styles: `
-    section {
-      max-width: 30rem;
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      max-width: 36rem;
+      padding: 1.5rem 1.75rem 2rem;
     }
     .list {
-      margin: 0 0 1rem;
+      margin: 0;
       padding: 0;
       list-style: none;
     }
@@ -61,7 +71,7 @@ import { WebOSCore } from '../../webos-core';
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.35rem 0.35rem 0.35rem 0.75rem;
+      padding: 0.45rem 0.35rem 0.45rem 0.75rem;
       border-radius: var(--radius-inset);
       font-size: 0.875rem;
     }
@@ -71,15 +81,30 @@ import { WebOSCore } from '../../webos-core';
     li.editing {
       outline: 1.5px solid var(--edit-outline);
     }
-    .title {
+    .what {
+      display: flex;
       flex: 1;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .title,
+    .date {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .date {
       color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+    .relative {
+      margin-right: 0.5rem;
+      color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .section-heading {
+      margin-bottom: 0.75rem;
     }
     .row {
       display: flex;
@@ -101,17 +126,17 @@ import { WebOSCore } from '../../webos-core';
     .actions {
       display: flex;
       gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    form .hint {
       margin-top: 0.5rem;
     }
     .hint {
-      margin-top: 0.5rem;
-    }
-    .section-heading {
-      margin-bottom: 1rem;
+      margin: 0;
     }
   `,
 })
-export class CountdownSettings {
+export class CountdownsApp {
   protected readonly webos = inject(WebOSCore);
   /** The Countdown the form is changing, if it is changing one rather than adding. */
   protected readonly editing = signal<string | undefined>(undefined);

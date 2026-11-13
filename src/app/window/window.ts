@@ -13,6 +13,7 @@ import {
 import type { AppId } from '../../core';
 import { collapseInto, expandFrom, settle } from '../../motion/flip';
 import { springTo } from '../../motion/springs';
+import { CountdownsApp } from '../apps/countdowns/countdowns-app';
 import { DevUtilitiesApp } from '../apps/dev-utilities/dev-utilities-app';
 import { NotesApp } from '../apps/notes/notes-app';
 import { SettingsApp } from '../apps/settings/settings-app';
@@ -28,13 +29,14 @@ interface WindowElements {
 }
 
 /**
- * The single Window. It springs out of the open App's Dock icon and closes
- * back into it, and closes on Esc, its close control, a click on the
- * Desktop around it, or a click on the open App's Dock icon. Opening another App swaps the content in place.
+ * The single Window. It springs out of the open App's origin (its Dock icon,
+ * or the Widget that opens it) and closes back into it, and closes on Esc,
+ * its close control, a click on the Desktop around it, or a click on the open
+ * App's Dock icon. Opening another App swaps the content in place.
  */
 @Component({
   selector: 'webos-window',
-  imports: [NotesApp, DevUtilitiesApp, SettingsApp],
+  imports: [NotesApp, CountdownsApp, DevUtilitiesApp, SettingsApp],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closeOnEscape()' },
   template: `
@@ -53,6 +55,9 @@ interface WindowElements {
           @switch (app) {
             @case ('notes') {
               <webos-notes-app />
+            }
+            @case ('countdowns') {
+              <webos-countdowns-app />
             }
             @case ('dev-utilities') {
               <webos-dev-utilities-app />

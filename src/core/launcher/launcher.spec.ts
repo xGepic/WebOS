@@ -54,6 +54,16 @@ describe('Launcher', () => {
     ]);
   });
 
+  it('finds the Apps that have no Dock icon, such as Countdowns', async () => {
+    const webos = await webosWith();
+
+    expect(webos.apps.filter((app) => !app.docked).map((app) => app.id)).toEqual(['notes', 'countdowns']);
+    expect(await webos.launcher.search('countdown')).toEqual([
+      { kind: 'app', id: 'app:countdowns', title: 'Countdowns', app: 'countdowns' },
+      expect.objectContaining({ kind: 'web' }),
+    ]);
+  });
+
   it('finds Links, after Apps', async () => {
     const webos = await webosWith();
     const group = await webos.links.addGroup('Local');

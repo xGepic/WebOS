@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BackupSettings } from './backup-settings';
-import { CountdownSettings } from './countdown-settings';
 import { GitHubSettings } from './github-settings';
 import { LinksSettings } from './links-settings';
 import { ProfileSettings } from './profile-settings';
@@ -14,7 +13,6 @@ import { WorldClockSettings } from './world-clock-settings';
     ProfileSettings,
     WeatherSettings,
     WorldClockSettings,
-    CountdownSettings,
     LinksSettings,
     GitHubSettings,
     BackupSettings,
@@ -24,7 +22,6 @@ import { WorldClockSettings } from './world-clock-settings';
     <webos-profile-settings />
     <webos-weather-settings />
     <webos-world-clock-settings />
-    <webos-countdown-settings />
     <webos-links-settings />
     <webos-github-settings />
     <webos-backup-settings />

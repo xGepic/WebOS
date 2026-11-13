@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject } from '@angular/core';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 
 /**
- * The Countdown Widget: the days to go until each Countdown set in Settings,
- * soonest first. The soonest one is shown large; a Countdown leaves once its
- * day has passed.
+ * The Countdown Widget: the days to go until each Countdown, soonest first.
+ * The soonest one is shown large; a Countdown leaves once its day has passed.
+ * Clicking it opens the Countdowns App, which springs out of this Widget, to
+ * add, change and delete them.
  */
 @Component({
   selector: 'webos-countdown-widget',
@@ -15,7 +16,12 @@ import { WindowState } from '../window/window-state';
     <h2 class="title-bar">{{ webos.widgetName('countdown') }}</h2>
     @if (webos.upcomingCountdowns(); as countdowns) {
       @if (countdowns.length) {
-        <ol>
+        <!--
+          A click anywhere opens the Countdowns App. The control lies under the list, which
+          scrolls when it is long and opens the App on a click itself; the control is for the keyboard.
+        -->
+        <button type="button" class="open" aria-label="Edit Countdowns" (click)="window.open('countdowns')"></button>
+        <ol (click)="window.open('countdowns')">
           @for (countdown of countdowns; track countdown.id; let first = $first) {
             <li [class.first]="first">
               <span class="days" [attr.aria-hidden]="true">
@@ -37,7 +43,7 @@ import { WindowState } from '../window/window-state';
       } @else {
         <div class="widget-empty">
           <p>Count down to a race, a release or a holiday.</p>
-          <button type="button" class="button" (click)="window.open('settings')">Add one in Settings</button>
+          <button type="button" class="button" (click)="window.open('countdowns')">Add a Countdown</button>
         </div>
       }
     }
@@ -47,4 +53,10 @@ import { WindowState } from '../window/window-state';
 export class CountdownWidget {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
+
+  constructor() {
+    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    this.window.registerOrigin('countdowns', element);
+    inject(DestroyRef).onDestroy(() => this.window.unregisterOrigin('countdowns', element));
+  }
 }
