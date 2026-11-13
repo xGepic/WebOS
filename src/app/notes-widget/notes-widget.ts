@@ -36,74 +36,7 @@ import { WindowState } from '../window/window-state';
       </div>
     }
   `,
-  styles: `
-    /* The Note's content isn't inset, so neither is the name above it. */
-    .title-bar {
-      padding-inline: 0;
-    }
-    :host {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      overflow: hidden;
-      padding: 1rem 1.125rem;
-      border-radius: var(--radius-widget);
-    }
-    .open {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      padding: 0;
-      border: 0;
-      border-radius: inherit;
-      background: none;
-      cursor: pointer;
-    }
-    .open:hover {
-      background: var(--control-fill);
-    }
-    .open:active {
-      background: var(--control-fill-hover);
-    }
-    .open:focus-visible {
-      outline: 2px solid var(--focus-ring);
-      outline-offset: -2px;
-    }
-    .caption {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: 0.6875rem;
-      font-weight: 650;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    /* Smaller than in the Notes App, and fading out where the Widget cuts it off. */
-    .preview {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-      font-size: 0.8125rem;
-      -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent);
-      mask-image: linear-gradient(to bottom, black 75%, transparent);
-    }
-    .empty {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 0.75rem;
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-    }
-    .empty p {
-      margin: 0;
-    }
-  `,
+  styleUrl: './notes-widget.css',
 })
 export class NotesWidget {
   protected readonly webos = inject(WebOSCore);

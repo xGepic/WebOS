@@ -60,26 +60,7 @@ import type { WeatherCondition } from '../../core';
       }
     </svg>
   `,
-  styles: `
-    :host {
-      display: inline-block;
-      width: 1em;
-      height: 1em;
-    }
-    svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.4;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .dots {
-      stroke-width: 2.2;
-    }
-  `,
+  styleUrl: './weather-icon.css',
 })
 export class WeatherIcon {
   readonly condition = input.required<WeatherCondition>();

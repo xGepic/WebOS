@@ -17,28 +17,7 @@ import { faviconUrl } from '../../edges/favicon';
       <span class="monogram">{{ link().title.charAt(0) }}</span>
     }
   `,
-  styles: `
-    :host {
-      display: grid;
-      container-type: size;
-    }
-    img,
-    .monogram {
-      width: 100%;
-      height: 100%;
-    }
-    .monogram {
-      display: grid;
-      place-items: center;
-      border-radius: 25%;
-      background: var(--control-fill-hover);
-      color: var(--text-primary);
-      font-size: 62cqh;
-      font-weight: 700;
-      line-height: 1;
-      text-transform: uppercase;
-    }
-  `,
+  styleUrl: './link-icon.css',
 })
 export class LinkIcon {
   readonly link = input.required<Pick<Link, 'title' | 'url'>>();

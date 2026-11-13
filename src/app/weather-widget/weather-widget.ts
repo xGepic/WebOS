@@ -36,64 +36,7 @@ import { WeatherIcon } from './weather-icon';
       }
     }
   `,
-  styles: `
-    :host {
-      container-type: size;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      overflow: hidden;
-      padding: 1rem;
-      text-align: center;
-    }
-    p {
-      margin: 0;
-    }
-    .place {
-      color: var(--text-secondary);
-      font-size: 0.9375rem;
-      font-weight: 500;
-    }
-    .now {
-      display: flex;
-      align-items: center;
-      gap: 0.15em;
-      font-size: clamp(2rem, min(30cqh, 24cqi), 4.5rem);
-      line-height: 1;
-    }
-    .icon {
-      font-size: 0.62em;
-      color: var(--text-secondary);
-    }
-    .temperature {
-      font-weight: 200;
-      letter-spacing: var(--tracking-display);
-      font-variant-numeric: tabular-nums;
-    }
-    .details {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-    }
-    .range {
-      display: block;
-      font-variant-numeric: tabular-nums;
-    }
-    .updated {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      opacity: 0.8;
-    }
-    .message {
-      max-width: 14rem;
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-    }
-    .button {
-      margin-top: 0.5rem;
-    }
-  `,
+  styleUrl: './weather-widget.css',
 })
 export class WeatherWidget {
   protected readonly webos = inject(WebOSCore);
