@@ -252,7 +252,7 @@ describe('state document', () => {
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 16, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 17, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -338,7 +338,7 @@ describe('state document', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.view()).toEqual([]);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 16 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 17 });
     // The GitHub Widget is gone, and with it the token and the stored graph.
     expect(await storage.read()).not.toHaveProperty('github');
   });
@@ -395,6 +395,27 @@ describe('state document', () => {
     expect(await storage.read()).not.toHaveProperty('github');
   });
 
+  it('migrates a v16 document to v17 with no Clips, keeping everything else', async () => {
+    const storage = createMemoryStorage({
+      schemaVersion: 16,
+      profile: { name: 'Stefan' },
+      apps: {},
+      todos: [{ id: 't', text: 'Ship it', createdAt: 0, completedAt: null }],
+      notes: [],
+      pinnedNoteId: null,
+      layout: [],
+      weather: { city: null, report: null },
+      countdowns: [],
+      worldClocks: [],
+    });
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.clips.list()).toEqual([]);
+    expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
+    expect(await storage.read()).toMatchObject({ schemaVersion: 17, profile: { name: 'Stefan' }, clips: [] });
+  });
+
   /** A version 12 document with `layout`, the first build with the 21-column Stage. */
   const v12 = (layout: object[]) => ({
     schemaVersion: 12,
@@ -447,7 +468,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['sun']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 16 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 17 });
   });
 
   it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers, with Search under the Clock", async () => {

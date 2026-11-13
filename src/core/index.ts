@@ -1,4 +1,5 @@
 import { createActivity, type ActivityApi } from './activity/api';
+import { createClipboard, type ClipboardApi } from './clipboard/api';
 import { createDesktop, type DesktopApi } from './desktop/api';
 import { normalizeLayout } from './desktop/desktop';
 import { createDevUtilities, type DevUtilitiesApi } from './dev-utilities/api';
@@ -36,6 +37,7 @@ export type { BackupFile } from './state/backup';
 export type { ListedNote, Note } from './organizer/notes';
 export type { TimestampResult } from './dev-utilities/timestamp';
 export type { Todo } from './organizer/todos';
+export type { ClipKind, ListedClip, SaveResult } from './clipboard/clips';
 export { StateDocumentError } from './state/state';
 
 export interface WebOSEdges {
@@ -50,7 +52,7 @@ export interface WebOSEdges {
 }
 
 /** The webOS core: everything the Angular layer reads and every command it sends. Each area's part is documented in its `api.ts`. */
-export interface WebOS extends DesktopApi, OrganizerApi, DevUtilitiesApi, BackupApi, TimeApi, SkyApi, ActivityApi {
+export interface WebOS extends DesktopApi, OrganizerApi, ClipboardApi, DevUtilitiesApi, BackupApi, TimeApi, SkyApi, ActivityApi {
   /**
    * Calls `listener` whenever anything readable from the core may have changed,
    * including the time at the start of every minute. Returns an unsubscribe function.
@@ -121,6 +123,7 @@ export async function createWebOS({ storage, clock, browser, fetch, system }: We
   return {
     ...createDesktop(store),
     ...createOrganizer(store),
+    ...createClipboard(store),
     ...createDevUtilities(store),
     ...createBackup(store),
     ...createTime(store),

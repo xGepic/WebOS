@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { WebOSCore } from '../../webos-core';
+import { DevUtilitiesHandoff } from './dev-utilities-handoff';
 import { CopyButton } from './copy-button';
 
 /**
@@ -24,6 +25,7 @@ import { CopyButton } from './copy-button';
           spellcheck="false"
           autocomplete="off"
           placeholder="1700000000, 2026-11-12 09:30 or 2026-11-12T08:30:00Z"
+          [value]="handedOver"
           (input)="text.set(input.value)"
         />
         <button type="button" class="button" (click)="useNow(input)">Now</button>
@@ -62,7 +64,9 @@ import { CopyButton } from './copy-button';
 })
 export class TimestampTab {
   private readonly webos = inject(WebOSCore);
-  protected readonly text = signal('');
+  /** Text another App opened this tab with, such as a Clip; empty otherwise. */
+  protected readonly handedOver = inject(DevUtilitiesHandoff).take('timestamp')?.trim() ?? '';
+  protected readonly text = signal(this.handedOver);
 
   /** Nothing until something is typed. */
   protected readonly result = computed(() => {

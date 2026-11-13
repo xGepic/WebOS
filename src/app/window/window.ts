@@ -13,6 +13,7 @@ import {
 import type { AppId } from '../../core';
 import { collapseInto, expandFrom, settle } from '../../motion/flip';
 import { springTo } from '../../motion/springs';
+import { ClipboardApp } from '../apps/clipboard/clipboard-app';
 import { CountdownsApp } from '../apps/countdowns/countdowns-app';
 import { DevUtilitiesApp } from '../apps/dev-utilities/dev-utilities-app';
 import { NotesApp } from '../apps/notes/notes-app';
@@ -37,7 +38,7 @@ interface WindowElements {
  */
 @Component({
   selector: 'webos-window',
-  imports: [NotesApp, CountdownsApp, WorldClockApp, DevUtilitiesApp, SettingsApp],
+  imports: [NotesApp, CountdownsApp, WorldClockApp, ClipboardApp, DevUtilitiesApp, SettingsApp],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closeOnEscape()' },
   template: `
@@ -62,6 +63,9 @@ interface WindowElements {
             }
             @case ('world-clock') {
               <webos-world-clock-app />
+            }
+            @case ('clipboard') {
+              <webos-clipboard-app />
             }
             @case ('dev-utilities') {
               <webos-dev-utilities-app />

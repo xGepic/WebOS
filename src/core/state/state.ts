@@ -1,4 +1,5 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
+import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
 import { isFiniteNumber, isRecord, isText } from '../guards';
 import type { Note } from '../organizer/notes';
@@ -37,9 +38,11 @@ export interface StateDocument {
   countdowns: Countdown[];
   /** The World Clock's cities, in the order the user put them. */
   worldClocks: WorldClockCity[];
+  /** The Clipboard App's Clips, newest first. */
+  clips: Clip[];
 }
 
-const SCHEMA_VERSION = 16;
+const SCHEMA_VERSION = 17;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -205,6 +208,8 @@ const migrations: Record<number, Migration> = {
   // No more Links: with the Links Widget, the Launcher and Docked Links gone, nothing shows
   // them, so the Link Groups and the Dock's list of Links go.
   15: ({ linkGroups: _, dockedLinkIds: __, ...document }) => ({ ...document, schemaVersion: 16 }),
+  // The Clipboard App: no Clips yet.
+  16: (document) => ({ ...document, schemaVersion: 17, clips: [] }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -244,6 +249,7 @@ function freshDocument(): StateDocument {
     weather: { city: null, report: null },
     countdowns: [],
     worldClocks: [],
+    clips: [],
   };
 }
 
@@ -288,7 +294,8 @@ function assertCurrentShape(
     !(weather.city === null || isRecord(weather.city)) ||
     !(weather.report === null || isRecord(weather.report)) ||
     !Array.isArray(document['countdowns']) ||
-    !Array.isArray(document['worldClocks'])
+    !Array.isArray(document['worldClocks']) ||
+    !Array.isArray(document['clips'])
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }
@@ -342,7 +349,7 @@ function allRecords(list: unknown, check: (item: Record<string, unknown>) => boo
 }
 
 /**
- * Throws unless every Todo, Note, Countdown and World Clock city in a
+ * Throws unless every Todo, Note, Countdown, World Clock city and Clip in a
  * current-shape document has the fields webOS reads, and no two of a kind share
  * an id. Checked for documents from outside, such as a backup file; the layout
  * needs no check, as it is made safe whenever it is read.
@@ -359,6 +366,7 @@ export function assertValidContents(document: StateDocument, subject: string): v
     allRecords(
       document.worldClocks,
       (city) => isText(city['name']) && isText(city['country']) && isText(city['timeZone']),
-    );
+    ) &&
+    allRecords(document.clips, (clip) => isText(clip['text']) && isFiniteNumber(clip['savedAt']) && typeof clip['pinned'] === 'boolean');
   if (!valid) throw new StateDocumentError(`${subject} is damaged: some of its data isn't what webOS expects.`);
 }

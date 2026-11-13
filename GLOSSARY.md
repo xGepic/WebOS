@@ -50,6 +50,10 @@ _Avoid_: Favorite note, featured note
 A single item on the one flat to-do list. It is either open or completed.
 _Avoid_: Task, item, ticket
 
+**Clip**:
+A text the user pasted into the Clipboard App to copy again later. It can be pinned, so it is never dropped.
+_Avoid_: Snippet, clipping, history entry
+
 **Countdown**:
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
 _Avoid_: Event, deadline, timer
