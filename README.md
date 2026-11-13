@@ -1,6 +1,6 @@
 # webOS
 
-A personal Brave extension that replaces the new tab with a Desktop that looks and feels like an operating system. What it does and why is in the specs, read in order: [Spec 0001](docs/specs/0001-webos-v1.md), [Spec 0002](docs/specs/0002-more-widgets.md) and [Spec 0003](docs/specs/0003-leaner-desktop.md), each changing the ones before it. See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
+A personal Brave extension that replaces the new tab with a Desktop that looks and feels like an operating system. What it does and why is in the specs, read in order: [Spec 0001](docs/specs/0001-webos-v1.md), [Spec 0002](docs/specs/0002-more-widgets.md), [Spec 0003](docs/specs/0003-leaner-desktop.md) and [Spec 0004](docs/specs/0004-clipboard.md), each changing the ones before it. See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
 ## Commands
 
@@ -25,6 +25,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
   - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Todos, Notes and the greeting
+  - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
   - `time/`: Calendar, Countdowns and the World Clock
   - `sky/`: Weather, Sun and Moon
   - `activity/`: Recent pages and System readings

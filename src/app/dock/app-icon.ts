@@ -51,6 +51,12 @@ import type { AppId } from '../../core';
             stroke-linejoin="round"
           />
         }
+        @case ('clipboard') {
+          <!-- A clipboard: a board, the clip at its top, and two lines of text on its sheet -->
+          <rect x="16" y="15" width="32" height="38" rx="4" class="glyph-fill" fill-opacity="0.95" />
+          <rect x="24" y="11" width="16" height="9" rx="3" class="clip" />
+          <path d="M23 32h18M23 40h12" class="notes-lines" stroke-width="3" stroke-linecap="round" />
+        }
         @case ('dev-utilities') {
           <!-- Angle brackets around a slash -->
           <path
@@ -93,6 +99,11 @@ import type { AppId } from '../../core';
     }
     .notes-fold {
       fill: var(--icon-glyph-muted);
+    }
+    .clip {
+      fill: var(--icon-glyph-muted);
+      stroke: var(--icon-glyph);
+      stroke-width: 2.5;
     }
     .notes-lines {
       stroke: var(--icon-glyph-muted);

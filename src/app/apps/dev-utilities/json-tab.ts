@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { WebOSCore } from '../../webos-core';
+import { DevUtilitiesHandoff } from './dev-utilities-handoff';
 import { Output } from './output';
 
 /** Dev Utilities › JSON: checks JSON as you type, and shows it pretty-printed or minified. */
@@ -23,6 +24,7 @@ import { Output } from './output';
         class="text-field code"
         spellcheck="false"
         placeholder="Paste JSON to check it, pretty-print it or minify it"
+        [value]="handedOver"
         (input)="text.set(input.value)"
       ></textarea>
     </div>
@@ -38,7 +40,9 @@ import { Output } from './output';
 })
 export class JsonTab {
   private readonly webos = inject(WebOSCore);
-  protected readonly text = signal('');
+  /** Text another App opened this tab with, such as a Clip; empty otherwise. */
+  protected readonly handedOver = inject(DevUtilitiesHandoff).take('json') ?? '';
+  protected readonly text = signal(this.handedOver);
   protected readonly layout = signal<'pretty' | 'minified'>('pretty');
 
   /** Nothing until something is typed. */

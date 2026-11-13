@@ -19,6 +19,7 @@ function everything(webos: WebOS) {
     layout: webos.desktop.layout(),
     hidden: webos.desktop.hidden(),
     devUtilitiesTab: webos.devUtilities.activeTab(),
+    clips: webos.clips.list(),
   };
 }
 
@@ -34,6 +35,9 @@ async function webosWithData() {
   await webos.notes.pin(pinned);
   await webos.desktop.hide('clock');
   await webos.devUtilities.setActiveTab('diff');
+  await webos.clips.save('curl localhost:4200');
+  await webos.clips.save('{"id": 42}');
+  await webos.clips.setPinned(webos.clips.list()[0].id, true);
   return webos;
 }
 
@@ -72,6 +76,7 @@ describe('Backup', () => {
 
   const todo = (id: string) => ({ id, text: 'Todo', createdAt: 0, completedAt: null });
   const note = (id: string) => ({ id, body: 'Note', createdAt: 0, editedAt: 0 });
+  const clip = (id: string) => ({ id, text: 'Clip', savedAt: 0, pinned: false });
 
   /** A valid backup (from version 12, which webOS brings forward) with one part replaced. */
   const backupWith = (change: Record<string, unknown>) =>
@@ -92,6 +97,23 @@ describe('Backup', () => {
       ...change,
     });
 
+  /** A valid backup from this build, with one part replaced: for the Clips, which an older backup can't have. */
+  const currentBackupWith = (change: Record<string, unknown>) =>
+    JSON.stringify({
+      schemaVersion: 17,
+      profile: { name: '' },
+      apps: {},
+      todos: [],
+      notes: [],
+      pinnedNoteId: null,
+      layout: [],
+      weather: { city: null, report: null },
+      countdowns: [],
+      worldClocks: [],
+      clips: [],
+      ...change,
+    });
+
   it.each([
     ["text that isn't JSON", 'Todo: buy milk', /isn't valid JSON/],
     ["JSON that isn't an object", '[1, 2, 3]', /isn't a webOS backup/],
@@ -104,6 +126,9 @@ describe('Backup', () => {
     ['schema version 0, which would import as nothing', backupWith({ schemaVersion: 0 }), /isn't a webOS backup/],
     ['two Todos with the same id', backupWith({ todos: [todo('a'), todo('a')] }), /damaged/],
     ['two Notes with the same id', backupWith({ notes: [note('a'), note('a')] }), /damaged/],
+    ["a Clip whose pin isn't true or false", currentBackupWith({ clips: [{ ...clip('a'), pinned: 'yes' }] }), /damaged/],
+    ['a Clip without a time', currentBackupWith({ clips: [{ id: 'a', text: 'Clip', pinned: false }] }), /damaged/],
+    ['two Clips with the same id', currentBackupWith({ clips: [clip('a'), clip('a')] }), /damaged/],
   ])('rejects %s, saying why, and changes nothing', async (_, text, reason) => {
     const storage = createMemoryStorage();
     const webos = await webosWith(storage);
@@ -126,9 +151,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 17 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 18 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 17, this build knows 16).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 18, this build knows 17).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { WebOSCore } from '../../webos-core';
+import { DevUtilitiesHandoff } from './dev-utilities-handoff';
 import { Output } from './output';
 
 /** What the Base64 tab's input and output are called, by direction. */
@@ -40,6 +41,7 @@ const WORDING = {
         class="text-field code"
         spellcheck="false"
         [placeholder]="wording().placeholder"
+        [value]="handedOver ?? ''"
         (input)="text.set(input.value)"
       ></textarea>
     </div>
@@ -63,8 +65,10 @@ const WORDING = {
 })
 export class Base64Tab {
   private readonly webos = inject(WebOSCore);
-  protected readonly text = signal('');
-  protected readonly direction = signal<'encode' | 'decode'>('encode');
+  /** Base64 another App opened this tab with, such as a Clip, to decode. */
+  protected readonly handedOver = inject(DevUtilitiesHandoff).take('base64');
+  protected readonly text = signal(this.handedOver ?? '');
+  protected readonly direction = signal<'encode' | 'decode'>(this.handedOver === undefined ? 'encode' : 'decode');
   protected readonly urlSafe = signal(false);
   protected readonly wording = computed(() => WORDING[this.direction()]);
 

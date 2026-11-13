@@ -18,8 +18,9 @@ const MAX_MAGNIFICATION = 0.25;
 const MAGNIFICATION_RANGE = 150;
 
 /**
- * The Dock along the bottom: an icon for each docked App. Notes, Countdowns
- * and World Clock have none here, because their Widgets open them.
+ * The Dock along the bottom: an icon for each docked App (Clipboard, Dev
+ * Utilities and Settings). Notes, Countdowns and World Clock have none here,
+ * because their Widgets open them.
  *
  * Icons magnify on a spring as the pointer moves along the Dock; under
  * reduced motion they don't. Clicking an App icon opens the App in the
