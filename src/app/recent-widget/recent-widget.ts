@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LinkIcon } from '../links-widget/link-icon';
+import { LinkIcon } from '../link-icon/link-icon';
 import { WebOSCore } from '../webos-core';
 
 /**

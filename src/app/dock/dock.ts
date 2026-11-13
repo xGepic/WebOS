@@ -10,7 +10,7 @@ import {
 import { prefersReducedMotion, springTo } from '../../motion/springs';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
-import { LinkIcon } from '../links-widget/link-icon';
+import { LinkIcon } from '../link-icon/link-icon';
 import { AppIcon } from './app-icon';
 
 /** Largest extra scale, for the icon right under the pointer. Kept subtle; --dock-clearance leaves room for it. */

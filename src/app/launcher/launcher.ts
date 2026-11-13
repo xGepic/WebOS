@@ -17,7 +17,7 @@ import { openInBackgroundTab, openInThisTab } from '../../edges/tabs';
 import { springTo } from '../../motion/springs';
 import { DesktopEditor } from '../desktop/desktop-editor';
 import { AppIcon } from '../dock/app-icon';
-import { LinkIcon } from '../links-widget/link-icon';
+import { LinkIcon } from '../link-icon/link-icon';
 import { Toasts } from '../toast/toasts';
 import { TodoHighlight } from '../todos-widget/todo-highlight';
 import { WebOSCore } from '../webos-core';

@@ -190,6 +190,6 @@ describe('Backup', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.forWidget()?.title).toBe('Old Note');
     expect(webos.desktop.hidden()).toEqual([]);
-    expect(webos.desktop.layout()).toHaveLength(14);
+    expect(webos.desktop.layout()).toHaveLength(13);
   });
 });

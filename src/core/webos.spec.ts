@@ -209,7 +209,6 @@ describe('state document', () => {
       'calendar S@15,0',
       'sun M@18,0',
       'search M@7,2',
-      'links M@0,3',
       'todos M@3,3',
       'notes M@6,3',
       'github M@9,3',
@@ -248,7 +247,6 @@ describe('state document', () => {
       'calendar S@15,0',
       'sun M@18,0',
       'search M@7,2',
-      'links M@0,3',
       'todos M@3,3',
       'github M@9,3',
       'recent M@18,3',
@@ -278,8 +276,8 @@ describe('state document', () => {
       pinnedNoteId: null,
       layout: [
         { widget: 'clock', size: 'L', column: 0, row: 0, visible: true },
-        { widget: 'links', size: 'M', column: 0, row: 3, visible: false },
-        { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
+        { widget: 'links', size: 'M', column: 0, row: 3, visible: true },
+        { widget: 'todos', size: 'M', column: 4, row: 3, visible: false },
         { widget: 'notes', size: 'M', column: 8, row: 3, visible: true },
       ],
     });
@@ -293,7 +291,6 @@ describe('state document', () => {
       'calendar S@15,0',
       'sun M@18,0',
       'search M@7,2',
-      'todos M@3,3',
       'notes M@6,3',
       'github M@9,3',
       'recent M@18,3',
@@ -301,7 +298,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['links']);
+    expect(webos.desktop.hidden()).toEqual(['todos']);
     expect(webos.weather.city()).toBeNull();
   });
 
@@ -335,7 +332,6 @@ describe('state document', () => {
       'calendar S@15,0',
       'sun M@18,0',
       'search M@7,2',
-      'links M@0,3',
       'todos M@3,3',
       'github M@9,3',
       'recent M@18,3',
@@ -391,7 +387,6 @@ describe('state document', () => {
       'clock M@7,0',
       'sun M@18,0',
       'search M@7,2',
-      'links M@0,3',
       'todos M@3,3',
       'notes M@6,3',
       'github M@9,3',
@@ -450,7 +445,6 @@ describe('state document', () => {
       'clock M@7,0',
       'calendar S@15,0',
       'search M@7,2',
-      'links M@0,3',
       'todos M@3,3',
       'notes M@6,3',
       'github M@9,3',

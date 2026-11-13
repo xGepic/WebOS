@@ -16,7 +16,6 @@ import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { CountdownWidget } from '../countdown-widget/countdown-widget';
 import { GitHubWidget } from '../github-widget/github-widget';
-import { LinksWidget } from '../links-widget/links-widget';
 import { MoonWidget } from '../moon-widget/moon-widget';
 import { NotesWidget } from '../notes-widget/notes-widget';
 import { RecentWidget } from '../recent-widget/recent-widget';
@@ -56,7 +55,6 @@ const MENU_MARGIN = 8;
     GridDrag,
     ClockWidget,
     SearchWidget,
-    LinksWidget,
     TodosWidget,
     NotesWidget,
     WeatherWidget,
@@ -103,9 +101,6 @@ const MENU_MARGIN = 8;
                 }
                 @case ('search') {
                   <webos-search-widget />
-                }
-                @case ('links') {
-                  <webos-links-widget />
                 }
                 @case ('todos') {
                   <webos-todos-widget />

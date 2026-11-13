@@ -8,12 +8,12 @@ async function webosWith(storage = roomyStorage()) {
 }
 
 /** The Widgets this layout doesn't mention, which it therefore hides, in catalog order. */
-const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'recent', 'system', 'github', 'search'];
+const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'github', 'search'];
 
 /**
  * The default (Stage) layout leaves no room for a Widget to move into, so most tests
  * start from this one instead, which leaves room to move into:
- * Clock S (3×2) at 0,0; Links M (3×5) at 0,2; Todos M (3×5) at 9,0; Notes S (3×3) at 18,5.
+ * Clock S (3×2) at 0,0; Recent M (3×5) at 0,2; Todos M (3×5) at 9,0; Notes S (3×3) at 18,5.
  * Weather and Calendar are hidden, and so are the Widgets it doesn't mention.
  */
 function roomyStorage() {
@@ -28,7 +28,7 @@ function roomyStorage() {
     pinnedNoteId: null,
     layout: [
       { widget: 'clock', size: 'S', column: 0, row: 0, visible: true },
-      { widget: 'links', size: 'M', column: 0, row: 2, visible: true },
+      { widget: 'recent', size: 'M', column: 0, row: 2, visible: true },
       { widget: 'todos', size: 'M', column: 9, row: 0, visible: true },
       { widget: 'notes', size: 'S', column: 18, row: 5, visible: true },
       { widget: 'weather', size: 'S', column: 0, row: 0, visible: false },
@@ -70,7 +70,7 @@ describe('moving a Widget', () => {
 
     await webos.desktop.move('clock', 4, 3);
 
-    expect(where(webos)).toEqual({ clock: 'S@4,3', links: 'M@0,2', todos: 'M@9,0', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'S@4,3', recent: 'M@0,2', todos: 'M@9,0', notes: 'S@18,5' });
   });
 
   it('pushes a Widget it lands on to the next free position', async () => {
@@ -79,7 +79,7 @@ describe('moving a Widget', () => {
     await webos.desktop.move('clock', 0, 2);
 
     // Links no longer fits at 0,2; reading on from there, the first place it fits is 3,2.
-    expect(where(webos)).toEqual({ clock: 'S@0,2', links: 'M@3,2', todos: 'M@9,0', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0', notes: 'S@18,5' });
     expectValidLayout(webos);
   });
 
@@ -96,8 +96,8 @@ describe('moving a Widget', () => {
     const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // On the Stage Desktop, Links one column right covers Todos, which then fits nowhere.
-    expect(await webos.desktop.move('links', 1, 3)).toBe(false);
+    // On the Stage Desktop, Recent one column left covers GitHub, which then fits nowhere.
+    expect(await webos.desktop.move('recent', 17, 3)).toBe(false);
 
     expect(where(webos)).toEqual(before);
   });
@@ -105,7 +105,8 @@ describe('moving a Widget', () => {
   it('swaps two Widgets of the same size on the Stage Desktop', async () => {
     const webos = await webosWith(createMemoryStorage());
 
-    expect(await webos.desktop.move('todos', 0, 3)).toBe(true);
+    // Notes onto Todos: Todos takes the place Notes left, the next free place along.
+    expect(await webos.desktop.move('notes', 3, 3)).toBe(true);
 
     expect(where(webos)).toEqual({
       'world-clock': 'M@0,0',
@@ -114,9 +115,8 @@ describe('moving a Widget', () => {
       search: 'M@7,2',
       calendar: 'S@15,0',
       sun: 'M@18,0',
-      todos: 'M@0,3',
-      links: 'M@3,3',
-      notes: 'M@6,3',
+      notes: 'M@3,3',
+      todos: 'M@6,3',
       github: 'M@9,3',
       recent: 'M@18,3',
       countdown: 'S@9,6',
@@ -136,10 +136,10 @@ describe('moving a Widget', () => {
   it('wraps around to the top when nothing is free further on', async () => {
     const webos = await webosWith();
 
-    await webos.desktop.move('links', 18, 3);
+    await webos.desktop.move('recent', 18, 3);
 
     // Links covers Notes. Nothing after 18,5 fits a 3 × 3 Widget, so Notes wraps to the top and lands at 3,0.
-    expect(where(webos)).toEqual({ clock: 'S@0,0', links: 'M@18,3', todos: 'M@9,0', notes: 'S@3,0' });
+    expect(where(webos)).toEqual({ clock: 'S@0,0', recent: 'M@18,3', todos: 'M@9,0', notes: 'S@3,0' });
     expectValidLayout(webos);
   });
 });
@@ -151,7 +151,7 @@ describe('resizing a Widget', () => {
     await webos.desktop.resize('clock', 'L');
 
     // The wide Clock covers Todos and Links; in reading order they move to the first free places, beside it.
-    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@12,0', links: 'M@15,2', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@12,0', recent: 'M@15,2', notes: 'S@18,5' });
     expectValidLayout(webos);
   });
 
@@ -170,7 +170,7 @@ describe('resizing a Widget', () => {
     const before = where(webos);
 
     // On the Stage Desktop, Links at L (6 × 5) would cover Todos, which fits nowhere else.
-    expect(await webos.desktop.resize('links', 'L')).toBe(false);
+    expect(await webos.desktop.resize('recent', 'L')).toBe(false);
 
     expect(where(webos)).toEqual(before);
   });
@@ -192,7 +192,7 @@ describe('hiding and showing Widgets', () => {
   it('shows a Widget at the next free position when its place was taken meanwhile', async () => {
     const webos = await webosWith();
     await webos.desktop.hide('notes');
-    await webos.desktop.move('links', 18, 3);
+    await webos.desktop.move('recent', 18, 3);
 
     await webos.desktop.show('notes');
 
@@ -256,7 +256,7 @@ describe('the saved layout', () => {
     await otherTab.desktop.move('clock', 0, 2);
     await otherTab.desktop.hide('notes');
 
-    expect(where(webos)).toEqual({ clock: 'S@0,2', links: 'M@3,2', todos: 'M@9,0' });
+    expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0' });
     expect(webos.desktop.hidden()).toEqual(['notes', 'weather', 'calendar', ...UNMENTIONED]);
   });
 
@@ -271,7 +271,7 @@ describe('the saved layout', () => {
       ...stored,
       layout: [
         { widget: 'clock', size: 'M', column: 0, row: 0, visible: true },
-        { widget: 'links', size: 'M', column: 1, row: 1, visible: true },
+        { widget: 'recent', size: 'M', column: 1, row: 1, visible: true },
         { widget: 'todos', size: 'M', column: 8, row: 0, visible: true },
         { widget: 'todos', size: 'S', column: 0, row: 6, visible: true },
       ],
