@@ -54,7 +54,6 @@ export class WebOSCore {
   readonly weatherCity = this.read((core) => core.weather.city());
   readonly countdowns = this.read((core) => core.countdowns.list());
   readonly upcomingCountdowns = this.read((core) => core.countdowns.upcoming());
-  readonly worldClockCities = this.read((core) => core.worldClock.cities());
   readonly worldClock = this.read((core) => core.worldClock.view());
   readonly moon = this.read((core) => core.moon.view());
   readonly sun = this.read((core) => core.sun.view());

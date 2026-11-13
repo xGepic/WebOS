@@ -4,7 +4,6 @@ import { GitHubSettings } from './github-settings';
 import { LinksSettings } from './links-settings';
 import { ProfileSettings } from './profile-settings';
 import { WeatherSettings } from './weather-settings';
-import { WorldClockSettings } from './world-clock-settings';
 
 /** The Settings App: one place to configure webOS, one section per topic. */
 @Component({
@@ -12,7 +11,6 @@ import { WorldClockSettings } from './world-clock-settings';
   imports: [
     ProfileSettings,
     WeatherSettings,
-    WorldClockSettings,
     LinksSettings,
     GitHubSettings,
     BackupSettings,
@@ -21,7 +19,6 @@ import { WorldClockSettings } from './world-clock-settings';
   template: `
     <webos-profile-settings />
     <webos-weather-settings />
-    <webos-world-clock-settings />
     <webos-links-settings />
     <webos-github-settings />
     <webos-backup-settings />

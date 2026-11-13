@@ -17,6 +17,7 @@ import { CountdownsApp } from '../apps/countdowns/countdowns-app';
 import { DevUtilitiesApp } from '../apps/dev-utilities/dev-utilities-app';
 import { NotesApp } from '../apps/notes/notes-app';
 import { SettingsApp } from '../apps/settings/settings-app';
+import { WorldClockApp } from '../apps/world-clock/world-clock-app';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from './window-state';
 
@@ -36,7 +37,7 @@ interface WindowElements {
  */
 @Component({
   selector: 'webos-window',
-  imports: [NotesApp, CountdownsApp, DevUtilitiesApp, SettingsApp],
+  imports: [NotesApp, CountdownsApp, WorldClockApp, DevUtilitiesApp, SettingsApp],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closeOnEscape()' },
   template: `
@@ -58,6 +59,9 @@ interface WindowElements {
             }
             @case ('countdowns') {
               <webos-countdowns-app />
+            }
+            @case ('world-clock') {
+              <webos-world-clock-app />
             }
             @case ('dev-utilities') {
               <webos-dev-utilities-app />

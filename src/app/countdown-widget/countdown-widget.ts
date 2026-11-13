@@ -16,12 +16,9 @@ import { WindowState } from '../window/window-state';
     <h2 class="title-bar">{{ webos.widgetName('countdown') }}</h2>
     @if (webos.upcomingCountdowns(); as countdowns) {
       @if (countdowns.length) {
-        <!--
-          A click anywhere opens the Countdowns App. The control lies under the list, which
-          scrolls when it is long and opens the App on a click itself; the control is for the keyboard.
-        -->
-        <button type="button" class="open" aria-label="Edit Countdowns" (click)="window.open('countdowns')"></button>
-        <ol (click)="window.open('countdowns')">
+        <!-- A click anywhere opens the Countdowns App; the list stays scrollable above the control. -->
+        <button type="button" class="widget-open" aria-label="Edit Countdowns" (click)="window.open('countdowns')"></button>
+        <ol class="widget-open-above" (click)="window.open('countdowns')">
           @for (countdown of countdowns; track countdown.id; let first = $first) {
             <li [class.first]="first">
               <span class="days" [attr.aria-hidden]="true">

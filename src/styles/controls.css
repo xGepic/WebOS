@@ -168,6 +168,39 @@
   margin: 0;
 }
 
+/*
+ * A control across a whole Widget that opens its App, e.g. the Countdowns
+ * App from the Countdown Widget; it needs an accessible name. The Widget's
+ * host needs position: relative. It lies under the Widget's content, so a
+ * list marked .widget-open-above stays scrollable; that list opens the App
+ * on a click itself, and the control is what the keyboard reaches.
+ */
+.widget-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+}
+:hover > .widget-open {
+  background: var(--control-fill);
+}
+:active > .widget-open {
+  background: var(--control-fill-hover);
+}
+.widget-open:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.widget-open ~ .widget-open-above {
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
 /* A Widget's Title Bar: its name in small capitals across the top, above a hairline. */
 .title-bar {
   flex: none;

@@ -39,6 +39,18 @@ import type { AppId } from '../../core';
           <path d="M26.5 47c1.5-6 4-8 5.5-8s4 2 5.5 8z" class="glyph-fill" />
           <path d="M28 21h8l-4 5z" class="glyph-fill" fill-opacity="0.8" />
         }
+        @case ('world-clock') {
+          <!-- A globe: its outline, two lines of latitude and a meridian -->
+          <circle cx="32" cy="32" r="17" fill="none" class="glyph-stroke" stroke-width="4" />
+          <path
+            d="M16 26h32M16 38h32M32 15c-6 5-8 11-8 17s2 12 8 17c6-5 8-11 8-17s-2-12-8-17z"
+            fill="none"
+            class="glyph-stroke"
+            stroke-opacity="0.55"
+            stroke-width="3"
+            stroke-linejoin="round"
+          />
+        }
         @case ('dev-utilities') {
           <!-- Angle brackets around a slash -->
           <path

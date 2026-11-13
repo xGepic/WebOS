@@ -54,12 +54,16 @@ describe('Launcher', () => {
     ]);
   });
 
-  it('finds the Apps that have no Dock icon, such as Countdowns', async () => {
+  it('finds the Apps that have no Dock icon, such as Countdowns and World Clock', async () => {
     const webos = await webosWith();
 
-    expect(webos.apps.filter((app) => !app.docked).map((app) => app.id)).toEqual(['notes', 'countdowns']);
+    expect(webos.apps.filter((app) => !app.docked).map((app) => app.id)).toEqual(['notes', 'countdowns', 'world-clock']);
     expect(await webos.launcher.search('countdown')).toEqual([
       { kind: 'app', id: 'app:countdowns', title: 'Countdowns', app: 'countdowns' },
+      expect.objectContaining({ kind: 'web' }),
+    ]);
+    expect(await webos.launcher.search('world')).toEqual([
+      { kind: 'app', id: 'app:world-clock', title: 'World Clock', app: 'world-clock' },
       expect.objectContaining({ kind: 'web' }),
     ]);
   });
