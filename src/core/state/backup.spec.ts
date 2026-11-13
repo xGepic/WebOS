@@ -38,7 +38,7 @@ async function webosWithData() {
   const pinned = await webos.notes.create('Release plan');
   await webos.notes.pin(pinned);
   await webos.desktop.hide('clock');
-  await webos.devUtilities.setActiveTab('jwt');
+  await webos.devUtilities.setActiveTab('diff');
   return webos;
 }
 

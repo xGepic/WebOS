@@ -92,92 +92,97 @@ describe('Base64', () => {
   });
 });
 
-describe('JWT', () => {
-  /** Base64URL of a JSON value, built with the platform's btoa, independent of the code under test. */
-  const part = (value: unknown) => btoa(JSON.stringify(value)).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
-  const jwt = (payload: unknown, header: unknown = { alg: 'HS256', typ: 'JWT' }) => `${part(header)}.${part(payload)}.c2lnbmF0dXJl`;
-  const seconds = (date: Date) => date.getTime() / 1000;
-  const inOneHour = new Date(2026, 10, 12, 10, 0);
+describe('Diff', () => {
+  const lines = (count: number, line: (n: number) => string) => Array.from({ length: count }, (_, i) => line(i + 1)).join('\n');
 
-  it('decodes the header and payload, pretty-printed', async () => {
+  it('says when the texts are identical', async () => {
     const tools = await devUtilities();
 
-    const decoded = tools.decodeJwt(jwt({ sub: '42', name: 'Ada', admin: true }));
-
-    expect(decoded).toMatchObject({
-      ok: true,
-      header: '{\n  "alg": "HS256",\n  "typ": "JWT"\n}',
-      payload: '{\n  "sub": "42",\n  "name": "Ada",\n  "admin": true\n}',
-      times: [],
-      validity: undefined,
-    });
+    expect(tools.diffText('a\nb', 'a\nb')).toEqual({ ok: true, identical: true, added: 0, removed: 0, rows: [] });
   });
 
-  it('shows the time claims in local time and as ISO dates', async () => {
+  it('lists removed and added lines with their line numbers, between the unchanged ones', async () => {
     const tools = await devUtilities();
 
-    const decoded = tools.decodeJwt(jwt({ iat: 1700000000, nbf: 1700000000, exp: seconds(inOneHour) }));
+    const result = tools.diffText('a\nb\nc', 'a\nB\nc\nd');
 
-    expect(decoded.ok && decoded.times).toEqual([
-      { claim: 'iat', label: 'Issued', ok: true, local: expect.any(String), iso: '2023-11-14T22:13:20.000Z' },
-      { claim: 'nbf', label: 'Not before', ok: true, local: expect.any(String), iso: '2023-11-14T22:13:20.000Z' },
-      { claim: 'exp', label: 'Expires', ok: true, local: 'Thu, Nov 12, 2026, 10:00:00 AM', iso: inOneHour.toISOString() },
+    expect(result).toMatchObject({ ok: true, identical: false, added: 2, removed: 1 });
+    expect(result.ok && result.rows.map((row) => (row.kind === 'skipped' ? row : { ...row, parts: row.parts.map((p) => p.text).join('') }))).toEqual([
+      { kind: 'same', before: 1, after: 1, parts: 'a' },
+      { kind: 'removed', before: 2, parts: 'b' },
+      { kind: 'added', after: 2, parts: 'B' },
+      { kind: 'same', before: 3, after: 3, parts: 'c' },
+      { kind: 'added', after: 4, parts: 'd' },
     ]);
   });
 
-  it('flags a token as expired from its exp time on', async () => {
-    const clock = createTestClock(start);
-    const tools = await devUtilities(clock);
-    const token = jwt({ exp: seconds(start) + 60 });
-    expect(tools.decodeJwt(token)).toMatchObject({ validity: 'valid' });
-
-    clock.advance(59_999);
-    expect(tools.decodeJwt(token)).toMatchObject({ validity: 'valid' });
-
-    clock.advance(1);
-    expect(tools.decodeJwt(token)).toMatchObject({ validity: 'expired' });
-  });
-
-  it('flags a token that is not valid yet', async () => {
-    const clock = createTestClock(start);
-    const tools = await devUtilities(clock);
-    const token = jwt({ nbf: seconds(start) + 60 });
-    expect(tools.decodeJwt(token)).toMatchObject({ validity: 'not yet valid' });
-
-    clock.advance(60_000);
-    expect(tools.decodeJwt(token)).toMatchObject({ validity: 'valid' });
-  });
-
-  it('reports a time claim that is not a number of seconds, rather than hiding it', async () => {
+  it('marks the part of a changed line that differs from its replacement', async () => {
     const tools = await devUtilities();
 
-    const decoded = tools.decodeJwt(jwt({ iat: '1700000000', exp: 1e13 }));
+    const result = tools.diffText('const port = 4200;', 'const port = 4300;');
 
-    expect(decoded).toMatchObject({
-      ok: true,
-      validity: undefined,
-      times: [
-        { claim: 'iat', label: 'Issued', ok: false, error: 'Not a number of seconds.' },
-        { claim: 'exp', label: 'Expires', ok: false, error: 'Too far from 1970 to be a date.' },
-      ],
+    expect(result.ok && result.rows).toEqual([
+      { kind: 'removed', before: 1, parts: [{ text: 'const port = 4', changed: false }, { text: '2', changed: true }, { text: '00;', changed: false }] },
+      { kind: 'added', after: 1, parts: [{ text: 'const port = 4', changed: false }, { text: '3', changed: true }, { text: '00;', changed: false }] },
+    ]);
+  });
+
+  it('leaves a line unmarked when it shares nothing with its replacement', async () => {
+    const tools = await devUtilities();
+
+    const result = tools.diffText('apple', 'zebra');
+
+    expect(result.ok && result.rows.map((row) => row.kind !== 'skipped' && row.parts)).toEqual([
+      [{ text: 'apple', changed: false }],
+      [{ text: 'zebra', changed: false }],
+    ]);
+  });
+
+  it('folds unchanged lines down to three beside each change', async () => {
+    const tools = await devUtilities();
+    const before = lines(20, (n) => `line ${n}`);
+
+    const result = tools.diffText(before, before.replace('line 10', 'line ten'));
+
+    expect(result.ok && result.rows.map((row) => (row.kind === 'skipped' ? `… ${row.lines}` : `${row.kind} ${row.kind === 'added' ? row.after : row.before}`))).toEqual([
+      '… 6',
+      'same 7',
+      'same 8',
+      'same 9',
+      'removed 10',
+      'added 10',
+      'same 11',
+      'same 12',
+      'same 13',
+      '… 7',
+    ]);
+  });
+
+  it('shows a single unchanged line between changes rather than folding it', async () => {
+    const tools = await devUtilities();
+    const before = lines(7, (n) => `line ${n}`);
+
+    const result = tools.diffText(before, before.replace('line 1', 'one').replace('line 7', 'seven'));
+
+    expect(result.ok && result.rows.some((row) => row.kind === 'skipped')).toBe(false);
+  });
+
+  it('can ignore differences in whitespace, and never counts Windows line endings as one', async () => {
+    const tools = await devUtilities();
+
+    expect(tools.diffText('  a\nb', 'a\nb  ')).toMatchObject({ identical: false });
+    expect(tools.diffText('  a\nb', 'a\nb  ', { ignoreWhitespace: true })).toMatchObject({ identical: true });
+    expect(tools.diffText('a\r\nb', 'a\nb')).toMatchObject({ identical: true });
+  });
+
+  it('refuses texts that differ in more than 2,000 lines', async () => {
+    const tools = await devUtilities();
+
+    expect(tools.diffText(lines(1000, (n) => `a${n}`), lines(1000, (n) => `b${n}`))).toEqual({ ok: true, identical: false, added: 1000, removed: 1000, rows: expect.any(Array) });
+    expect(tools.diffText(lines(1001, (n) => `a${n}`), lines(1001, (n) => `b${n}`))).toEqual({
+      ok: false,
+      error: 'These texts differ in more than 2,000 lines, too many to compare here.',
     });
-  });
-
-  it('accepts a token pasted with a "Bearer" prefix and surrounding whitespace', async () => {
-    const tools = await devUtilities();
-
-    expect(tools.decodeJwt(`  Bearer ${jwt({ sub: '42' })}\n`)).toMatchObject({ ok: true, payload: '{\n  "sub": "42"\n}' });
-  });
-
-  it.each([
-    ['without three parts', 'abc.def', 'A JWT has three parts separated by dots.'],
-    ['whose header is not Base64URL', `ab!c.${part({})}.sig`, 'The header is not valid Base64URL.'],
-    ['whose header is not JSON', `${btoa('nope')}.${part({})}.sig`, 'The header is not JSON.'],
-    ['whose payload is not a JSON object', `${part({ alg: 'none' })}.${part([1, 2])}.`, 'The payload is not a JSON object.'],
-  ])('refuses a token %s', async (_, token, error) => {
-    const tools = await devUtilities();
-
-    expect(tools.decodeJwt(token)).toEqual({ ok: false, error });
   });
 });
 
@@ -323,10 +328,16 @@ describe('the active Dev Utilities tab', () => {
     const tools = await devUtilities(createTestClock(start), storage);
     expect(tools.activeTab()).toBe('json');
 
-    await tools.setActiveTab('jwt');
+    await tools.setActiveTab('diff');
     const nextTab = await devUtilities(createTestClock(start), storage);
 
-    expect(tools.activeTab()).toBe('jwt');
-    expect(nextTab.activeTab()).toBe('jwt');
+    expect(tools.activeTab()).toBe('diff');
+    expect(nextTab.activeTab()).toBe('diff');
+  });
+
+  it('starts on JSON when the remembered tab no longer exists, like the JWT tab Diff replaced', async () => {
+    const tools = await devUtilities(createTestClock(start), createMemoryStorage({ apps: { 'dev-utilities': { activeTab: 'jwt' } } }));
+
+    expect(tools.activeTab()).toBe('json');
   });
 });

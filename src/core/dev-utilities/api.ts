@@ -1,8 +1,8 @@
 import type { Store } from '../store';
 import * as base64 from './base64';
 import * as devUtilities from './dev-utilities';
+import * as diff from './diff';
 import * as json from './json';
-import * as jwt from './jwt';
 import * as timestamp from './timestamp';
 
 export interface DevUtilitiesApi {
@@ -22,10 +22,11 @@ export interface DevUtilitiesApi {
     /** Decodes standard or URL-safe Base64, padded or not, to UTF-8 text. */
     decodeBase64(encoded: string): base64.Base64Result;
     /**
-     * Decodes a JWT's header and payload, with its time claims as dates and
-     * whether it has expired or isn't valid yet. The signature is not verified.
+     * The lines removed from `before` and added to make `after`, as a unified
+     * diff with the changed part of each line marked and long unchanged runs
+     * folded. Optionally ignores differences in whitespace.
      */
-    decodeJwt(token: string): jwt.JwtResult;
+    diffText(before: string, after: string, options?: diff.DiffOptions): diff.DiffResult;
     /** Generates `count` random (v4) UUIDs, at least 1 and at most 100. */
     uuids(count: number): string[];
     /**
@@ -54,7 +55,7 @@ export function createDevUtilities(store: Store): DevUtilitiesApi {
       minifyJson: json.minifyJson,
       encodeBase64: base64.encodeBase64,
       decodeBase64: base64.decodeBase64,
-      decodeJwt: (token) => jwt.decodeJwt(token, clock.now()),
+      diffText: diff.diffText,
       uuids: devUtilities.uuids,
       convertTime: timestamp.convertTime,
       now: () => timestamp.now(clock.now()),

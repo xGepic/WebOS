@@ -2,7 +2,7 @@
 export const devUtilitiesTabs = [
   { id: 'json', name: 'JSON' },
   { id: 'base64', name: 'Base64' },
-  { id: 'jwt', name: 'JWT' },
+  { id: 'diff', name: 'Diff' },
   { id: 'uuid', name: 'UUID' },
   { id: 'timestamp', name: 'Timestamp' },
 ] as const;

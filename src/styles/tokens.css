@@ -42,6 +42,11 @@
   /* The deeper shadow of a Widget lifted in Edit Mode */
   --lift-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
   --danger: #ff8a8a;
+  /* Dev Utilities › Diff: removed lines in the danger red, added ones in the accent blue, the changed part stronger */
+  --diff-removed-fill: rgba(255, 138, 138, 0.08);
+  --diff-removed-mark: rgba(255, 138, 138, 0.26);
+  --diff-added-fill: rgba(111, 143, 220, 0.1);
+  --diff-added-mark: rgba(111, 143, 220, 0.32);
 
   /* Dims the Desktop behind the Window and the Launcher */
   --scrim: rgba(0, 1, 5, 0.65);

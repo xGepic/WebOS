@@ -188,7 +188,7 @@ describe('state document', () => {
     const storage = createMemoryStorage({
       schemaVersion: 7,
       profile: { name: 'Stefan' },
-      apps: { 'dev-utilities': { activeTab: 'jwt' } },
+      apps: { 'dev-utilities': { activeTab: 'uuid' } },
       linkGroups: [],
       dockedLinkIds: [],
       todos: [{ id: 't', text: 'Ship it', createdAt: at(8, 0).getTime(), completedAt: null }],
@@ -201,7 +201,7 @@ describe('state document', () => {
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.notes.forWidget()?.pinned).toBe(true);
-    expect(webos.devUtilities.activeTab()).toBe('jwt');
+    expect(webos.devUtilities.activeTab()).toBe('uuid');
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
       'weather S@3,0',

@@ -9,8 +9,8 @@ import {
 import type { DevUtilitiesTab } from '../../../core';
 import { WebOSCore } from '../../webos-core';
 import { Base64Tab } from './base64-tab';
+import { DiffTab } from './diff-tab';
 import { JsonTab } from './json-tab';
-import { JwtTab } from './jwt-tab';
 import { TimestampTab } from './timestamp-tab';
 import { UuidTab } from './uuid-tab';
 
@@ -21,7 +21,7 @@ import { UuidTab } from './uuid-tab';
  */
 @Component({
   selector: 'webos-dev-utilities-app',
-  imports: [JsonTab, Base64Tab, JwtTab, UuidTab, TimestampTab],
+  imports: [JsonTab, Base64Tab, DiffTab, UuidTab, TimestampTab],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="segmented tabs" role="tablist" aria-label="Dev Utilities" (keydown)="moveWithKeys($event)">
@@ -51,8 +51,8 @@ import { UuidTab } from './uuid-tab';
           @case ('base64') {
             <webos-base64-tab />
           }
-          @case ('jwt') {
-            <webos-jwt-tab />
+          @case ('diff') {
+            <webos-diff-tab />
           }
           @case ('uuid') {
             <webos-uuid-tab />

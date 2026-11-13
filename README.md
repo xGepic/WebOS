@@ -23,7 +23,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
   - `state/`: the versioned state document, its migrations, and backups
   - `desktop/`: the snap grid, the Widget catalog and Edit Mode's moves, and the Apps
   - `launcher/`: search ranking and quick actions
-  - `dev-utilities/`: JSON, Base64, JWT, UUID and timestamp conversions
+  - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Links, Todos, Notes and the greeting
   - `time/`: Calendar, Countdowns and the World Clock
   - `sky/`: Weather, Sun and Moon
