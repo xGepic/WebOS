@@ -51,7 +51,7 @@ export interface StateDocument {
   };
 }
 
-const SCHEMA_VERSION = 12;
+const SCHEMA_VERSION = 13;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -168,6 +168,36 @@ const migrations: Record<number, Migration> = {
       schemaVersion: 12,
       layout: stage.map((entry) => ({ ...entry, visible: !(older.has(entry.widget) && hidden.has(entry.widget)) })),
     };
+  },
+  // The centred Clock: the Clock at size M grows from six columns to seven, so it can sit in the
+  // exact middle of the 21. A Desktop whose top band is still version 12's Stage moves to the new
+  // one: the Clock centred with a gap either side, Calendar and Sun after it, and the Moon, which no
+  // longer fits up there, small in the slot under GitHub. Visibility is kept. Any other layout is
+  // the user's own and stays as it is; loading it moves whatever the wider Clock now covers.
+  12: (document) => {
+    const saved = Array.isArray(document['layout']) ? document['layout'] : [];
+    const oldBand: Record<string, string> = {
+      'world-clock': 'M@0,0',
+      weather: 'S@3,0',
+      clock: 'M@6,0',
+      calendar: 'S@12,0',
+      sun: 'M@15,0',
+      moon: 'M@18,0',
+    };
+    const newBand: Record<string, { size: string; column: number; row: number }> = {
+      clock: { size: 'M', column: 7, row: 0 },
+      calendar: { size: 'S', column: 15, row: 0 },
+      sun: { size: 'M', column: 18, row: 0 },
+      moon: { size: 'S', column: 15, row: 6 },
+    };
+    const where = (entry: unknown) => (isRecord(entry) ? `${entry['size']}@${entry['column']},${entry['row']}` : '');
+    const onOldBand = Object.entries(oldBand).every(([widget, place]) =>
+      saved.some((entry) => isRecord(entry) && entry['widget'] === widget && where(entry) === place),
+    );
+    const layout = onOldBand
+      ? saved.map((entry) => (isRecord(entry) && typeof entry['widget'] === 'string' && newBand[entry['widget']] ? { ...entry, ...newBand[entry['widget']] } : entry))
+      : saved;
+    return { ...document, schemaVersion: 13, layout };
   },
 };
 

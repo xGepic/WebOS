@@ -47,16 +47,15 @@ describe('default Desktop layout geometry', () => {
     expect(new Set(cells).size).toBe(cells.length);
   });
 
-  it('is the Stage layout: a top band of six Widgets around the Clock, and Links, Todos, Notes, GitHub and Recent beneath', async () => {
+  it('is the Stage layout: a top band of five Widgets with the Clock in the middle, and Links, Todos, Notes, GitHub and Recent beneath', async () => {
     const { desktop } = await freshWebOS();
 
     expect(desktop.layout().map((p) => `${p.widget} ${p.size} ${p.columns}×${p.rows}@${p.column},${p.row}`)).toEqual([
       'world-clock M 3×3@0,0',
       'weather S 3×3@3,0',
-      'clock M 6×3@6,0',
-      'calendar S 3×3@12,0',
-      'sun M 3×3@15,0',
-      'moon M 3×3@18,0',
+      'clock M 7×3@7,0',
+      'calendar S 3×3@15,0',
+      'sun M 3×3@18,0',
       'links M 3×5@0,3',
       'todos M 3×5@3,3',
       'notes M 3×5@6,3',
@@ -64,12 +63,15 @@ describe('default Desktop layout geometry', () => {
       'recent M 3×5@18,3',
       'countdown S 3×2@9,6',
       'system S 3×2@12,6',
+      'moon S 3×2@15,6',
     ]);
   });
 
-  it('fills every cell of the grid but one 3 × 2 slot, left for Edit Mode to move into', async () => {
+  it('centres the Clock, with a one-column gap either side of it and every other cell filled', async () => {
     const { desktop } = await freshWebOS();
+    const clock = desktop.layout().find((p) => p.widget === 'clock')!;
 
-    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - 6);
+    expect(clock.column).toBe(desktop.grid.columns - (clock.column + clock.columns));
+    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - 2 * 3);
   });
 });

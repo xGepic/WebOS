@@ -24,8 +24,9 @@ export const widgets = {
     name: 'Clock',
     sizes: {
       S: { columns: 3, rows: 2 },
-      // The middle of the Stage layout's top band, between Weather and Calendar.
-      M: { columns: 6, rows: 3 },
+      // The middle of the Stage layout's top band, between Weather and Calendar. Seven columns,
+      // an odd number like the grid's 21, so it can sit exactly in the middle: columns 7 to 13.
+      M: { columns: 7, rows: 3 },
       // A wide band across the Desktop.
       L: { columns: 12, rows: 3 },
     },
@@ -153,18 +154,17 @@ export interface LayoutEntry extends Placement {
 
 /**
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
- * the World Clock, Weather, the Clock, Calendar, Sun and Moon; beneath it
- * Links, Todos, Notes, GitHub (with a Countdown and System under it) and
- * Recent. Every Widget is visible, and one 3 × 2 slot under GitHub is left
- * free, so Edit Mode has room to move things.
+ * the World Clock, Weather, the Clock, Calendar and Sun, with the Clock in the
+ * exact middle and a one-column gap on either side of it; beneath it Links,
+ * Todos, Notes, GitHub (with a Countdown, System and Moon under it) and
+ * Recent. Every Widget is visible.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
   { widget: 'weather', size: 'S', column: 3, row: 0, visible: true },
-  { widget: 'clock', size: 'M', column: 6, row: 0, visible: true },
-  { widget: 'calendar', size: 'S', column: 12, row: 0, visible: true },
-  { widget: 'sun', size: 'M', column: 15, row: 0, visible: true },
-  { widget: 'moon', size: 'M', column: 18, row: 0, visible: true },
+  { widget: 'clock', size: 'M', column: 7, row: 0, visible: true },
+  { widget: 'calendar', size: 'S', column: 15, row: 0, visible: true },
+  { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'links', size: 'M', column: 0, row: 3, visible: true },
   { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
   { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
@@ -172,6 +172,7 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
   { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
   { widget: 'system', size: 'S', column: 12, row: 6, visible: true },
+  { widget: 'moon', size: 'S', column: 15, row: 6, visible: true },
 ];
 
 /** The sizes, largest first: a Widget that has to shrink tries them in this order. */

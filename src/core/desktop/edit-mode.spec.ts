@@ -110,10 +110,9 @@ describe('moving a Widget', () => {
     expect(where(webos)).toEqual({
       'world-clock': 'M@0,0',
       weather: 'S@3,0',
-      clock: 'M@6,0',
-      calendar: 'S@12,0',
-      sun: 'M@15,0',
-      moon: 'M@18,0',
+      clock: 'M@7,0',
+      calendar: 'S@15,0',
+      sun: 'M@18,0',
       todos: 'M@0,3',
       links: 'M@3,3',
       notes: 'M@6,3',
@@ -121,6 +120,7 @@ describe('moving a Widget', () => {
       recent: 'M@18,3',
       countdown: 'S@9,6',
       system: 'S@12,6',
+      moon: 'S@15,6',
     });
     expectValidLayout(webos);
   });

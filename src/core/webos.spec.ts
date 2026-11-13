@@ -205,10 +205,9 @@ describe('state document', () => {
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
       'weather S@3,0',
-      'clock M@6,0',
-      'calendar S@12,0',
-      'sun M@15,0',
-      'moon M@18,0',
+      'clock M@7,0',
+      'calendar S@15,0',
+      'sun M@18,0',
       'links M@0,3',
       'todos M@3,3',
       'notes M@6,3',
@@ -216,6 +215,7 @@ describe('state document', () => {
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
+      'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual([]);
   });
@@ -243,20 +243,20 @@ describe('state document', () => {
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
       'weather S@3,0',
-      'clock M@6,0',
-      'calendar S@12,0',
-      'sun M@15,0',
-      'moon M@18,0',
+      'clock M@7,0',
+      'calendar S@15,0',
+      'sun M@18,0',
       'links M@0,3',
       'todos M@3,3',
       'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
+      'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 12, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 13, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -287,16 +287,16 @@ describe('state document', () => {
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
       'weather S@3,0',
-      'clock M@6,0',
-      'calendar S@12,0',
-      'sun M@15,0',
-      'moon M@18,0',
+      'clock M@7,0',
+      'calendar S@15,0',
+      'sun M@18,0',
       'todos M@3,3',
       'notes M@6,3',
       'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
+      'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['links']);
     expect(webos.weather.city()).toBeNull();
@@ -328,16 +328,16 @@ describe('state document', () => {
 
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
-      'clock M@6,0',
-      'calendar S@12,0',
-      'sun M@15,0',
-      'moon M@18,0',
+      'clock M@7,0',
+      'calendar S@15,0',
+      'sun M@18,0',
       'links M@0,3',
       'todos M@3,3',
       'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
+      'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes', 'weather']);
     expect(webos.weather.city()).toEqual(vienna);
@@ -345,7 +345,7 @@ describe('state document', () => {
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.cities()).toEqual([]);
     expect(webos.github.hasToken()).toBe(false);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 12 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 13 });
   });
 
   it('moves a v11 layout (the first build with more Widgets) to the wide Stage layout, showing the new Widgets', async () => {
@@ -384,9 +384,8 @@ describe('state document', () => {
     expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
       'world-clock M@0,0',
       'weather S@3,0',
-      'clock M@6,0',
-      'sun M@15,0',
-      'moon M@18,0',
+      'clock M@7,0',
+      'sun M@18,0',
       'links M@0,3',
       'todos M@3,3',
       'notes M@6,3',
@@ -394,11 +393,89 @@ describe('state document', () => {
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
+      'moon S@15,6',
     ]);
     // Calendar was hidden by the user; the newer Widgets were hidden only for lack of room.
     expect(webos.desktop.hidden()).toEqual(['calendar']);
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Race']);
     expect(webos.github.hasToken()).toBe(true);
+  });
+
+  /** A version 12 document with `layout`, the first build with the 21-column Stage. */
+  const v12 = (layout: object[]) => ({
+    schemaVersion: 12,
+    profile: { name: '' },
+    apps: {},
+    linkGroups: [],
+    dockedLinkIds: [],
+    todos: [],
+    notes: [],
+    pinnedNoteId: null,
+    layout,
+    weather: { city: null, report: null },
+    countdowns: [],
+    worldClocks: [],
+    github: { token: '', contributions: null },
+  });
+
+  it('moves a v12 Desktop still on the old Stage to the centred Clock, keeping hidden Widgets hidden', async () => {
+    const storage = createMemoryStorage(
+      v12([
+        { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
+        { widget: 'weather', size: 'S', column: 3, row: 0, visible: true },
+        { widget: 'clock', size: 'M', column: 6, row: 0, visible: true },
+        { widget: 'calendar', size: 'S', column: 12, row: 0, visible: true },
+        { widget: 'sun', size: 'M', column: 15, row: 0, visible: false },
+        { widget: 'moon', size: 'M', column: 18, row: 0, visible: true },
+        { widget: 'links', size: 'M', column: 0, row: 3, visible: true },
+        { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
+        { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
+        { widget: 'github', size: 'M', column: 9, row: 3, visible: true },
+        { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
+        { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
+        { widget: 'system', size: 'S', column: 12, row: 6, visible: true },
+      ]),
+    );
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
+      'world-clock M@0,0',
+      'weather S@3,0',
+      'clock M@7,0',
+      'calendar S@15,0',
+      'links M@0,3',
+      'todos M@3,3',
+      'notes M@6,3',
+      'github M@9,3',
+      'recent M@18,3',
+      'countdown S@9,6',
+      'system S@12,6',
+      'moon S@15,6',
+    ]);
+    expect(webos.desktop.hidden()).toEqual(['sun']);
+    expect(await storage.read()).toMatchObject({ schemaVersion: 13 });
+  });
+
+  it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers", async () => {
+    const storage = createMemoryStorage(
+      v12([
+        { widget: 'weather', size: 'S', column: 0, row: 0, visible: true },
+        { widget: 'clock', size: 'M', column: 3, row: 0, visible: true },
+        { widget: 'calendar', size: 'S', column: 9, row: 0, visible: true },
+        { widget: 'sun', size: 'M', column: 14, row: 0, visible: true },
+      ]),
+    );
+
+    const webos = await createWebOS({ storage, clock: clock() });
+
+    // The Clock now spans columns 3 to 9, so Calendar moves to the next free place along.
+    expect(webos.desktop.layout().map((p) => `${p.widget} ${p.size}@${p.column},${p.row}`)).toEqual([
+      'weather S@0,0',
+      'clock M@3,0',
+      'calendar S@10,0',
+      'sun M@14,0',
+    ]);
   });
 
   it.each([
@@ -408,7 +485,7 @@ describe('state document', () => {
     [
       'at the current version but missing its profile',
       {
-        schemaVersion: 12,
+        schemaVersion: 13,
         apps: {},
         linkGroups: [],
         dockedLinkIds: [],
