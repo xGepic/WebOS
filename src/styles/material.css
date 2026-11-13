@@ -1,6 +1,6 @@
 /*
  * The translucent material shared by every webOS surface: Menu Bar, Dock,
- * Widgets, Window and Launcher. Surfaces add `class="material"` and set only
+ * Widgets and Window. Surfaces add `class="material"` and set only
  * their own corner radius from the --radius-* tokens. Variants for particular
  * surface shapes live in this file too.
  */
@@ -21,7 +21,7 @@
   box-shadow: none;
 }
 
-/* A surface floating above the Desktop (the Window, the Launcher, menus, toasts) casts a shadow. */
+/* A surface floating above the Desktop (the Window, menus, toasts) casts a shadow. */
 .material.material-raised {
   box-shadow:
     inset 0 1px 0 var(--material-highlight),

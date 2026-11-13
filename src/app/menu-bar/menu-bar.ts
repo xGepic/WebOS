@@ -6,8 +6,7 @@ import { WindowState } from '../window/window-state';
 /**
  * The Menu Bar across the top: the webOS mark and the open App's name on the
  * left, the 12-hour time on the right. In Edit Mode it offers the hidden
- * Widgets and "Done". Searching is the Search Widget's job; the Launcher
- * opens with ⌘/Ctrl+K or by typing on the Desktop.
+ * Widgets and "Done". Searching is the Search Widget's job.
  */
 @Component({
   selector: 'webos-menu-bar',

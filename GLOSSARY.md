@@ -17,12 +17,8 @@ The single focused frame an App opens in. Only one Window exists at a time.
 _Avoid_: Modal, dialog, panel
 
 **Menu Bar**:
-The thin bar across the top of the Desktop showing the open App's name, Data Source status, a Launcher button and the time.
+The thin bar across the top of the Desktop showing the open App's name, Data Source status and the time.
 _Avoid_: Top bar, header, status bar
-
-**Launcher**:
-The keyboard-driven search box that finds and opens Apps, Links, Todos, Notes, bookmarks and history, runs quick actions, and otherwise falls back to a web search.
-_Avoid_: Spotlight, command palette, search bar, omnibox
 
 **Edit Mode**:
 The Desktop state in which Widgets can be moved, resized and added or removed on the snap grid.

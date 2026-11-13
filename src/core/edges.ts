@@ -25,25 +25,16 @@ export interface Clock {
   onMinute(listener: () => void): () => void;
 }
 
-/** A page the browser knows, from its bookmarks or history. */
-export interface BrowserPage {
+/** A page from the browser's history, with when it was last visited (epoch milliseconds). */
+export interface VisitedPage {
   title: string;
   url: string;
-}
-
-/** A page from the browser's history, with when it was last visited (epoch milliseconds). */
-export interface VisitedPage extends BrowserPage {
   visitedAt: number;
 }
 
-/**
- * Looks up the browser's bookmarks and history for the Launcher. Like the
- * browser, it finds pages whose title or URL contains what was typed.
- */
+/** Looks up the browser's history, for the Recent Widget. */
 export interface BrowserLookup {
-  bookmarks(query: string): Promise<BrowserPage[]>;
-  history(query: string): Promise<VisitedPage[]>;
-  /** The `count` pages visited last, latest first, for the Recent Widget. */
+  /** The `count` pages visited last, latest first. */
   recent(count: number): Promise<VisitedPage[]>;
 }
 

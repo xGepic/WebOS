@@ -1,6 +1,5 @@
 import type {
   BrowserLookup,
-  BrowserPage,
   Clock,
   Fetch,
   FetchRequest,
@@ -77,19 +76,9 @@ export function createMemoryStorage(initial?: unknown): MemoryStorage {
   return openTab();
 }
 
-/**
- * A BrowserLookup over the given bookmarks and history. Like the browser, it
- * finds pages whose title or URL contains the query, ignoring case.
- */
-export function createTestBrowser({
-  bookmarks = [],
-  history = [],
-}: { bookmarks?: BrowserPage[]; history?: VisitedPage[] } = {}): BrowserLookup {
-  const matching = <T extends BrowserPage>(pages: T[], query: string) =>
-    pages.filter((page) => `${page.title} ${page.url}`.toLowerCase().includes(query.toLowerCase()));
+/** A BrowserLookup over the given history. */
+export function createTestBrowser({ history = [] }: { history?: VisitedPage[] } = {}): BrowserLookup {
   return {
-    bookmarks: async (query) => structuredClone(matching(bookmarks, query)),
-    history: async (query) => structuredClone(matching(history, query)),
     recent: async (count) => structuredClone([...history].sort((a, b) => b.visitedAt - a.visitedAt).slice(0, count)),
   };
 }

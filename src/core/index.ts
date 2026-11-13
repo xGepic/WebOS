@@ -3,7 +3,6 @@ import { createDesktop, type DesktopApi } from './desktop/api';
 import { normalizeLayout } from './desktop/desktop';
 import { createDevUtilities, type DevUtilitiesApi } from './dev-utilities/api';
 import type { BrowserLookup, Clock, Fetch, Storage, SystemMonitor } from './edges';
-import { createLauncher, type LauncherApi } from './launcher/api';
 import { createOrganizer, type OrganizerApi } from './organizer/api';
 import { clearCompleted } from './organizer/todos';
 import { createSky, type SkyApi } from './sky/api';
@@ -15,7 +14,7 @@ import { clearPassed } from './time/countdown';
 
 export type { AppId } from './desktop/apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop/desktop';
-export type { BrowserLookup, BrowserPage, Clock, Fetch, FetchRequest, Storage, SystemMonitor, SystemSample, VisitedPage } from './edges';
+export type { BrowserLookup, Clock, Fetch, FetchRequest, Storage, SystemMonitor, SystemSample, VisitedPage } from './edges';
 export { FetchError } from './edges';
 export type { Countdown, CountdownInput, CountdownView } from './time/countdown';
 export type { WorldClockCity, WorldClockView } from './time/world-clock';
@@ -32,8 +31,7 @@ export type { Base64Result } from './dev-utilities/base64';
 export type { DevUtilitiesTab } from './dev-utilities/dev-utilities';
 export type { DiffPart, DiffResult, DiffRow } from './dev-utilities/diff';
 export type { JsonError, JsonResult } from './dev-utilities/json';
-export type { ActionOutcome, ActionResult, LauncherResult } from './launcher/launcher';
-export { webSearchUrl } from './launcher/launcher';
+export { webSearchUrl } from './search/web-search';
 export type { BackupFile } from './state/backup';
 export type { Link, LinkGroup, LinkInput } from './organizer/links';
 export type { ListedNote, Note } from './organizer/notes';
@@ -44,7 +42,7 @@ export { StateDocumentError } from './state/state';
 export interface WebOSEdges {
   storage: Storage;
   clock: Clock;
-  /** The browser's bookmarks and history, for the Launcher and the Recent Widget. Without it, they find none. */
+  /** The browser's history, for the Recent Widget. Without it, the Widget lists no pages. */
   browser?: BrowserLookup;
   /** The network, for the Weather Widget. Without it, nothing is fetched. */
   fetch?: Fetch;
@@ -53,7 +51,7 @@ export interface WebOSEdges {
 }
 
 /** The webOS core: everything the Angular layer reads and every command it sends. Each area's part is documented in its `api.ts`. */
-export interface WebOS extends DesktopApi, OrganizerApi, DevUtilitiesApi, LauncherApi, BackupApi, TimeApi, SkyApi, ActivityApi {
+export interface WebOS extends DesktopApi, OrganizerApi, DevUtilitiesApi, BackupApi, TimeApi, SkyApi, ActivityApi {
   /**
    * Calls `listener` whenever anything readable from the core may have changed,
    * including the time at the start of every minute. Returns an unsubscribe function.
@@ -121,12 +119,10 @@ export async function createWebOS({ storage, clock, browser, fetch, system }: We
     adopt(withSafeLayout(next));
   });
 
-  const organizer = createOrganizer(store);
   return {
     ...createDesktop(store),
-    ...organizer,
+    ...createOrganizer(store),
     ...createDevUtilities(store),
-    ...createLauncher(store, organizer, browser),
     ...createBackup(store),
     ...createTime(store),
     ...createSky(store, fetch),

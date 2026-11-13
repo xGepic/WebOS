@@ -19,10 +19,10 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 
 ## Layout
 
-- `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for the Launcher, Recent and its bookmarks and history, `Fetch` for the weather, and `SystemMonitor` for CPU and memory), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
+- `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history, `Fetch` for the weather, and `SystemMonitor` for CPU and memory), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
   - `state/`: the versioned state document, its migrations, and backups
   - `desktop/`: the snap grid, the Widget catalog and Edit Mode's moves, and the Apps
-  - `launcher/`: search ranking and quick actions
+  - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Links, Todos, Notes and the greeting
   - `time/`: Calendar, Countdowns and the World Clock

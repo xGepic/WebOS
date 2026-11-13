@@ -6,7 +6,6 @@ import {
   type CalendarDayDetails,
   type CalendarMonth,
   type Cell,
-  type LauncherResult,
   type WeatherCity,
   type WebOS,
   type WidgetId,
@@ -98,15 +97,6 @@ export class WebOSCore {
       console.error('webOS could not save a change', error);
       return undefined;
     });
-  }
-
-  /**
-   * What the Launcher finds for `query`. Called inside an effect, the effect
-   * runs again whenever what it could find changes.
-   */
-  searchLauncher(query: string): Promise<readonly LauncherResult[]> {
-    this.changes();
-    return this.core()?.launcher.search(query) ?? Promise.resolve([]);
   }
 
   /**

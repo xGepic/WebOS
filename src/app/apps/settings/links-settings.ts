@@ -15,8 +15,8 @@ import { WebOSCore } from '../../webos-core';
     <section aria-labelledby="settings-links">
       <h3 id="settings-links" class="section-heading">Links</h3>
       <p class="hint">
-        The Launcher finds every Link, and Docked Links sit in the Dock. A URL without http:// or https://
-        gets http:// for localhost and IP addresses, https:// otherwise.
+        Docked Links sit in the Dock. A URL without http:// or https:// gets http:// for localhost and IP
+        addresses, https:// otherwise.
       </p>
 
       @for (group of groups(); track group.id; let groupIndex = $index, firstGroup = $first, lastGroup = $last) {

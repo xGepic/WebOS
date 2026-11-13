@@ -1,7 +1,6 @@
 /**
  * Every App webOS has. Apps with `docked` have an icon in the Dock, in this
  * order. Notes, Countdowns and World Clock don't: their Widgets open them.
- * The Launcher finds every App.
  */
 export const apps = [
   { id: 'notes', name: 'Notes', docked: false },

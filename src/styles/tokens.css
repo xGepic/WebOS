@@ -24,7 +24,7 @@
   --material-tint: rgba(110, 140, 235, 0.025);
   --material-border: rgba(150, 175, 250, 0.075);
   --material-highlight: rgba(180, 200, 255, 0.04);
-  /* Surfaces lie flat on the Desktop; the Window and the Launcher lift off it with their own shadow. */
+  /* Surfaces lie flat on the Desktop; the Window lifts off it with their own shadow. */
   --material-shadow: none;
   --raised-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.5);
 
@@ -48,7 +48,7 @@
   --diff-added-fill: rgba(111, 143, 220, 0.1);
   --diff-added-mark: rgba(111, 143, 220, 0.32);
 
-  /* Dims the Desktop behind the Window and the Launcher */
+  /* Dims the Desktop behind the Window */
   --scrim: rgba(0, 1, 5, 0.65);
 
   /* App icons in the Dock: all Apps share one look and differ by their symbol. */
