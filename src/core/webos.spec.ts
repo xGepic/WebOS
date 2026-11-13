@@ -109,10 +109,9 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
-    expect(webos.links.groups()).toEqual([]);
   });
 
-  it('keeps the name and Links when migrating a v3 document (ticket 05 builds) forward', async () => {
+  it('keeps the name when migrating a v3 document (ticket 05 builds) forward, dropping its Links', async () => {
     const storage = createMemoryStorage({
       schemaVersion: 3,
       profile: { name: 'Stefan' },
@@ -123,11 +122,11 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
-    expect(webos.links.groups()[0].links[0].title).toBe('web');
-    expect(webos.links.docked()).toEqual([]);
+    // Links went in version 16, as nothing shows them any more.
+    expect(await storage.read()).not.toHaveProperty('linkGroups');
   });
 
-  it('keeps the name, Links and Docked Links when migrating a v4 document (ticket 06 builds) forward', async () => {
+  it('keeps the name when migrating a v4 document (ticket 06 builds) forward, dropping its Links and Docked Links', async () => {
     const storage = createMemoryStorage({
       schemaVersion: 4,
       profile: { name: 'Stefan' },
@@ -139,7 +138,8 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
-    expect(webos.links.docked().map((link) => link.title)).toEqual(['web']);
+    expect(await storage.read()).not.toHaveProperty('linkGroups');
+    expect(await storage.read()).not.toHaveProperty('dockedLinkIds');
     expect(webos.todos.open()).toEqual([]);
   });
 
@@ -156,7 +156,6 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
-    expect(webos.links.docked().map((link) => link.title)).toEqual(['web']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.notes.list()).toEqual([]);
     expect(webos.notes.selected()).toBeUndefined();
@@ -177,7 +176,6 @@ describe('state document', () => {
     const webos = await createWebOS({ storage, clock: clock() });
 
     expect(webos.profile.greeting()).toBe('Good morning, Stefan');
-    expect(webos.links.docked().map((link) => link.title)).toEqual(['web']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.notes.list().map((listed) => listed.title)).toEqual(['Newer', 'Older']);
     expect(webos.notes.selected()?.title).toBe('Older');
@@ -254,7 +252,7 @@ describe('state document', () => {
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 15, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 16, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -340,7 +338,7 @@ describe('state document', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.view()).toEqual([]);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 15 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 16 });
     // The GitHub Widget is gone, and with it the token and the stored graph.
     expect(await storage.read()).not.toHaveProperty('github');
   });
@@ -449,7 +447,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['sun']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 15 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 16 });
   });
 
   it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers, with Search under the Clock", async () => {
@@ -481,10 +479,8 @@ describe('state document', () => {
     [
       'at the current version but missing its profile',
       {
-        schemaVersion: 15,
+        schemaVersion: 16,
         apps: {},
-        linkGroups: [],
-        dockedLinkIds: [],
         todos: [],
         notes: [],
         pinnedNoteId: null,

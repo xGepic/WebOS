@@ -1,7 +1,6 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
 import type { Storage } from '../edges';
 import { isFiniteNumber, isRecord, isText } from '../guards';
-import type { LinkGroup } from '../organizer/links';
 import type { Note } from '../organizer/notes';
 import type { Countdown } from '../time/countdown';
 import type { Todo } from '../organizer/todos';
@@ -20,10 +19,6 @@ export interface StateDocument {
   };
   /** What each App remembers between openings, such as the selected Note. */
   apps: AppMemory;
-  /** Link Groups in display order, each holding its Links in display order. */
-  linkGroups: LinkGroup[];
-  /** The ids of the Docked Links, in Dock order. Independent of the Link Groups' order. */
-  dockedLinkIds: string[];
   /** Every Todo, open and completed, in display order. */
   todos: Todo[];
   /** Every Note, in the order they were created. */
@@ -44,7 +39,7 @@ export interface StateDocument {
   worldClocks: WorldClockCity[];
 }
 
-const SCHEMA_VERSION = 15;
+const SCHEMA_VERSION = 16;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -207,6 +202,9 @@ const migrations: Record<number, Migration> = {
   // No more GitHub Widget: the token and the stored contribution graph go. The layout's GitHub
   // entry is dropped when the layout is loaded, as for any Widget webOS no longer has.
   14: ({ github: _, ...document }) => ({ ...document, schemaVersion: 15 }),
+  // No more Links: with the Links Widget, the Launcher and Docked Links gone, nothing shows
+  // them, so the Link Groups and the Dock's list of Links go.
+  15: ({ linkGroups: _, dockedLinkIds: __, ...document }) => ({ ...document, schemaVersion: 16 }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -239,8 +237,6 @@ function freshDocument(): StateDocument {
     schemaVersion: SCHEMA_VERSION,
     profile: { name: '' },
     apps: {},
-    linkGroups: [],
-    dockedLinkIds: [],
     todos: [],
     notes: [],
     pinnedNoteId: null,
@@ -284,8 +280,6 @@ function assertCurrentShape(
     typeof apps !== 'object' ||
     apps === null ||
     Array.isArray(apps) ||
-    !Array.isArray(document['linkGroups']) ||
-    !Array.isArray(document['dockedLinkIds']) ||
     !Array.isArray(document['todos']) ||
     !Array.isArray(document['notes']) ||
     (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null) ||
@@ -348,20 +342,13 @@ function allRecords(list: unknown, check: (item: Record<string, unknown>) => boo
 }
 
 /**
- * Throws unless every Link Group, Link, Docked Link, Todo, Note, Countdown and World Clock city in a
+ * Throws unless every Todo, Note, Countdown and World Clock city in a
  * current-shape document has the fields webOS reads, and no two of a kind share
  * an id. Checked for documents from outside, such as a backup file; the layout
  * needs no check, as it is made safe whenever it is read.
  */
 export function assertValidContents(document: StateDocument, subject: string): void {
   const valid =
-    allRecords(document.linkGroups, (group) => isText(group['name']) && Array.isArray(group['links'])) &&
-    // Link ids are unique across all Link Groups, as the Dock refers to them by id alone.
-    allRecords(
-      document.linkGroups.flatMap((group) => group.links),
-      (link) => isText(link['title']) && isText(link['url']),
-    ) &&
-    document.dockedLinkIds.every(isText) &&
     allRecords(
       document.todos,
       (todo) => isText(todo['text']) && isFiniteNumber(todo['createdAt']) && (todo['completedAt'] === null || isFiniteNumber(todo['completedAt'])),

@@ -17,7 +17,7 @@ type Outcome = { kind: 'imported'; fileName: string } | { kind: 'failed'; reason
     <section aria-labelledby="settings-backup">
       <h3 id="settings-backup" class="section-heading">Backup</h3>
       <p class="hint">
-        Save all your webOS data (Links, Todos, Notes, the Desktop layout and your settings) to a file, and bring it
+        Save all your webOS data (Todos, Notes, Countdowns, the Desktop layout and your settings) to a file, and bring it
         back later or on another machine.
       </p>
       <div class="actions">

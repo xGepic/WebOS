@@ -37,8 +37,6 @@ export class WebOSCore {
   readonly hiddenWidgets = this.read((core) => core.desktop.hidden());
   readonly name = this.read((core) => core.profile.name());
   readonly greeting = this.read((core) => core.profile.greeting());
-  readonly linkGroups = this.read((core) => core.links.groups());
-  readonly dockedLinks = this.read((core) => core.links.docked());
   readonly openTodos = this.read((core) => core.todos.open());
   readonly completedTodos = this.read((core) => core.todos.completed());
   readonly notes = this.read((core) => core.notes.list());

@@ -10,7 +10,6 @@ import {
 import { prefersReducedMotion, springTo } from '../../motion/springs';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
-import { LinkIcon } from '../link-icon/link-icon';
 import { AppIcon } from './app-icon';
 
 /** Largest extra scale, for the icon right under the pointer. Kept subtle; --dock-clearance leaves room for it. */
@@ -19,18 +18,17 @@ const MAX_MAGNIFICATION = 0.25;
 const MAGNIFICATION_RANGE = 150;
 
 /**
- * The Dock along the bottom: an icon for each App, then a divider and the
- * Docked Links. Notes has no icon here, because the Notes Widget opens it.
+ * The Dock along the bottom: an icon for each docked App. Notes, Countdowns
+ * and World Clock have none here, because their Widgets open them.
  *
  * Icons magnify on a spring as the pointer moves along the Dock; under
  * reduced motion they don't. Clicking an App icon opens the App in the
  * Window, and clicking it again closes the Window. The open App's icon has a
- * dot under it. Docked Links are plain anchors, so they open like any Link:
- * this tab, or a background tab on ⌘/Ctrl+click or middle-click.
+ * dot under it.
  */
 @Component({
   selector: 'webos-dock',
-  imports: [AppIcon, LinkIcon],
+  imports: [AppIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'material',
@@ -55,16 +53,6 @@ const MAGNIFICATION_RANGE = 150;
         </button>
         <span class="open-indicator" [class.visible]="window.app() === app.id"></span>
       </span>
-    }
-    @if (webos.dockedLinks()?.length) {
-      <span class="divider" aria-hidden="true"></span>
-      @for (link of webos.dockedLinks(); track link.id) {
-        <span class="slot">
-          <a #linkIcon class="icon docked-link" [href]="link.url" [attr.aria-label]="link.title" [title]="link.title">
-            <webos-link-icon class="link-icon" [link]="link" [resolution]="64" />
-          </a>
-        </span>
-      }
     }
   `,
   styles: `
@@ -109,24 +97,6 @@ const MAGNIFICATION_RANGE = 150;
       cursor: pointer;
       transform-origin: 50% 100%;
     }
-    .divider {
-      align-self: center;
-      width: 1px;
-      height: calc(var(--dock-icon-size) * 0.75);
-      margin-inline: 0.125rem;
-      background: var(--material-border);
-    }
-    .docked-link {
-      display: grid;
-      place-items: center;
-      box-sizing: border-box;
-      border: 1px solid var(--material-border);
-      background: var(--control-fill);
-    }
-    .link-icon {
-      width: 55%;
-      height: 55%;
-    }
     /* Motion owns transform, so pressing darkens the icon instead, instantly. */
     .icon:active {
       filter: brightness(0.75);
@@ -140,17 +110,15 @@ const MAGNIFICATION_RANGE = 150;
 export class Dock {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
-  private readonly appIcons = viewChildren<ElementRef<HTMLButtonElement>>('appIcon');
-  private readonly linkIcons = viewChildren<ElementRef<HTMLAnchorElement>>('linkIcon');
+  /** The App icons, in Dock order. */
+  private readonly icons = viewChildren<ElementRef<HTMLButtonElement>>('appIcon');
   protected readonly dockedApps = computed(() => (this.webos.apps() ?? []).filter((app) => app.docked));
-  /** Every icon in the Dock, Apps then Docked Links, in order. */
-  private readonly icons = computed(() => [...this.appIcons(), ...this.linkIcons()]);
 
   constructor() {
     // Let the Window find each App's icon to open out of and close into.
     effect(() => {
       const apps = this.dockedApps();
-      this.appIcons().forEach((icon, index) => {
+      this.icons().forEach((icon, index) => {
         const app = apps[index];
         if (app) this.window.registerOrigin(app.id, icon.nativeElement);
       });

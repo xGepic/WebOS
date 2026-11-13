@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BackupSettings } from './backup-settings';
-import { LinksSettings } from './links-settings';
 import { ProfileSettings } from './profile-settings';
 import { WeatherSettings } from './weather-settings';
 
@@ -10,14 +9,12 @@ import { WeatherSettings } from './weather-settings';
   imports: [
     ProfileSettings,
     WeatherSettings,
-    LinksSettings,
     BackupSettings,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <webos-profile-settings />
     <webos-weather-settings />
-    <webos-links-settings />
     <webos-backup-settings />
   `,
   styles: `

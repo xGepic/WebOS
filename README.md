@@ -24,7 +24,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
   - `desktop/`: the snap grid, the Widget catalog and Edit Mode's moves, and the Apps
   - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
-  - `organizer/`: Links, Todos, Notes and the greeting
+  - `organizer/`: Todos, Notes and the greeting
   - `time/`: Calendar, Countdowns and the World Clock
   - `sky/`: Weather, Sun and Moon
   - `activity/`: Recent pages and System readings

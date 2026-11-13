@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LinkIcon } from '../link-icon/link-icon';
+import { SiteIcon } from './site-icon';
 import { WebOSCore } from '../webos-core';
 
 /**
@@ -9,7 +9,7 @@ import { WebOSCore } from '../webos-core';
  */
 @Component({
   selector: 'webos-recent-widget',
-  imports: [LinkIcon],
+  imports: [SiteIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'material', '(document:visibilitychange)': 'refreshWhenShown()' },
   template: `
@@ -20,7 +20,7 @@ import { WebOSCore } from '../webos-core';
           @for (page of pages; track page.url) {
             <li>
               <a class="page" [href]="page.url" [title]="page.url">
-                <webos-link-icon class="icon" [link]="page" />
+                <webos-site-icon class="icon" [page]="page" />
                 <span class="text">
                   <span class="title">{{ page.title }}</span>
                   <span class="detail">{{ page.site }} · {{ page.when }}</span>

@@ -33,7 +33,6 @@ export type { DiffPart, DiffResult, DiffRow } from './dev-utilities/diff';
 export type { JsonError, JsonResult } from './dev-utilities/json';
 export { webSearchUrl } from './search/web-search';
 export type { BackupFile } from './state/backup';
-export type { Link, LinkGroup, LinkInput } from './organizer/links';
 export type { ListedNote, Note } from './organizer/notes';
 export type { TimestampResult } from './dev-utilities/timestamp';
 export type { Todo } from './organizer/todos';

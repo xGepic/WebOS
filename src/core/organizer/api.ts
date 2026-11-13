@@ -1,7 +1,6 @@
 import type { StateDocument } from '../state/state';
 import type { Store } from '../store';
 import { greetingFor } from './greeting';
-import * as links from './links';
 import * as notes from './notes';
 import * as todos from './todos';
 
@@ -13,32 +12,6 @@ export interface OrganizerApi {
     name(): string;
     /** Sets the name the greeting uses, and saves it. */
     setName(name: string): Promise<void>;
-  };
-  readonly links: {
-    /** Link Groups in display order, each with its Links in display order. */
-    groups(): readonly links.LinkGroup[];
-    /** Adds a Link Group at the end. Resolves to its id. */
-    addGroup(name: string): Promise<string>;
-    /** Adds a Link at the end of a Link Group, normalising its URL. Resolves to its id. */
-    addLink(groupId: string, link: links.LinkInput): Promise<string>;
-    /** Moves a Link Group to `toIndex` (clamped to the list). */
-    moveGroup(groupId: string, toIndex: number): Promise<void>;
-    /** Moves a Link to `toIndex` (clamped) in a Link Group, which may be the one it is in. */
-    moveLink(linkId: string, toGroupId: string, toIndex: number): Promise<void>;
-    renameGroup(groupId: string, name: string): Promise<void>;
-    /** Replaces a Link's title and URL, normalising the URL. */
-    editLink(linkId: string, link: links.LinkInput): Promise<void>;
-    deleteLink(linkId: string): Promise<void>;
-    /** Deletes a Link Group together with all of its Links. */
-    deleteGroup(groupId: string): Promise<void>;
-    /** The Docked Links, in Dock order. */
-    docked(): readonly links.Link[];
-    /** Adds a Link to the end of the Dock. */
-    dock(linkId: string): Promise<void>;
-    /** Takes a Link out of the Dock; the Link itself stays. */
-    undock(linkId: string): Promise<void>;
-    /** Moves a Docked Link to `toIndex` in the Dock (clamped). */
-    moveDocked(linkId: string, toIndex: number): Promise<void>;
   };
   readonly todos: {
     /** Open Todos in display order. */
@@ -87,7 +60,7 @@ export interface OrganizerApi {
   };
 }
 
-/** The profile, Links, Todos and Notes. */
+/** The profile, Todos and Notes. */
 export function createOrganizer(store: Store): OrganizerApi {
   const { clock } = store;
   const state = store.state;
@@ -99,12 +72,6 @@ export function createOrganizer(store: Store): OrganizerApi {
   store.onAdopt((next, { imported }) => {
     shownNoteId = notes.shownNoteId(next.notes, imported ? next.apps.notes?.selectedNoteId : shownNoteId);
   });
-
-  /** Applies a change to the Link Groups. Deleted Links leave the Dock with them. */
-  const commitLinks = (change: (groups: readonly links.LinkGroup[]) => links.LinkGroup[]) => {
-    const linkGroups = change(state().linkGroups);
-    return store.commit({ ...state(), linkGroups, dockedLinkIds: links.pruneDock(linkGroups, state().dockedLinkIds) });
-  };
 
   /** Applies a change to the Notes. Deleting the Pinned Note leaves none pinned. */
   const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) => {
@@ -127,34 +94,6 @@ export function createOrganizer(store: Store): OrganizerApi {
       name: () => state().profile.name,
       greeting: () => greetingFor(clock.now(), state().profile.name),
       setName: (name) => store.commit({ ...state(), profile: { ...state().profile, name } }),
-    },
-    links: {
-      groups: () => state().linkGroups,
-      async addGroup(name) {
-        const id = crypto.randomUUID();
-        await commitLinks((groups) => links.addGroup(groups, id, name));
-        return id;
-      },
-      async addLink(groupId, link) {
-        const id = crypto.randomUUID();
-        await commitLinks((groups) => links.addLink(groups, groupId, id, link));
-        return id;
-      },
-      moveGroup: (groupId, toIndex) => commitLinks((groups) => links.moveGroup(groups, groupId, toIndex)),
-      moveLink: (linkId, toGroupId, toIndex) => commitLinks((groups) => links.moveLink(groups, linkId, toGroupId, toIndex)),
-      renameGroup: (groupId, name) => commitLinks((groups) => links.renameGroup(groups, groupId, name)),
-      editLink: (linkId, link) => commitLinks((groups) => links.editLink(groups, linkId, link)),
-      deleteLink: (linkId) => commitLinks((groups) => links.deleteLink(groups, linkId)),
-      deleteGroup: (groupId) => commitLinks((groups) => links.deleteGroup(groups, groupId)),
-      docked: () => links.dockedLinks(state().linkGroups, state().dockedLinkIds),
-      dock: (linkId) =>
-        store.commit({ ...state(), dockedLinkIds: links.dock(state().linkGroups, state().dockedLinkIds, linkId) }),
-      undock: (linkId) => store.commit({ ...state(), dockedLinkIds: links.undock(state().dockedLinkIds, linkId) }),
-      moveDocked: (linkId, toIndex) =>
-        store.commit({
-          ...state(),
-          dockedLinkIds: links.moveDocked(state().linkGroups, state().dockedLinkIds, linkId, toIndex),
-        }),
     },
     todos: {
       open: () => todos.openTodos(state().todos),

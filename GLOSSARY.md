@@ -35,20 +35,8 @@ The thin strip across the top of a Widget that shows the Widget's name.
 _Avoid_: Task bar, header
 
 **App**:
-A tool you open from the Dock into the Window for focused work.
+A tool you open into the Window for focused work, from its Dock icon or, for Notes, Countdowns and World Clock, from its Widget.
 _Avoid_: Program, tool, module
-
-**Link**:
-A curated URL saved in webOS, shown on the Desktop. Distinct from a browser bookmark.
-_Avoid_: Bookmark, shortcut, favorite
-
-**Link Group**:
-A named section of Links inside the Links Widget.
-_Avoid_: Folder, category, collection
-
-**Docked Link**:
-A Link placed in the Dock after the App icons.
-_Avoid_: Pinned Link, favorite
 
 **Note**:
 A Markdown document written in the Notes App.

@@ -1,4 +1,3 @@
-import { normalizeUrl } from '../organizer/links';
 import { StateDocumentError, assertValidContents, toCurrentDocument, type StateDocument } from './state';
 
 /** What every StateDocumentError about a backup file calls it. */
@@ -28,8 +27,8 @@ export function exportFile(document: StateDocument, now: Date): BackupFile {
 
 /**
  * The state document in a backup file's text, brought forward to the current
- * schema, with its Link URLs as webOS saves them. Throws a `StateDocumentError`
- * saying what is wrong if it isn't a backup this build can use.
+ * schema. Throws a `StateDocumentError` saying what is wrong if it isn't a
+ * backup this build can use.
  */
 export function importDocument(text: string): StateDocument {
   let parsed: unknown;
@@ -51,9 +50,5 @@ export function importDocument(text: string): StateDocument {
     ...document,
     // Any weather in the file is stale; the next refresh fetches it fresh.
     weather: { ...document.weather, report: null },
-    linkGroups: document.linkGroups.map((group) => ({
-      ...group,
-      links: group.links.map((link) => ({ ...link, url: normalizeUrl(link.url) })),
-    })),
   };
 }

@@ -11,8 +11,6 @@ async function webosWith(storage = createMemoryStorage()) {
 function everything(webos: WebOS) {
   return {
     name: webos.profile.name(),
-    groups: webos.links.groups(),
-    docked: webos.links.docked(),
     open: webos.todos.open(),
     completed: webos.todos.completed(),
     notes: webos.notes.list(),
@@ -28,9 +26,6 @@ function everything(webos: WebOS) {
 async function webosWithData() {
   const webos = await webosWith();
   await webos.profile.setName('Stefan');
-  const group = await webos.links.addGroup('Local');
-  const link = await webos.links.addLink(group, { title: 'web', url: 'localhost:4200' });
-  await webos.links.dock(link);
   await webos.todos.add('Ship the Launcher');
   const done = await webos.todos.add('Write the spec');
   await webos.todos.complete(done!);
@@ -77,8 +72,6 @@ describe('Backup', () => {
 
   const todo = (id: string) => ({ id, text: 'Todo', createdAt: 0, completedAt: null });
   const note = (id: string) => ({ id, body: 'Note', createdAt: 0, editedAt: 0 });
-  const link = (id: string, url = 'https://example.com') => ({ id, title: 'Link', url });
-  const group = (id: string, links: unknown[]) => ({ id, name: 'Group', links });
 
   /** A valid backup (from version 12, which webOS brings forward) with one part replaced. */
   const backupWith = (change: Record<string, unknown>) =>
@@ -107,18 +100,10 @@ describe('Backup', () => {
     ['a missing part', backupWith({ todos: undefined }), /damaged/],
     ['a Todo without text', backupWith({ todos: [{ id: 'a', createdAt: 0, completedAt: null }] }), /damaged/],
     ["a Note whose body isn't text", backupWith({ notes: [{ id: 'a', body: 42, createdAt: 0, editedAt: 0 }] }), /damaged/],
-    ['a Link without a URL', backupWith({ linkGroups: [{ id: 'g', name: 'Dev', links: [{ id: 'l', title: 'web' }] }] }), /damaged/],
-    ["a Docked Link id that isn't text", backupWith({ dockedLinkIds: [7] }), /damaged/],
     ["a name that isn't text", backupWith({ profile: { name: null } }), /damaged/],
     ['schema version 0, which would import as nothing', backupWith({ schemaVersion: 0 }), /isn't a webOS backup/],
     ['two Todos with the same id', backupWith({ todos: [todo('a'), todo('a')] }), /damaged/],
     ['two Notes with the same id', backupWith({ notes: [note('a'), note('a')] }), /damaged/],
-    [
-      'two Links with the same id in different Link Groups',
-      backupWith({ linkGroups: [group('g1', [link('l')]), group('g2', [link('l')])] }),
-      /damaged/,
-    ],
-    ['two Link Groups with the same id', backupWith({ linkGroups: [group('g', []), group('g', [])] }), /damaged/],
   ])('rejects %s, saying why, and changes nothing', async (_, text, reason) => {
     const storage = createMemoryStorage();
     const webos = await webosWith(storage);
@@ -141,9 +126,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 16 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 17 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 16, this build knows 15).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 17, this build knows 16).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -161,14 +146,6 @@ describe('Backup', () => {
 
     await expect(result).rejects.toThrow('Storage is full');
     expect(everything(webos)).toEqual(before);
-  });
-
-  it('stores Link URLs as webOS would have saved them', async () => {
-    const webos = await webosWith();
-
-    await webos.backup.import(backupWith({ linkGroups: [group('g', [link('l', 'example.com'), link('m', 'localhost:4200')])] }));
-
-    expect(webos.links.groups()[0].links.map((saved) => saved.url)).toEqual(['https://example.com', 'http://localhost:4200']);
   });
 
   it('brings a backup from an older webOS forward', async () => {
