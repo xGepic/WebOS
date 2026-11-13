@@ -2,6 +2,7 @@
 
 Status: built
 Related: [Spec 0001: webOS v1](0001-webos-v1.md), [GLOSSARY](../../GLOSSARY.md)
+Changed by: [Spec 0003: A Leaner Desktop](0003-leaner-desktop.md), which removes the GitHub Widget, moves Countdowns and World Clock cities from Settings into Apps opened from their Widgets, and changes the Stage layout around a centred Clock and a Search Widget.
 
 ## Problem Statement
 

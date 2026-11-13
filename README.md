@@ -1,6 +1,6 @@
 # webOS
 
-A personal Brave extension that replaces the new tab with a Desktop that looks and feels like an operating system. See [Spec 0001](docs/specs/0001-webos-v1.md), the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
+A personal Brave extension that replaces the new tab with a Desktop that looks and feels like an operating system. What it does and why is in the specs, read in order: [Spec 0001](docs/specs/0001-webos-v1.md), [Spec 0002](docs/specs/0002-more-widgets.md) and [Spec 0003](docs/specs/0003-leaner-desktop.md), each changing the ones before it. See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
 ## Commands
 
@@ -29,7 +29,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
   - `sky/`: Weather, Sun and Moon
   - `activity/`: Recent pages and System readings
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.
-- `src/edges/`: the browser-facing edges. Extension storage, the system clock, the bookmarks/history lookup and the network (`network.ts`, for the weather) are injected into the core; the favicon lookup and opening URLs in this tab or a background tab (`tabs.ts`) are used by views directly.
-- `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the fixed wallpaper. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, segmented controls, checkboxes, section headings, hints and screen-reader-only text used inside Apps and Widgets.
+- `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history lookup and the network (`network.ts`, for the weather) are injected into the core; the favicon lookup and opening URLs in this tab or a background tab (`tabs.ts`) are used by views directly.
+- `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the fixed wallpaper. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, segmented controls, checkboxes, section headings, hints and screen-reader-only text used inside Apps and Widgets, and `.widget-open`, the control with which a Widget opens its App.
 - `src/motion/`: spring presets on Motion's `animate()`, with a short opacity fade under reduced motion, plus the framework-agnostic helpers built on them: the FLIP Window transition (`flip.ts`) and the grid helpers Edit Mode settles Widgets with (`grid.ts`). Everything that moves uses them; the one exception is Angular CDK drag-sorting (Todos), whose row shifts use a short CSS transition that is off under reduced motion.
 - `src/app/`: the Angular layer. `WebOSCore` exposes the core's state as signals, and components are thin views over it. Each App lives in `src/app/apps/`. Note previews are rendered with `marked` and sanitised with DOMPurify (`apps/notes/markdown.ts`); that is the only HTML webOS injects.

@@ -1,8 +1,9 @@
 # Spec 0001: webOS v1
 
-Status: ready to build
+Status: built
 Related: [GLOSSARY](../../GLOSSARY.md), [ADR-0001 Angular instead of React](../adr/0001-angular-over-react.md)
 Extended by: [Spec 0002: More Widgets](0002-more-widgets.md), which adds seven Widgets, a GitHub integration, a full-width 21-column grid and a new Stage layout.
+Changed by: [Spec 0003: A Leaner Desktop](0003-leaner-desktop.md), which removes the Launcher, Links, Docked Links and the Links Widget, replaces the JWT tab with a Diff tab and Brave Search with DuckDuckGo, and takes Notes out of the Dock.
 
 ## Problem Statement
 
