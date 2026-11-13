@@ -85,7 +85,7 @@ function offsetMinutes(offset: string): number | undefined {
 }
 
 /** Reads a Unix timestamp, telling seconds from milliseconds by its size. */
-export function fromTimestamp(text: string): TimestampResult {
+function fromTimestamp(text: string): TimestampResult {
   const trimmed = text.trim();
   if (!NUMBER.test(trimmed)) return { ok: false, error: 'Enter a Unix timestamp in seconds or milliseconds, e.g. 1700000000.' };
   const value = Number(trimmed);
@@ -96,7 +96,7 @@ export function fromTimestamp(text: string): TimestampResult {
  * Reads a date: an ISO date, a date and time without an offset (local time),
  * or the local form this tab shows, so that it round-trips.
  */
-export function fromDate(text: string): TimestampResult {
+function fromDate(text: string): TimestampResult {
   const invalid: TimestampResult = {
     ok: false,
     error: 'Enter a date like 2026-11-12 09:30, or an ISO date like 2026-11-12T08:30:00Z.',

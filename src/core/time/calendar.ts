@@ -55,7 +55,7 @@ export const isoDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMont
 const dayNumber = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY;
 
 /** The ISO 8601 week number: weeks start on Monday, and week 1 is the one with the year's first Thursday. */
-export function isoWeek(date: Date): number {
+function isoWeek(date: Date): number {
   const weekday = (date.getDay() + 6) % 7;
   // The Thursday of this week decides which year, and so which week, it belongs to.
   const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - weekday + 3);
@@ -106,7 +106,7 @@ export function parseIsoDate(date: string): Date | undefined {
 export const daysFrom = (now: Date, day: Date) => dayNumber(day) - dayNumber(now);
 
 /** Whole days from today in words: "today", "tomorrow", "yesterday", "in 18 days" or "3 days ago". */
-export function relativeDay(days: number): string {
+function relativeDay(days: number): string {
   if (days === 0) return 'today';
   if (days === 1) return 'tomorrow';
   if (days === -1) return 'yesterday';

@@ -46,7 +46,7 @@ const deg = (radians: number) => (radians * 180) / Math.PI;
 type SunTimes = { kind: 'day'; sunrise: number; sunset: number } | { kind: 'polar-day' | 'polar-night' };
 
 /** Sunrise and sunset on the calendar day `year`-`month`-`day` (month 0-based) at `latitude`, `longitude`. */
-export function sunTimes(year: number, month: number, day: number, latitude: number, longitude: number): SunTimes {
+function sunTimes(year: number, month: number, day: number, latitude: number, longitude: number): SunTimes {
   // Days from J2000 to noon UTC that day, then to the mean solar noon at this longitude.
   const n = Date.UTC(year, month, day, 12) / DAY_MS + UNIX_EPOCH_JD - J2000;
   const meanNoon = n - longitude / 360;

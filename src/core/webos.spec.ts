@@ -339,7 +339,7 @@ describe('state document', () => {
     expect(webos.weather.city()).toEqual(vienna);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
-    expect(webos.worldClock.cities()).toEqual([]);
+    expect(webos.worldClock.view()).toEqual([]);
     expect(await storage.read()).toMatchObject({ schemaVersion: 15 });
     // The GitHub Widget is gone, and with it the token and the stored graph.
     expect(await storage.read()).not.toHaveProperty('github');

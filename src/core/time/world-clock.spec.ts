@@ -62,19 +62,19 @@ describe('World Clock', () => {
     for (const name of ['Osaka', 'Kyoto', 'Nagoya', 'Sapporo', 'Kobe']) expect(await webos.worldClock.add(city(name, 'Asia/Tokyo'))).toBe(true);
     expect(await webos.worldClock.add(newYork)).toBe(false);
 
-    expect(webos.worldClock.cities()).toHaveLength(6);
+    expect(webos.worldClock.view()).toHaveLength(6);
   });
 
   it('reorders and removes cities, and keeps them for the next tab', async () => {
     const { webos, storage } = await setUp();
     for (const added of [tokyo, newYork, kolkata]) await webos.worldClock.add(added);
-    const [first, , third] = webos.worldClock.cities();
+    const [first, , third] = webos.worldClock.view();
 
     await webos.worldClock.move(third.id, 0);
     await webos.worldClock.delete(first.id);
     const nextTab = await createWebOS({ storage, clock: createTestClock(new Date(2026, 10, 12, 9, 0)) });
 
-    expect(nextTab.worldClock.cities().map((shown) => shown.name)).toEqual(['Kolkata', 'New York']);
+    expect(nextTab.worldClock.view().map((shown) => shown.name)).toEqual(['Kolkata', 'New York']);
   });
 
   it('finds cities with their time zone through the city search', async () => {
@@ -86,6 +86,6 @@ describe('World Clock', () => {
     const [found] = await webos.weather.searchCities('Tokyo');
     expect(found.timeZone).toBe('Asia/Tokyo');
     expect(await webos.worldClock.add(found)).toBe(true);
-    expect(webos.worldClock.cities()).toEqual([{ id: expect.any(String), name: 'Tokyo', country: 'Japan', timeZone: 'Asia/Tokyo' }]);
+    expect(webos.worldClock.view()).toMatchObject([{ id: expect.any(String), name: 'Tokyo', country: 'Japan', timeZone: 'Asia/Tokyo' }]);
   });
 });

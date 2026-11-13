@@ -219,7 +219,7 @@ function hiddenIn(document: Record<string, unknown>): Set<unknown> {
  * What each App remembers between openings, so it survives closing the App
  * and opening a new tab. Each App adds its own entry when it needs one.
  */
-export interface AppMemory {
+interface AppMemory {
   notes?: {
     /** The Note the Notes App shows. It may since have been deleted. */
     selectedNoteId?: string;

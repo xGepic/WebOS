@@ -20,7 +20,7 @@ export interface ActionResult {
 }
 
 /** An App the Launcher found; choosing it opens the App in the Window. */
-export interface AppResult {
+interface AppResult {
   kind: 'app';
   id: string;
   title: string;
@@ -28,7 +28,7 @@ export interface AppResult {
 }
 
 /** A Link the Launcher found; choosing it opens the Link. */
-export interface LinkResult {
+interface LinkResult {
   kind: 'link';
   id: string;
   title: string;
@@ -36,7 +36,7 @@ export interface LinkResult {
 }
 
 /** An open Todo the Launcher found; choosing it shows the Todos Widget with the Todo highlighted. */
-export interface TodoResult {
+interface TodoResult {
   kind: 'todo';
   id: string;
   title: string;
@@ -44,7 +44,7 @@ export interface TodoResult {
 }
 
 /** A Note the Launcher found; choosing it opens the Note in the Notes App. */
-export interface NoteResult {
+interface NoteResult {
   kind: 'note';
   id: string;
   title: string;
@@ -54,7 +54,7 @@ export interface NoteResult {
 }
 
 /** A page from the browser's bookmarks or history; choosing it opens it, as a Link does. */
-export interface PageResult {
+interface PageResult {
   kind: 'bookmark' | 'history';
   id: string;
   title: string;
@@ -62,7 +62,7 @@ export interface PageResult {
 }
 
 /** The last Launcher result, always there: a DuckDuckGo search for what was typed. */
-export interface WebResult {
+interface WebResult {
   kind: 'web';
   id: 'web';
   title: string;
@@ -110,7 +110,7 @@ const ACTIONS = [
   title: (text: string) => string;
 }[];
 
-export type ActionId = (typeof ACTIONS)[number]['id'];
+type ActionId = (typeof ACTIONS)[number]['id'];
 
 /**
  * The actions `typed` asks for: those whose command it starts with, followed by
@@ -137,7 +137,7 @@ function actionResults(typed: string): ActionResult[] {
 const MAX_PAGES = 3;
 
 /** What the Launcher searches, from the state document. */
-export interface Searchable {
+interface Searchable {
   linkGroups: readonly LinkGroup[];
   /** The open Todos, in display order. */
   todos: readonly Todo[];

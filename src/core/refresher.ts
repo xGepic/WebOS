@@ -2,7 +2,7 @@ import type { StateDocument } from './state/state';
 import type { Store } from './store';
 
 /** Keeps a stored answer from the network fresh. See `createRefresher`. */
-export interface Refresher<Problem> {
+interface Refresher<Problem> {
   /**
    * Fetches the answer if it is due, or if `force`d, unless a fetch is already
    * under way (then it waits for that one). Resolves when it is done; a failed
@@ -15,7 +15,7 @@ export interface Refresher<Problem> {
   forget(): void;
 }
 
-export interface RefresherOptions<Source, Answer, Problem> {
+interface RefresherOptions<Source, Answer, Problem> {
   /** What the answer is fetched for (the Weather city), or undefined when there is nothing to fetch. */
   source(state: StateDocument): Source | undefined;
   /** Whether two sources are the same, so an answer for one still fits the other. */

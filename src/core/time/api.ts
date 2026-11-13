@@ -41,11 +41,9 @@ export interface TimeApi {
     edit(id: string, input: countdown.CountdownInput): Promise<boolean>;
     delete(id: string): Promise<void>;
   };
-  /** The World Clock's cities, managed in Settings. */
+  /** The World Clock's cities, managed in the World Clock App. */
   readonly worldClock: {
-    /** The cities, in the order the user put them. */
-    cities(): readonly worldClock.WorldClockCity[];
-    /** Each city's time now, and how it compares with the time here. */
+    /** Each city, in the order the user put them, with its time now and how it compares with the time here. */
     view(): readonly worldClock.WorldClockView[];
     /**
      * Adds a city found by `weather.searchCities` at the end. Resolves to
@@ -104,7 +102,6 @@ export function createTime(store: Store): TimeApi {
       },
     },
     worldClock: {
-      cities: () => state().worldClocks,
       view: () => worldClock.worldClockView(state().worldClocks, clock.now()),
       add: (city) =>
         commitWorldClocks(

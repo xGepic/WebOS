@@ -39,7 +39,7 @@ export interface DiffOptions {
 /** Unchanged lines kept on each side of a change, as in `git diff`. */
 const CONTEXT = 3;
 /** Beyond this many removed and added lines, the texts are too different to be worth comparing line by line. */
-export const MAX_EDITS = 2000;
+const MAX_EDITS = 2000;
 
 type Op = { kind: 'same'; before: number; after: number } | { kind: 'removed'; before: number } | { kind: 'added'; after: number };
 

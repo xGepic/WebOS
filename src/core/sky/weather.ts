@@ -68,13 +68,13 @@ export type WeatherView =
 
 const MINUTE = 60_000;
 /** A new tab fetches the weather again once the last report is this old. */
-export const REFRESH_AFTER_MS = 30 * MINUTE;
+const REFRESH_AFTER_MS = 30 * MINUTE;
 /** Older than this, the Widget says when the weather it shows is from. */
 const SAY_WHEN_AFTER_MS = 60 * MINUTE;
 /** The most matches a city search offers. */
 const MAX_CITIES = 5;
 
-export const conditionLabels: Record<WeatherCondition, string> = {
+const conditionLabels: Record<WeatherCondition, string> = {
   clear: 'Clear',
   'partly-cloudy': 'Partly cloudy',
   cloudy: 'Cloudy',
@@ -87,7 +87,7 @@ export const conditionLabels: Record<WeatherCondition, string> = {
 };
 
 /** The condition for a WMO weather interpretation code, as Open-Meteo reports them. */
-export function conditionFor(code: number): WeatherCondition {
+function conditionFor(code: number): WeatherCondition {
   if (code <= 1) return 'clear';
   if (code === 2) return 'partly-cloudy';
   if (code === 3) return 'cloudy';

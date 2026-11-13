@@ -34,7 +34,7 @@ function lineText(line: string): string {
 }
 
 /** The first non-empty line with Markdown heading markers stripped, or "Untitled" when there is none. */
-export function titleOf(body: string): string {
+function titleOf(body: string): string {
   for (const line of body.split('\n')) {
     const text = lineText(line);
     if (text) return text;

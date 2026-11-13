@@ -19,7 +19,7 @@ export type SystemView =
     };
 
 /** This tab's readings so far. Kept per tab, never saved. */
-export interface SystemReadings {
+interface SystemReadings {
   last?: SystemSample;
   /** Processor use between consecutive readings, oldest first, each 0–1. */
   cpuHistory: number[];

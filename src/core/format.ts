@@ -14,7 +14,7 @@ export function formatTime(time: Date, timeZone?: string): string {
 }
 
 /** What a wall clock in some time zone shows at a moment. `month` is 0-based, like `Date`'s. */
-export interface WallClock {
+interface WallClock {
   year: number;
   month: number;
   day: number;
