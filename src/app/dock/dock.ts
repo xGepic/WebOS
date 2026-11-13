@@ -19,13 +19,14 @@ const MAX_MAGNIFICATION = 0.25;
 const MAGNIFICATION_RANGE = 150;
 
 /**
- * The Dock along the bottom, with an icon per App and, after a divider, the
- * Docked Links. Icons magnify on a spring as the pointer moves along the Dock;
- * under reduced motion they don't. Clicking an App icon opens the App in the
+ * The Dock along the bottom: an icon for each App, then a divider and the
+ * Docked Links. Notes has no icon here, because the Notes Widget opens it.
+ *
+ * Icons magnify on a spring as the pointer moves along the Dock; under
+ * reduced motion they don't. Clicking an App icon opens the App in the
  * Window, and clicking it again closes the Window. The open App's icon has a
- * dot under it. Docked Links are plain
- * anchors, so they open like any Link: this tab, or a background tab on
- * ⌘/Ctrl+click or middle-click.
+ * dot under it. Docked Links are plain anchors, so they open like any Link:
+ * this tab, or a background tab on ⌘/Ctrl+click or middle-click.
  */
 @Component({
   selector: 'webos-dock',
@@ -39,7 +40,7 @@ const MAGNIFICATION_RANGE = 150;
     '(pointerleave)': 'restore()',
   },
   template: `
-    @for (app of webos.apps(); track app.id) {
+    @for (app of dockedApps(); track app.id) {
       <span class="slot">
         <button
           #appIcon
@@ -141,16 +142,17 @@ export class Dock {
   protected readonly window = inject(WindowState);
   private readonly appIcons = viewChildren<ElementRef<HTMLButtonElement>>('appIcon');
   private readonly linkIcons = viewChildren<ElementRef<HTMLAnchorElement>>('linkIcon');
+  protected readonly dockedApps = computed(() => (this.webos.apps() ?? []).filter((app) => app.docked));
   /** Every icon in the Dock, Apps then Docked Links, in order. */
   private readonly icons = computed(() => [...this.appIcons(), ...this.linkIcons()]);
 
   constructor() {
     // Let the Window find each App's icon to open out of and close into.
     effect(() => {
-      const apps = this.webos.apps() ?? [];
+      const apps = this.dockedApps();
       this.appIcons().forEach((icon, index) => {
         const app = apps[index];
-        if (app) this.window.registerDockIcon(app.id, icon.nativeElement);
+        if (app) this.window.registerOrigin(app.id, icon.nativeElement);
       });
     });
   }

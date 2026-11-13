@@ -9,7 +9,7 @@ import type { AppId } from '../../core';
 @Injectable({ providedIn: 'root' })
 export class WindowState {
   private readonly openApp = signal<AppId | undefined>(undefined);
-  private readonly dockIcons = new Map<AppId, HTMLElement>();
+  private readonly origins = new Map<AppId, HTMLElement>();
 
   /** The App open in the Window, if any. */
   readonly app = this.openApp.asReadonly();
@@ -28,12 +28,20 @@ export class WindowState {
     else this.open(app);
   }
 
-  /** The Dock registers each App's icon, so the Window can open out of it and close back into it. */
-  registerDockIcon(app: AppId, icon: HTMLElement): void {
-    this.dockIcons.set(app, icon);
+  /**
+   * Where the Window opens out of for an App and closes back into: its Dock
+   * icon, or for Notes the Notes Widget. Without one, the Window just fades.
+   */
+  registerOrigin(app: AppId, element: HTMLElement): void {
+    this.origins.set(app, element);
   }
 
-  dockIconFor(app: AppId): HTMLElement | undefined {
-    return this.dockIcons.get(app);
+  /** Forgets `element` as the App's origin, if it still is, e.g. when its Widget leaves the Desktop. */
+  unregisterOrigin(app: AppId, element: HTMLElement): void {
+    if (this.origins.get(app) === element) this.origins.delete(app);
+  }
+
+  originFor(app: AppId): HTMLElement | undefined {
+    return this.origins.get(app);
   }
 }

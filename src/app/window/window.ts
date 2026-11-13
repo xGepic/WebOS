@@ -171,7 +171,7 @@ export class AppWindow {
       });
     } else if (wasClosed) {
       this.afterRender(({ frame, backdrop }) => {
-        const icon = this.state.dockIconFor(app);
+        const icon = this.state.originFor(app);
         if (icon) expandFrom(frame, icon);
         springTo(backdrop, { opacity: 1 });
         this.focusInside(frame);
@@ -188,7 +188,7 @@ export class AppWindow {
     const generation = this.generation;
 
     this.animate(({ frame, backdrop }) => {
-      const icon = this.state.dockIconFor(app);
+      const icon = this.state.originFor(app);
       if (icon && frame.contains(document.activeElement)) icon.focus({ preventScroll: true });
       springTo(backdrop, { opacity: 0 });
       const collapse = icon ? collapseInto(frame, icon) : springTo(frame, { opacity: 0 });

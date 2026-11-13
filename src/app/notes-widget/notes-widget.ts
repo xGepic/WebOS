@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject } from '@angular/core';
 import type { ListedNote } from '../../core';
 import { MarkdownPreview } from '../apps/notes/markdown-preview';
 import { PinIcon } from '../apps/notes/pin-icon';
@@ -7,7 +7,8 @@ import { WindowState } from '../window/window-state';
 
 /**
  * The Notes Widget: a preview of the Pinned Note, or of the most recently
- * edited Note when none is pinned. Clicking it opens that Note in the Notes App.
+ * edited Note when none is pinned. Clicking it opens that Note in the Notes App,
+ * which has no Dock icon: the Window springs out of this Widget instead.
  * With no Notes yet, it offers to create one.
  */
 @Component({
@@ -41,6 +42,12 @@ import { WindowState } from '../window/window-state';
 export class NotesWidget {
   protected readonly webos = inject(WebOSCore);
   private readonly window = inject(WindowState);
+
+  constructor() {
+    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    this.window.registerOrigin('notes', element);
+    inject(DestroyRef).onDestroy(() => this.window.unregisterOrigin('notes', element));
+  }
 
   protected open(note: ListedNote): void {
     this.webos.send((core) => core.notes.select(note.id));

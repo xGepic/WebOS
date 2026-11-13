@@ -3,7 +3,7 @@ import { apps } from './apps';
 import * as desktop from './desktop';
 
 export interface DesktopApi {
-  /** Every App, in Dock order. */
+  /** Every App; those `docked` have a Dock icon, in this order. */
   readonly apps: typeof apps;
   readonly desktop: {
     /** The snap grid, in cells. */
