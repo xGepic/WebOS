@@ -1,4 +1,5 @@
 :host {
+  container-type: size;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -22,20 +23,52 @@
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
-rect.level-0 {
-  fill: var(--control-fill-hover);
+/* The graph's squares and the legend's swatches share the shades. */
+.level-0 {
+  --shade: var(--control-fill-hover);
 }
-rect.level-1 {
-  fill: rgba(111, 143, 220, 0.32);
+.level-1 {
+  --shade: rgba(111, 143, 220, 0.32);
 }
-rect.level-2 {
-  fill: rgba(111, 143, 220, 0.55);
+.level-2 {
+  --shade: rgba(111, 143, 220, 0.55);
 }
-rect.level-3 {
-  fill: rgba(111, 143, 220, 0.78);
+.level-3 {
+  --shade: rgba(111, 143, 220, 0.78);
 }
-rect.level-4 {
-  fill: var(--accent);
+.level-4 {
+  --shade: var(--accent);
+}
+rect {
+  fill: var(--shade);
+}
+.label {
+  fill: var(--text-secondary);
+  font-size: 8px;
+}
+.weekday {
+  text-anchor: end;
+  dominant-baseline: central;
+}
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.125rem 0.75rem;
+  padding: 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}
+.today {
+  white-space: nowrap;
+}
+.count {
+  margin-right: 0.2em;
+  font-size: 1.375rem;
+  font-weight: 500;
+}
+.note {
+  min-width: 0;
 }
 p {
   margin: 0;
@@ -54,8 +87,36 @@ strong {
   font-variant-numeric: tabular-nums;
 }
 .stale {
-  margin-left: auto;
   opacity: 0.8;
+}
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  margin-left: auto;
+}
+.swatch {
+  width: 0.5625rem;
+  height: 0.5625rem;
+  border-radius: 2px;
+  background: var(--shade);
+}
+.legend .swatch:first-child {
+  margin-left: 0.25rem;
+}
+.legend .swatch:last-of-type {
+  margin-right: 0.25rem;
+}
+/* The smallest size has no room for the line on today, a narrow one none for the legend. */
+@container (max-height: 200px) {
+  .headline {
+    display: none;
+  }
+}
+@container (max-width: 460px) {
+  .legend {
+    display: none;
+  }
 }
 .message {
   margin: auto 0;

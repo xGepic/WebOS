@@ -88,6 +88,37 @@ describe('the GitHub Widget', () => {
     expect(notYetToday.webos.github.view()).toMatchObject({ currentStreak: 2, longestStreak: 4 });
   });
 
+  it('labels the week each month starts, leaving out a label the next one would crowd', async () => {
+    // 40 days up to Thursday, Nov 12 start on Sunday, Oct 4: October has room for its label.
+    const roomy = await setUp({ respond: () => graph(Array(40).fill(1)) });
+    await roomy.webos.github.setToken('ghp_secret');
+    await settle();
+    expect(roomy.webos.github.view()).toMatchObject({ months: ['Oct', null, null, null, 'Nov', null] });
+
+    // 20 days start on Saturday, Oct 24: a lone October day two weeks before November gets no label.
+    const crowded = await setUp({ respond: () => graph(Array(20).fill(1)) });
+    await crowded.webos.github.setToken('ghp_secret');
+    await settle();
+    expect(crowded.webos.github.view()).toMatchObject({ months: [null, null, 'Nov', null] });
+  });
+
+  it("says in words how today and the streak are going", async () => {
+    // The last count is today, Thursday Nov 12; the week began on Sunday, Nov 8.
+    const cases: [number[], number, string][] = [
+      [[2, 2, 2, 0, 1, 1, 1], 1, '3 days in a row. Keep it going.'],
+      [[0, 4], 4, 'A new streak starts today.'],
+      [[1, 1, 1, 1, 0, 1, 1, 0], 0, 'Nothing yet today. One contribution keeps your 2-day streak.'],
+      [[5, 0, 2, 0, 0, 0], 0, 'Nothing yet today, 2 so far this week.'],
+      [[3, 0, 0, 0, 0, 0], 0, 'A quiet week so far. Today is a good day to start.'],
+    ];
+    for (const [counts, today, message] of cases) {
+      const { webos } = await setUp({ respond: () => graph(counts) });
+      await webos.github.setToken('ghp_secret');
+      await settle();
+      expect(webos.github.view()).toMatchObject({ today, message });
+    }
+  });
+
   it('shows the stored graph at once in a new tab, and fetches it again only once it is an hour old', async () => {
     const { webos, storage, clock, fetch } = await setUp();
     await webos.github.setToken('ghp_secret');

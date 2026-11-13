@@ -8,11 +8,16 @@ const WEEKS_SHOWN: Record<WidgetSize, number> = { S: 26, M: 39, L: 53 };
 /** A day's square and the gap after it, in the SVG's own units. */
 const CELL = 10;
 const GAP = 3;
+/** Room left of the graph for the weekday labels and above it for the month labels, in the same units. */
+const LEFT = 24;
+const TOP = 14;
 
 /**
  * The GitHub Widget: the contribution graph of the token's owner, as on their
- * GitHub profile, with the year's total and the current and longest streaks.
- * The token is set in Settings. Larger sizes show more weeks.
+ * GitHub profile, labelled with months and weekdays, under a line on today
+ * and above the year's total and the current and longest streaks. The token
+ * is set in Settings. Larger sizes show more weeks; the smallest leaves out
+ * the line on today.
  */
 @Component({
   selector: 'webos-github-widget',
@@ -27,13 +32,23 @@ const GAP = 3;
     </h2>
     @if (webos.github(); as github) {
       @if (github.status === 'ready') {
+        <p class="headline">
+          <span class="today"><strong class="count">{{ github.today }}</strong> today</span>
+          <span class="note">{{ github.message }}</span>
+        </p>
         <svg
           class="graph"
-          [attr.viewBox]="'0 0 ' + graphWidth() + ' ' + (7 * (cell + gap) - gap)"
+          [attr.viewBox]="viewBox()"
           preserveAspectRatio="xMaxYMid meet"
           role="img"
           [attr.aria-label]="github.total + ' contributions in the last year'"
         >
+          @for (label of monthLabels(); track label.x) {
+            <text class="label" [attr.x]="label.x" [attr.y]="-labelGap">{{ label.text }}</text>
+          }
+          @for (row of weekdayRows; track row.day) {
+            <text class="label weekday" [attr.x]="-labelGap" [attr.y]="row.day * (cell + gap) + cell / 2">{{ row.text }}</text>
+          }
           @for (week of weeks(); track $index; let w = $index) {
             @for (day of week; track $index; let d = $index) {
               @if (day) {
@@ -60,6 +75,13 @@ const GAP = 3;
               {{ github.problem === 'token' ? "Token refused" : github.updatedAt ? 'Updated ' + github.updatedAt : 'Offline' }}
             </span>
           }
+          <span class="legend" aria-hidden="true">
+            Less
+            @for (level of levels; track level) {
+              <span class="swatch" [class]="'level-' + level"></span>
+            }
+            More
+          </span>
         </p>
       } @else if (github.status === 'loading') {
         <p class="message">Loading your contributions…</p>
@@ -86,6 +108,14 @@ export class GitHubWidget {
   readonly size = input.required<WidgetSize>();
   protected readonly cell = CELL;
   protected readonly gap = GAP;
+  protected readonly labelGap = 4;
+  protected readonly levels = [0, 1, 2, 3, 4];
+  /** GitHub labels every other row, so the labels never crowd each other. */
+  protected readonly weekdayRows = [
+    { day: 1, text: 'Mon' },
+    { day: 3, text: 'Wed' },
+    { day: 5, text: 'Fri' },
+  ];
 
   protected readonly ready = computed(() => {
     const github = this.webos.github();
@@ -95,6 +125,13 @@ export class GitHubWidget {
   /** The last weeks this size shows, oldest first. */
   protected readonly weeks = computed(() => this.ready()?.weeks.slice(-WEEKS_SHOWN[this.size()]) ?? []);
   protected readonly graphWidth = computed(() => Math.max(1, this.weeks().length * (CELL + GAP) - GAP));
+  protected readonly viewBox = computed(() => `${-LEFT} ${-TOP} ${this.graphWidth() + LEFT} ${7 * (CELL + GAP) - GAP + TOP}`);
+
+  /** The month labels over the weeks this size shows. */
+  protected readonly monthLabels = computed(() => {
+    const months = this.ready()?.months.slice(-WEEKS_SHOWN[this.size()]) ?? [];
+    return months.flatMap((text, week) => (text ? [{ text, x: week * (CELL + GAP) }] : []));
+  });
 
   protected describe(day: ContributionDay): string {
     const date = new Date(`${day.date}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });

@@ -57,6 +57,12 @@ export type GitHubView =
       total: string;
       /** Weeks from Sunday to Saturday, oldest first; days outside the year are null. */
       weeks: (ContributionDay | null)[][];
+      /** The month each week starts, e.g. "Nov", aligned with `weeks`; null where no label goes. */
+      months: (string | null)[];
+      /** Contributions so far today. */
+      today: number;
+      /** A short line on today and the streak, e.g. "12 days in a row. Keep it going." */
+      message: string;
       /** Days in a row with a contribution, up to today; today counts once it has one. */
       currentStreak: number;
       longestStreak: number;
@@ -124,6 +130,32 @@ function inWeeks(days: readonly ContributionDay[]): (ContributionDay | null)[][]
   return weeks;
 }
 
+/** "Nov" for `2026-11-01`. */
+const monthName = (date: string) =>
+  new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+
+/** A month label is this many weeks wide: a label closer than this to the next one is left out. */
+const LABEL_WEEKS = 3;
+
+/** A label over each week that holds the 1st of a month, and over the first week, unless the next label would crowd it. */
+function monthLabels(weeks: readonly (ContributionDay | null)[][]): (string | null)[] {
+  const labels = weeks.map((week, index) => {
+    const first = week.find((day) => day?.date.endsWith('-01')) ?? (index === 0 ? week.find((day) => day) : undefined);
+    return first ? monthName(first.date) : null;
+  });
+  return labels.map((label, index) =>
+    label && labels.slice(index + 1, index + LABEL_WEEKS).some((next) => next) ? null : label,
+  );
+}
+
+/** A line on today and the streak, in words. */
+function todayMessage(today: number, current: number, thisWeek: number): string {
+  if (today > 0) return current > 1 ? `${current} days in a row. Keep it going.` : 'A new streak starts today.';
+  if (current > 0) return `Nothing yet today. One contribution keeps your ${current}-day streak.`;
+  if (thisWeek > 0) return `Nothing yet today, ${thisWeek} so far this week.`;
+  return 'A quiet week so far. Today is a good day to start.';
+}
+
 /** The current and longest runs of days with a contribution, up to `today`. */
 function streaks(days: readonly ContributionDay[], today: string) {
   const past = days.filter((day) => day.date <= today);
@@ -148,12 +180,23 @@ export function gitHubView(
 ): GitHubView {
   if (!hasToken) return { status: 'no-token' };
   if (!contributions) return problem ? { status: 'failed', problem } : { status: 'loading' };
-  const { current, longest } = streaks(contributions.days, isoDate(now));
+  const todayDate = isoDate(now);
+  const { current, longest } = streaks(contributions.days, todayDate);
+  const weeks = inWeeks(contributions.days);
+  const today = contributions.days.find((day) => day.date === todayDate)?.count ?? 0;
+  const sunday = isoDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()));
+  const thisWeek = contributions.days.reduce(
+    (sum, day) => sum + (day.date >= sunday && day.date <= todayDate ? day.count : 0),
+    0,
+  );
   return {
     status: 'ready',
     login: contributions.login,
     total: contributions.total.toLocaleString('en-US'),
-    weeks: inWeeks(contributions.days),
+    weeks,
+    months: monthLabels(weeks),
+    today,
+    message: todayMessage(today, current, thisWeek),
     currentStreak: current,
     longestStreak: longest,
     updatedAt:
