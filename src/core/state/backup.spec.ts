@@ -80,7 +80,7 @@ describe('Backup', () => {
   const link = (id: string, url = 'https://example.com') => ({ id, title: 'Link', url });
   const group = (id: string, links: unknown[]) => ({ id, name: 'Group', links });
 
-  /** A valid current backup with one part replaced. */
+  /** A valid backup (from version 12, which webOS brings forward) with one part replaced. */
   const backupWith = (change: Record<string, unknown>) =>
     JSON.stringify({
       schemaVersion: 12,
@@ -141,9 +141,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 15 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 16 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 15, this build knows 14).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 16, this build knows 15).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -190,6 +190,6 @@ describe('Backup', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.forWidget()?.title).toBe('Old Note');
     expect(webos.desktop.hidden()).toEqual([]);
-    expect(webos.desktop.layout()).toHaveLength(13);
+    expect(webos.desktop.layout()).toHaveLength(12);
   });
 });

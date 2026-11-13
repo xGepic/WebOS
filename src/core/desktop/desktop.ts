@@ -112,15 +112,6 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
-  // The contribution graph is wide: half a year at S, three quarters at M, the whole year at L.
-  github: {
-    name: 'GitHub',
-    sizes: {
-      S: { columns: 6, rows: 2 },
-      M: { columns: 9, rows: 3 },
-      L: { columns: 12, rows: 3 },
-    },
-  },
   // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
   search: {
     name: 'Search',
@@ -159,8 +150,9 @@ export interface LayoutEntry extends Placement {
  * the World Clock, Weather, the Clock with the Search Widget under it,
  * Calendar and Sun, with the Clock and Search in the exact middle and a
  * one-column gap on either side of them; beneath it a free 3 × 5 slot, so Edit
- * Mode has room to move things, then Todos, Notes, GitHub (with a Countdown,
- * System and Moon under it) and Recent. Every Widget is visible.
+ * Mode has room to move things, then Todos, Notes, a Countdown, System and
+ * Moon side by side along the bottom, and Recent. Every Widget is visible, and
+ * the 9 × 3 space above the Countdown, System and Moon is free too.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
@@ -171,7 +163,6 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
   { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
-  { widget: 'github', size: 'M', column: 9, row: 3, visible: true },
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
   { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
   { widget: 'system', size: 'S', column: 12, row: 6, visible: true },

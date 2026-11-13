@@ -15,7 +15,6 @@ import { springTo } from '../../motion/springs';
 import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { CountdownWidget } from '../countdown-widget/countdown-widget';
-import { GitHubWidget } from '../github-widget/github-widget';
 import { MoonWidget } from '../moon-widget/moon-widget';
 import { NotesWidget } from '../notes-widget/notes-widget';
 import { RecentWidget } from '../recent-widget/recent-widget';
@@ -65,7 +64,6 @@ const MENU_MARGIN = 8;
     SunWidget,
     RecentWidget,
     SystemWidget,
-    GitHubWidget,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -131,9 +129,6 @@ const MENU_MARGIN = 8;
                 }
                 @case ('system') {
                   <webos-system-widget />
-                }
-                @case ('github') {
-                  <webos-github-widget [size]="placed.size" />
                 }
               }
             </div>

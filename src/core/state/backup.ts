@@ -12,15 +12,14 @@ export interface BackupFile {
 
 /**
  * A backup file of `document`, named after the local date `now`: `webos-backup-2026-11-12.json`.
- * The cached weather and GitHub graph are left out: they are stale by the time
- * the file is used. So is the GitHub token: no secret sits in plain text in a backup.
+ * The cached weather is left out: it is stale by the time the file is used.
  */
 export function exportFile(document: StateDocument, now: Date): BackupFile {
   const pad = (n: number) => String(n).padStart(2, '0');
   return {
     fileName: `webos-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`,
     text: JSON.stringify(
-      { ...document, weather: { ...document.weather, report: null }, github: { token: '', contributions: null } },
+      { ...document, weather: { ...document.weather, report: null } },
       null,
       2,
     ),
@@ -52,8 +51,6 @@ export function importDocument(text: string): StateDocument {
     ...document,
     // Any weather in the file is stale; the next refresh fetches it fresh.
     weather: { ...document.weather, report: null },
-    // A backup holds no token; the core keeps this machine's own.
-    github: { token: '', contributions: null },
     linkGroups: document.linkGroups.map((group) => ({
       ...group,
       links: group.links.map((link) => ({ ...link, url: normalizeUrl(link.url) })),

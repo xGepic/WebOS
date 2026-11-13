@@ -16,7 +16,7 @@ export interface Refresher<Problem> {
 }
 
 export interface RefresherOptions<Source, Answer, Problem> {
-  /** What the answer is fetched for (the Weather city, the GitHub token), or undefined when there is nothing to fetch. */
+  /** What the answer is fetched for (the Weather city), or undefined when there is nothing to fetch. */
   source(state: StateDocument): Source | undefined;
   /** Whether two sources are the same, so an answer for one still fits the other. */
   same(a: Source, b: Source): boolean;

@@ -59,8 +59,6 @@ export class WebOSCore {
   readonly sun = this.read((core) => core.sun.view());
   readonly recentPages = this.read((core) => core.recent.pages());
   readonly system = this.read((core) => core.system.view());
-  readonly github = this.read((core) => core.github.view());
-  readonly hasGitHubToken = this.read((core) => core.github.hasToken());
 
   /** Creates the core. Called once by the app initializer before the first render. */
   async start(): Promise<void> {

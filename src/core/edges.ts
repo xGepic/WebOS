@@ -67,7 +67,7 @@ export class FetchError extends Error {
 }
 
 /**
- * Fetches JSON over the network, for the Weather and GitHub Widgets. Rejects
+ * Fetches JSON over the network, for the Weather Widget. Rejects
  * when the request fails or times out, and with a `FetchError` when the
  * server answers without success.
  */

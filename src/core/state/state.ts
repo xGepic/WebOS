@@ -4,7 +4,6 @@ import { isFiniteNumber, isRecord, isText } from '../guards';
 import type { LinkGroup } from '../organizer/links';
 import type { Note } from '../organizer/notes';
 import type { Countdown } from '../time/countdown';
-import type { GitHubContributions } from '../activity/github';
 import type { Todo } from '../organizer/todos';
 import type { WeatherCity, WeatherReport } from '../sky/weather';
 import type { WorldClockCity } from '../time/world-clock';
@@ -43,15 +42,9 @@ export interface StateDocument {
   countdowns: Countdown[];
   /** The World Clock's cities, in the order the user put them. */
   worldClocks: WorldClockCity[];
-  github: {
-    /** The personal access token the GitHub Widget reads with; empty when not set. Backups leave it out. */
-    token: string;
-    /** The last contribution graph fetched with it. A cache: backups leave it out. */
-    contributions: GitHubContributions | null;
-  };
 }
 
-const SCHEMA_VERSION = 14;
+const SCHEMA_VERSION = 15;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -211,6 +204,9 @@ const migrations: Record<number, Migration> = {
         : { column: 0, row: 0, visible: false };
     return { ...document, schemaVersion: 14, layout: [...saved, { widget: 'search', size: 'M', ...under }] };
   },
+  // No more GitHub Widget: the token and the stored contribution graph go. The layout's GitHub
+  // entry is dropped when the layout is loaded, as for any Widget webOS no longer has.
+  14: ({ github: _, ...document }) => ({ ...document, schemaVersion: 15 }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -252,7 +248,6 @@ function freshDocument(): StateDocument {
     weather: { city: null, report: null },
     countdowns: [],
     worldClocks: [],
-    github: { token: '', contributions: null },
   };
 }
 
@@ -284,7 +279,6 @@ function assertCurrentShape(
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
   const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
-  const github = document['github'] as { token?: unknown; contributions?: unknown } | undefined;
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -300,10 +294,7 @@ function assertCurrentShape(
     !(weather.city === null || isRecord(weather.city)) ||
     !(weather.report === null || isRecord(weather.report)) ||
     !Array.isArray(document['countdowns']) ||
-    !Array.isArray(document['worldClocks']) ||
-    !isRecord(github) ||
-    typeof github.token !== 'string' ||
-    !(github.contributions === null || isRecord(github.contributions))
+    !Array.isArray(document['worldClocks'])
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

@@ -25,7 +25,6 @@ export type { SunView } from './sky/sun';
 export type { RecentPage } from './activity/recent';
 export type { SystemView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
-export type { ContributionDay, ContributionLevel, GitHubProblem, GitHubView } from './activity/github';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
 export type { WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
 export { describeCity } from './sky/weather';
@@ -47,7 +46,7 @@ export interface WebOSEdges {
   clock: Clock;
   /** The browser's bookmarks and history, for the Launcher and the Recent Widget. Without it, they find none. */
   browser?: BrowserLookup;
-  /** The network, for the Weather and GitHub Widgets. Without it, nothing is fetched. */
+  /** The network, for the Weather Widget. Without it, nothing is fetched. */
   fetch?: Fetch;
   /** The machine's processors and memory, for the System Widget. Without it, the Widget says they are unavailable. */
   system?: SystemMonitor;
@@ -131,7 +130,7 @@ export async function createWebOS({ storage, clock, browser, fetch, system }: We
     ...createBackup(store),
     ...createTime(store),
     ...createSky(store, fetch),
-    ...createActivity(store, { browser, fetch, system }),
+    ...createActivity(store, { browser, system }),
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);

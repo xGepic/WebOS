@@ -211,7 +211,6 @@ describe('state document', () => {
       'search M@7,2',
       'todos M@3,3',
       'notes M@6,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
@@ -248,7 +247,6 @@ describe('state document', () => {
       'sun M@18,0',
       'search M@7,2',
       'todos M@3,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
@@ -256,7 +254,7 @@ describe('state document', () => {
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 14, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 15, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -292,7 +290,6 @@ describe('state document', () => {
       'sun M@18,0',
       'search M@7,2',
       'notes M@6,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
@@ -333,7 +330,6 @@ describe('state document', () => {
       'sun M@18,0',
       'search M@7,2',
       'todos M@3,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
@@ -344,8 +340,9 @@ describe('state document', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.cities()).toEqual([]);
-    expect(webos.github.hasToken()).toBe(false);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 14 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 15 });
+    // The GitHub Widget is gone, and with it the token and the stored graph.
+    expect(await storage.read()).not.toHaveProperty('github');
   });
 
   it('moves a v11 layout (the first build with more Widgets) to the wide Stage layout, showing the new Widgets', async () => {
@@ -389,7 +386,6 @@ describe('state document', () => {
       'search M@7,2',
       'todos M@3,3',
       'notes M@6,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
@@ -398,7 +394,7 @@ describe('state document', () => {
     // Calendar was hidden by the user; the newer Widgets were hidden only for lack of room.
     expect(webos.desktop.hidden()).toEqual(['calendar']);
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Race']);
-    expect(webos.github.hasToken()).toBe(true);
+    expect(await storage.read()).not.toHaveProperty('github');
   });
 
   /** A version 12 document with `layout`, the first build with the 21-column Stage. */
@@ -447,14 +443,13 @@ describe('state document', () => {
       'search M@7,2',
       'todos M@3,3',
       'notes M@6,3',
-      'github M@9,3',
       'recent M@18,3',
       'countdown S@9,6',
       'system S@12,6',
       'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['sun']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 14 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 15 });
   });
 
   it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers, with Search under the Clock", async () => {
@@ -486,7 +481,7 @@ describe('state document', () => {
     [
       'at the current version but missing its profile',
       {
-        schemaVersion: 13,
+        schemaVersion: 15,
         apps: {},
         linkGroups: [],
         dockedLinkIds: [],

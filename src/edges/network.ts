@@ -4,7 +4,7 @@ import { FetchError, type Fetch } from '../core';
 const TIMEOUT_MS = 10_000;
 
 /**
- * The network, for the Weather and GitHub Widgets. Sends no cookies; a slow
+ * The network, for the Weather Widget. Sends no cookies; a slow
  * or failed request rejects, and an unsuccessful one rejects with a `FetchError`.
  */
 export function createNetworkFetch(): Fetch {

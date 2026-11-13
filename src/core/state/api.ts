@@ -21,9 +21,7 @@ export function createBackup(store: Store): BackupApi {
     backup: {
       export: () => backup.exportFile(store.state(), store.clock.now()),
       async import(text) {
-        const imported = backup.importDocument(text);
-        // A backup holds no GitHub token: this machine keeps its own, and fetches its graph afresh.
-        await store.replace({ ...imported, github: { token: store.state().github.token, contributions: null } });
+        await store.replace(backup.importDocument(text));
       },
     },
   };

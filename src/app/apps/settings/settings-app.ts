@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BackupSettings } from './backup-settings';
-import { GitHubSettings } from './github-settings';
 import { LinksSettings } from './links-settings';
 import { ProfileSettings } from './profile-settings';
 import { WeatherSettings } from './weather-settings';
@@ -12,7 +11,6 @@ import { WeatherSettings } from './weather-settings';
     ProfileSettings,
     WeatherSettings,
     LinksSettings,
-    GitHubSettings,
     BackupSettings,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +18,6 @@ import { WeatherSettings } from './weather-settings';
     <webos-profile-settings />
     <webos-weather-settings />
     <webos-links-settings />
-    <webos-github-settings />
     <webos-backup-settings />
   `,
   styles: `

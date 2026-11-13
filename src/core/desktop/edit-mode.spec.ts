@@ -8,7 +8,7 @@ async function webosWith(storage = roomyStorage()) {
 }
 
 /** The Widgets this layout doesn't mention, which it therefore hides, in catalog order. */
-const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'github', 'search'];
+const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'search'];
 
 /**
  * The default (Stage) layout leaves no room for a Widget to move into, so most tests
@@ -96,8 +96,8 @@ describe('moving a Widget', () => {
     const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // On the Stage Desktop, Recent one column left covers GitHub, which then fits nowhere.
-    expect(await webos.desktop.move('recent', 17, 3)).toBe(false);
+    // On the Stage Desktop, the Clock dropped onto Todos and Notes pushes them out, and no space five rows tall is left for them.
+    expect(await webos.desktop.move('clock', 0, 3)).toBe(false);
 
     expect(where(webos)).toEqual(before);
   });
@@ -117,7 +117,6 @@ describe('moving a Widget', () => {
       sun: 'M@18,0',
       notes: 'M@3,3',
       todos: 'M@6,3',
-      github: 'M@9,3',
       recent: 'M@18,3',
       countdown: 'S@9,6',
       system: 'S@12,6',
@@ -169,8 +168,8 @@ describe('resizing a Widget', () => {
     const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // On the Stage Desktop, Links at L (6 × 5) would cover Todos, which fits nowhere else.
-    expect(await webos.desktop.resize('recent', 'L')).toBe(false);
+    // On the Stage Desktop, the Clock at L (12 × 3) covers Calendar, Sun and Search, and Search then fits nowhere.
+    expect(await webos.desktop.resize('clock', 'L')).toBe(false);
 
     expect(where(webos)).toEqual(before);
   });
