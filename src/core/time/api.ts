@@ -3,6 +3,7 @@ import type { WeatherCity } from '../sky/weather';
 import type { Store } from '../store';
 import * as calendar from './calendar';
 import * as countdown from './countdown';
+import * as holidays from './holidays';
 import * as worldClock from './world-clock';
 
 export interface TimeApi {
@@ -15,7 +16,8 @@ export interface TimeApi {
   readonly calendar: {
     /**
      * A month for the Calendar Widget, `offset` months from the current one
-     * (0 by default), in weeks starting on Monday with ISO week numbers, today marked.
+     * (0 by default), in weeks starting on Monday with ISO week numbers, today
+     * marked, and each day's Austrian public holiday and Countdowns.
      */
     month(offset?: number): calendar.CalendarMonth;
     /** A day (`2026-11-30`) for the line under the grid: "Mon, Nov 30", "in 18 days", week 49. Undefined for text that isn't a date. */
@@ -76,13 +78,26 @@ export function createTime(store: Store): TimeApi {
     return true;
   };
 
+  /** The holidays and Countdowns on the days of the month `offset` months from now. */
+  const marksFor = (offset: number): calendar.DayMarks => {
+    const holidayDays = new Map<string, string>();
+    for (const year of calendar.yearsShown(clock.now(), offset)) {
+      for (const holiday of holidays.holidays(year)) holidayDays.set(holiday.date, holiday.name);
+    }
+    const countdownDays = new Map<string, string[]>();
+    for (const { date, title } of [...state().countdowns].sort((a, b) => a.title.localeCompare(b.title))) {
+      countdownDays.set(date, [...(countdownDays.get(date) ?? []), title]);
+    }
+    return { holidays: holidayDays, countdowns: countdownDays };
+  };
+
   return {
     clock: {
       time: () => formatTime(clock.now()),
       date: () => formatDate(clock.now()),
     },
     calendar: {
-      month: (offset = 0) => calendar.monthView(clock.now(), offset),
+      month: (offset = 0) => calendar.monthView(clock.now(), offset, marksFor(offset)),
       describe: (date) => calendar.describeDay(date, clock.now()),
       addDays: calendar.addDays,
       addMonths: calendar.addMonths,

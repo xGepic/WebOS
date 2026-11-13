@@ -100,7 +100,7 @@ describe('Backup', () => {
   /** A valid backup from this build, with one part replaced: for the Clips, which an older backup can't have. */
   const currentBackupWith = (change: Record<string, unknown>) =>
     JSON.stringify({
-      schemaVersion: 17,
+      schemaVersion: 19,
       profile: { name: '' },
       apps: {},
       todos: [],
@@ -151,9 +151,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 18 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 20 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 18, this build knows 17).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 20, this build knows 19).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });

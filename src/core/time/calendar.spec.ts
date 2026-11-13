@@ -1,4 +1,4 @@
-import { createWebOS, type CalendarWeek } from '../index';
+import { createWebOS, type CalendarDay, type CalendarMonth, type CalendarWeek, type WebOS } from '../index';
 import { createMemoryStorage, createTestClock } from '../testing';
 
 async function webosOn(date: Date) {
@@ -64,7 +64,7 @@ describe('the Calendar Widget', () => {
     const month = webos.calendar.month();
     expect(month.month).toBe('December');
     expect(month.weeks.flatMap((w) => w.days).filter((day) => day.today)).toEqual([
-      { date: '2026-12-01', day: 1, inMonth: true, today: true },
+      { date: '2026-12-01', day: 1, inMonth: true, today: true, weekend: false, countdowns: [] },
     ]);
   });
 });
@@ -126,5 +126,103 @@ describe('a day in the Calendar', () => {
     expect(webos.calendar.addMonths('2027-01-31', 1)).toBe('2027-02-28');
     expect(webos.calendar.addMonths('2027-01-15', -2)).toBe('2026-11-15');
     expect(webos.calendar.today()).toBe('2026-11-12');
+  });
+});
+
+/** Every day of the month (not the neighbouring months' days) that has a holiday, as "2026-12-25 Christmas Day". */
+const holidaysIn = (month: CalendarMonth) =>
+  month.weeks.flatMap((w) => w.days).flatMap((day) => (day.inMonth && day.holiday ? [`${day.date} ${day.holiday}`] : []));
+
+/** A day of the grid by its date. */
+const dayOf = (month: CalendarMonth, date: string): CalendarDay | undefined =>
+  month.weeks.flatMap((w) => w.days).find((day) => day.date === date);
+
+/** The holidays of the twelve months from `offset`, as `holidaysIn` lists them. */
+const holidaysOfYear = (webos: WebOS, offset = 0) =>
+  Array.from({ length: 12 }, (_, i) => holidaysIn(webos.calendar.month(offset + i))).flat();
+
+describe('weekends on the Calendar', () => {
+  it('marks Saturdays and Sundays, including the neighbouring months’ days', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+
+    const weeks = webos.calendar.month().weeks;
+
+    expect(weeks.map((w) => w.days.map((day) => (day.weekend ? 'W' : '-')).join(''))).toEqual(Array(6).fill('-----WW'));
+    expect(weeks[0].days[5]).toMatchObject({ date: '2026-10-31', inMonth: false, weekend: true });
+  });
+});
+
+describe('Countdowns on the Calendar', () => {
+  it('names the Countdowns on their days, by title, in every month that shows the day', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+    await webos.countdowns.add({ title: 'Release', date: '2026-11-30' });
+    await webos.countdowns.add({ title: 'Party', date: '2026-11-30' });
+    await webos.countdowns.add({ title: 'Race', date: '2027-04-25' });
+
+    expect(dayOf(webos.calendar.month(), '2026-11-30')?.countdowns).toEqual(['Party', 'Release']);
+    expect(dayOf(webos.calendar.month(), '2026-11-29')?.countdowns).toEqual([]);
+    // 30 November also fills out December's first week.
+    expect(dayOf(webos.calendar.month(1), '2026-11-30')?.countdowns).toEqual(['Party', 'Release']);
+    expect(dayOf(webos.calendar.month(5), '2027-04-25')?.countdowns).toEqual(['Race']);
+  });
+
+  it('follows a Countdown as it is moved and deleted', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+    const id = (await webos.countdowns.add({ title: 'Release', date: '2026-11-30' }))!;
+
+    await webos.countdowns.edit(id, { title: 'Release', date: '2026-11-20' });
+    expect(dayOf(webos.calendar.month(), '2026-11-30')?.countdowns).toEqual([]);
+    expect(dayOf(webos.calendar.month(), '2026-11-20')?.countdowns).toEqual(['Release']);
+
+    await webos.countdowns.delete(id);
+    expect(dayOf(webos.calendar.month(), '2026-11-20')?.countdowns).toEqual([]);
+  });
+});
+
+describe('Austrian public holidays on the Calendar', () => {
+  it('marks the 13 public holidays, those after Easter moving with it', async () => {
+    const { webos } = await webosOn(new Date(2026, 0, 1, 9, 0));
+
+    // Easter Sunday 2026 is 5 April.
+    expect(holidaysOfYear(webos)).toEqual([
+      '2026-01-01 New Year’s Day',
+      '2026-01-06 Epiphany',
+      '2026-04-06 Easter Monday',
+      '2026-05-01 Labour Day',
+      '2026-05-14 Ascension Day',
+      '2026-05-25 Whit Monday',
+      '2026-06-04 Corpus Christi',
+      '2026-08-15 Assumption Day',
+      '2026-10-26 National Day',
+      '2026-11-01 All Saints’ Day',
+      '2026-12-08 Immaculate Conception',
+      '2026-12-25 Christmas Day',
+      '2026-12-26 St. Stephen’s Day',
+    ]);
+  });
+
+  it.each([
+    [2024, '2024-04-01', '2024-05-30'],
+    [2025, '2025-04-21', '2025-06-19'],
+    [2027, '2027-03-29', '2027-05-27'],
+    [2038, '2038-04-26', '2038-06-24'],
+  ])('finds Easter in %i: Easter Monday is %s and Corpus Christi %s', async (year, easterMonday, corpusChristi) => {
+    const { webos } = await webosOn(new Date(year, 0, 1, 9, 0));
+
+    expect(holidaysOfYear(webos)).toEqual(expect.arrayContaining([`${easterMonday} Easter Monday`, `${corpusChristi} Corpus Christi`]));
+  });
+
+  it('marks next year’s holidays on the days that fill out December', async () => {
+    // December 2026's last week runs into 2027: 1 January is a Friday.
+    const { webos } = await webosOn(new Date(2026, 11, 1, 9, 0));
+
+    expect(dayOf(webos.calendar.month(), '2027-01-01')).toMatchObject({ inMonth: false, holiday: 'New Year’s Day' });
+  });
+
+  it('leaves ordinary days without a holiday', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+
+    expect(holidaysIn(webos.calendar.month())).toEqual(['2026-11-01 All Saints’ Day']);
+    expect(dayOf(webos.calendar.month(), '2026-11-12')?.holiday).toBeUndefined();
   });
 });

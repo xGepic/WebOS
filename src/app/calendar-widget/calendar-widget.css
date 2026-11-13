@@ -73,6 +73,7 @@ td {
   padding: 0.05em 0.08em;
 }
 .day {
+  position: relative;
   display: inline-grid;
   place-items: center;
   width: 1.8em;
@@ -86,12 +87,39 @@ td {
 .outside {
   opacity: 0.28;
 }
+/* Weekends and public holidays: days off, so quieter than working days. */
+.day-off {
+  color: var(--text-secondary);
+}
+/* A dot under the number for each kind of mark: a holiday, then any Countdowns. */
+.marks {
+  position: absolute;
+  bottom: 0.18em;
+  left: 50%;
+  display: flex;
+  gap: 0.16em;
+  transform: translateX(-50%);
+}
+.mark {
+  width: 0.22em;
+  height: 0.22em;
+  border-radius: var(--radius-pill);
+}
+.holiday-mark {
+  background: var(--text-secondary);
+}
+.countdown-mark {
+  background: var(--accent);
+}
 .today,
 .today:hover {
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 650;
   opacity: 1;
+}
+.today .mark {
+  background: var(--on-accent);
 }
 /* The reset above clears the shared .button fill, so it is set again here. */
 .today-button {

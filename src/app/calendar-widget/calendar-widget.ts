@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
+import type { CalendarDay } from '../../core';
 import { Toasts } from '../toast/toasts';
 import { WebOSCore } from '../webos-core';
 
@@ -8,7 +9,9 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
 
 /**
  * The Calendar Widget: a month in weeks starting on Monday, with ISO week
- * numbers and today marked. No events. Like the Clock it has no surface.
+ * numbers and today marked. Weekends and public holidays are quieter; a
+ * holiday and a Countdown each put a dot under their day, named on hover.
+ * Like the Clock it has no surface.
  *
  * ‹ and › browse months, and Today, shown under the grid while another
  * month is, goes back to the current one. Clicking a day (or Enter) copies
@@ -53,15 +56,27 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
                     class="day"
                     [class.outside]="!day.inMonth"
                     [class.today]="day.today"
+                    [class.day-off]="day.weekend || !!day.holiday"
                     [attr.data-date]="day.date"
                     [attr.aria-current]="day.today ? 'date' : null"
-                    [attr.aria-label]="labelFor(day.date)"
+                    [attr.aria-label]="labelFor(day)"
+                    [attr.title]="namesOf(day) || null"
                     [tabindex]="day.date === tabStop() ? 0 : -1"
                     (focus)="active.set(day.date)"
                     (keydown)="onKey($event, day.date)"
                     (click)="copy(day.date)"
                   >
                     {{ day.day }}
+                    @if (day.holiday || day.countdowns.length) {
+                      <span class="marks" aria-hidden="true">
+                        @if (day.holiday) {
+                          <span class="mark holiday-mark"></span>
+                        }
+                        @if (day.countdowns.length) {
+                          <span class="mark countdown-mark"></span>
+                        }
+                      </span>
+                    }
                   </button>
                 </td>
               }
@@ -97,9 +112,16 @@ export class CalendarWidget {
     return (days.find((day) => day.today) ?? days.find((day) => day.inMonth))?.date;
   });
 
-  protected labelFor(date: string): string {
-    const details = this.webos.calendar.describe(date);
-    return details ? `${details.label}, ${details.relative}. Copy ${date}` : date;
+  protected labelFor(day: CalendarDay): string {
+    const details = this.webos.calendar.describe(day.date);
+    if (!details) return day.date;
+    const names = this.namesOf(day);
+    return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''} Copy ${day.date}`;
+  }
+
+  /** The day's holiday and Countdowns, for its tooltip: "Christmas Day · Release". Empty for a plain day. */
+  protected namesOf(day: CalendarDay): string {
+    return [...(day.holiday ? [day.holiday] : []), ...day.countdowns].join(' · ');
   }
 
   protected showMonth(offset: number): void {

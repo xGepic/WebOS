@@ -7,7 +7,21 @@ export interface CalendarDay {
   /** False for the days of the previous and next months that fill the first and last weeks. */
   inMonth: boolean;
   today: boolean;
+  /** Saturday or Sunday, which the Widget shows quieter. */
+  weekend: boolean;
+  /** The Austrian public holiday on this day, if any. */
+  holiday?: string;
+  /** The titles of the Countdowns on this day, if any. */
+  countdowns: readonly string[];
 }
+
+/** What the Calendar marks on its days, by date (`2026-12-25`). */
+export interface DayMarks {
+  holidays: ReadonlyMap<string, string>;
+  countdowns: ReadonlyMap<string, readonly string[]>;
+}
+
+const NO_MARKS: DayMarks = { holidays: new Map(), countdowns: new Map() };
 
 /** A row of the grid: Monday to Sunday, with its ISO week number. */
 export interface CalendarWeek {
@@ -63,11 +77,18 @@ function isoWeek(date: Date): number {
   return Math.floor((dayNumber(thursday) - dayNumber(firstOfYear)) / 7) + 1;
 }
 
+/** The years a month's grid of six weeks reaches into: the month's own, and the one before or after it in December and January. */
+export function yearsShown(now: Date, offset = 0): number[] {
+  const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  const year = first.getFullYear();
+  return first.getMonth() === 0 ? [year - 1, year] : first.getMonth() === 11 ? [year, year + 1] : [year];
+}
+
 /**
  * The month `offset` months from the one containing `now` (0 is the current
- * month, -1 the one before), in local time.
+ * month, -1 the one before), in local time, with `marks` on its days.
  */
-export function monthView(now: Date, offset = 0): CalendarMonth {
+export function monthView(now: Date, offset = 0, marks: DayMarks = NO_MARKS): CalendarMonth {
   const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
   const year = first.getFullYear();
   const month = first.getMonth();
@@ -81,7 +102,17 @@ export function monthView(now: Date, offset = 0): CalendarMonth {
     for (let weekday = 0; weekday < 7; weekday++) {
       // Built from the date parts, not by adding milliseconds, so daylight-saving changes can't shift a day.
       const date = new Date(year, month, 1 - leading + week * 7 + weekday);
-      days.push({ date: isoDate(date), day: date.getDate(), inMonth: date.getMonth() === month, today: isoDate(date) === today });
+      const iso = isoDate(date);
+      const holiday = marks.holidays.get(iso);
+      days.push({
+        date: iso,
+        day: date.getDate(),
+        inMonth: date.getMonth() === month,
+        today: iso === today,
+        weekend: weekday >= 5,
+        ...(holiday ? { holiday } : {}),
+        countdowns: marks.countdowns.get(iso) ?? [],
+      });
     }
     weeks.push({ number: isoWeek(new Date(year, month, 1 - leading + week * 7)), days });
   }

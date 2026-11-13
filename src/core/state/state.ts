@@ -42,7 +42,7 @@ export interface StateDocument {
   clips: Clip[];
 }
 
-const SCHEMA_VERSION = 17;
+const SCHEMA_VERSION = 19;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -210,6 +210,10 @@ const migrations: Record<number, Migration> = {
   15: ({ linkGroups: _, dockedLinkIds: __, ...document }) => ({ ...document, schemaVersion: 16 }),
   // The Clipboard App: no Clips yet.
   16: (document) => ({ ...document, schemaVersion: 17, clips: [] }),
+  // A pre-release build of the Calendar marks saved a holiday country as version 18. webOS marks
+  // Austria's holidays without one, so version 19 drops it. Version 17 documents have none to drop.
+  17: (document) => ({ ...document, schemaVersion: 18 }),
+  18: ({ calendar: _, ...document }) => ({ ...document, schemaVersion: 19 }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
