@@ -20,6 +20,7 @@ import { LinksWidget } from '../links-widget/links-widget';
 import { MoonWidget } from '../moon-widget/moon-widget';
 import { NotesWidget } from '../notes-widget/notes-widget';
 import { RecentWidget } from '../recent-widget/recent-widget';
+import { SearchWidget } from '../search-widget/search-widget';
 import { SunWidget } from '../sun-widget/sun-widget';
 import { SystemWidget } from '../system-widget/system-widget';
 import { TodosWidget } from '../todos-widget/todos-widget';
@@ -54,6 +55,7 @@ const MENU_MARGIN = 8;
   imports: [
     GridDrag,
     ClockWidget,
+    SearchWidget,
     LinksWidget,
     TodosWidget,
     NotesWidget,
@@ -98,6 +100,9 @@ const MENU_MARGIN = 8;
               @switch (placed.widget) {
                 @case ('clock') {
                   <webos-clock-widget [size]="placed.size" />
+                }
+                @case ('search') {
+                  <webos-search-widget />
                 }
                 @case ('links') {
                   <webos-links-widget />

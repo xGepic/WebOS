@@ -61,7 +61,7 @@ export interface PageResult {
   url: string;
 }
 
-/** The last Launcher result, always there: a Brave search for what was typed. */
+/** The last Launcher result, always there: a DuckDuckGo search for what was typed. */
 export interface WebResult {
   kind: 'web';
   id: 'web';
@@ -198,7 +198,7 @@ function ranked<R extends LauncherResult>(candidates: readonly Candidate<R>[], n
  * The Launcher's results for `query`, best first, by kind: Apps, then Links,
  * then Todos and Notes, then a few bookmarks, then a few history entries.
  * Within a kind, results rank by how well their title
- * matches, ignoring case. A Brave search for the query always comes last. An
+ * matches, ignoring case. A DuckDuckGo search for the query always comes last. An
  * empty query finds nothing.
  */
 export function search(query: string, { linkGroups, todos, notes, bookmarks, history }: Searchable): LauncherResult[] {
@@ -254,11 +254,16 @@ function pageCandidates(kind: PageResult['kind'], pages: readonly BrowserPage[])
   }));
 }
 
+/** The DuckDuckGo results page for `query`: the web search of the Launcher and the Search Widget. */
+export function webSearchUrl(query: string): string {
+  return `https://duckduckgo.com/?q=${encodeURIComponent(query.trim())}`;
+}
+
 function webSearch(query: string): WebResult {
   return {
     kind: 'web',
     id: 'web',
-    title: `Search Brave for "${query}"`,
-    url: `https://search.brave.com/search?q=${encodeURIComponent(query)}`,
+    title: `Search DuckDuckGo for "${query}"`,
+    url: webSearchUrl(query),
   };
 }

@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DesktopEditor } from '../desktop/desktop-editor';
-import { LauncherState } from '../launcher/launcher-state';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 
 /**
  * The Menu Bar across the top: the webOS mark and the open App's name on the
- * left, the Launcher button and the 12-hour time on the right. In Edit Mode it
- * offers the hidden Widgets and "Done".
+ * left, the 12-hour time on the right. In Edit Mode it offers the hidden
+ * Widgets and "Done". Searching is the Search Widget's job; the Launcher
+ * opens with ⌘/Ctrl+K or by typing on the Desktop.
  */
 @Component({
   selector: 'webos-menu-bar',
@@ -42,19 +42,6 @@ import { WindowState } from '../window/window-state';
     @if (editor.editing()) {
       <button type="button" class="chip done" (click)="editor.exit()">Done</button>
     }
-    <button
-      type="button"
-      class="launcher-button"
-      aria-label="Open the Launcher"
-      aria-keyshortcuts="Control+K Meta+K"
-      title="Launcher (⌘K or Ctrl+K)"
-      (click)="launcher.open()"
-    >
-      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-        <circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.75" />
-        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-      </svg>
-    </button>
     <time class="time">{{ webos.time() }}</time>
   `,
   styles: `
@@ -120,29 +107,6 @@ import { WindowState } from '../window/window-state';
     .spacer {
       flex: 1;
     }
-    .launcher-button {
-      display: grid;
-      place-items: center;
-      width: 1.75rem;
-      height: 1.375rem;
-      margin-right: 0.25rem;
-      padding: 0;
-      border: 0;
-      border-radius: var(--radius-control);
-      background: none;
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-    .launcher-button:hover {
-      background: var(--control-fill-hover);
-    }
-    .launcher-button:active {
-      background: var(--control-fill-active);
-    }
-    .launcher-button:focus-visible {
-      outline: 2px solid var(--focus-ring);
-      outline-offset: 1px;
-    }
     .time {
       font-variant-numeric: tabular-nums;
     }
@@ -152,6 +116,5 @@ export class MenuBar {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
   protected readonly editor = inject(DesktopEditor);
-  protected readonly launcher = inject(LauncherState);
   protected readonly hidden = computed(() => this.webos.hiddenWidgets() ?? []);
 }

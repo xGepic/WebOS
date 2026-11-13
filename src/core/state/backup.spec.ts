@@ -141,9 +141,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 14 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 15 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 14, this build knows 13).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 15, this build knows 14).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -190,6 +190,6 @@ describe('Backup', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.forWidget()?.title).toBe('Old Note');
     expect(webos.desktop.hidden()).toEqual([]);
-    expect(webos.desktop.layout()).toHaveLength(13);
+    expect(webos.desktop.layout()).toHaveLength(14);
   });
 });

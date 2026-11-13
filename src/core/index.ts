@@ -34,6 +34,7 @@ export type { DevUtilitiesTab } from './dev-utilities/dev-utilities';
 export type { DiffPart, DiffResult, DiffRow } from './dev-utilities/diff';
 export type { JsonError, JsonResult } from './dev-utilities/json';
 export type { ActionOutcome, ActionResult, LauncherResult } from './launcher/launcher';
+export { webSearchUrl } from './launcher/launcher';
 export type { BackupFile } from './state/backup';
 export type { Link, LinkGroup, LinkInput } from './organizer/links';
 export type { ListedNote, Note } from './organizer/notes';

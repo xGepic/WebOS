@@ -24,9 +24,10 @@ export const widgets = {
     name: 'Clock',
     sizes: {
       S: { columns: 3, rows: 2 },
-      // The middle of the Stage layout's top band, between Weather and Calendar. Seven columns,
-      // an odd number like the grid's 21, so it can sit exactly in the middle: columns 7 to 13.
-      M: { columns: 7, rows: 3 },
+      // The middle of the Stage layout's top band, between Weather and Calendar, above the Search
+      // Widget. Seven columns, an odd number like the grid's 21, so it can sit exactly in the
+      // middle: columns 7 to 13.
+      M: { columns: 7, rows: 2 },
       // A wide band across the Desktop.
       L: { columns: 12, rows: 3 },
     },
@@ -128,6 +129,15 @@ export const widgets = {
       L: { columns: 12, rows: 3 },
     },
   },
+  // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
+  search: {
+    name: 'Search',
+    sizes: {
+      S: { columns: 3, rows: 1 },
+      M: { columns: 7, rows: 1 },
+      L: { columns: 12, rows: 1 },
+    },
+  },
 } as const satisfies Record<string, WidgetDefinition>;
 
 export type WidgetId = keyof typeof widgets;
@@ -154,8 +164,9 @@ export interface LayoutEntry extends Placement {
 
 /**
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
- * the World Clock, Weather, the Clock, Calendar and Sun, with the Clock in the
- * exact middle and a one-column gap on either side of it; beneath it Links,
+ * the World Clock, Weather, the Clock with the Search Widget under it,
+ * Calendar and Sun, with the Clock and Search in the exact middle and a
+ * one-column gap on either side of them; beneath it Links,
  * Todos, Notes, GitHub (with a Countdown, System and Moon under it) and
  * Recent. Every Widget is visible.
  */
@@ -163,6 +174,7 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
   { widget: 'weather', size: 'S', column: 3, row: 0, visible: true },
   { widget: 'clock', size: 'M', column: 7, row: 0, visible: true },
+  { widget: 'search', size: 'M', column: 7, row: 2, visible: true },
   { widget: 'calendar', size: 'S', column: 15, row: 0, visible: true },
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'links', size: 'M', column: 0, row: 3, visible: true },

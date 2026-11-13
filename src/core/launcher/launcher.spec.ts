@@ -24,7 +24,7 @@ const visited = (title: string, url: string, daysAgo = 0): VisitedPage => ({
 const titles = (results: readonly { title: string }[]) => results.map((result) => result.title);
 
 describe('Launcher', () => {
-  it('ends with a Brave search for what was typed', async () => {
+  it('ends with a DuckDuckGo search for what was typed', async () => {
     const webos = await webosWith();
 
     const results = await webos.launcher.search('angular signals');
@@ -32,16 +32,16 @@ describe('Launcher', () => {
     expect(results.at(-1)).toEqual({
       kind: 'web',
       id: 'web',
-      title: 'Search Brave for "angular signals"',
-      url: 'https://search.brave.com/search?q=angular%20signals',
+      title: 'Search DuckDuckGo for "angular signals"',
+      url: 'https://duckduckgo.com/?q=angular%20signals',
     });
   });
 
-  it('searches Brave for exactly what was typed, symbols included', async () => {
+  it('searches DuckDuckGo for exactly what was typed, symbols included', async () => {
     const webos = await webosWith();
 
     expect((await webos.launcher.search('c++ & rust?')).at(-1)).toMatchObject({
-      url: 'https://search.brave.com/search?q=c%2B%2B%20%26%20rust%3F',
+      url: 'https://duckduckgo.com/?q=c%2B%2B%20%26%20rust%3F',
     });
   });
 
@@ -86,7 +86,7 @@ describe('Launcher', () => {
     for (const title of ['Rapid deploy', 'Staging API', 'Grafana', 'API gateway', 'Mapping'])
       await webos.links.addLink(group, { title, url: 'example.com' });
 
-    expect(titles(await webos.launcher.search('api'))).toEqual(['API gateway', 'Staging API', 'Rapid deploy', 'Search Brave for "api"']);
+    expect(titles(await webos.launcher.search('api'))).toEqual(['API gateway', 'Staging API', 'Rapid deploy', 'Search DuckDuckGo for "api"']);
   });
 
   it('counts a word start even when the query also appears earlier inside a word', async () => {
@@ -96,13 +96,13 @@ describe('Launcher', () => {
     await webos.links.addLink(group, { title: 'Grapefruit app', url: 'example.com' });
     await webos.links.addLink(group, { title: 'my-app', url: 'example.com' });
 
-    expect(titles(await webos.launcher.search('app'))).toEqual(['Grapefruit app', 'my-app', 'Search Brave for "app"']);
+    expect(titles(await webos.launcher.search('app'))).toEqual(['Grapefruit app', 'my-app', 'Search DuckDuckGo for "app"']);
   });
 
   it('ignores spaces around the query', async () => {
     const webos = await webosWith();
 
-    expect(titles(await webos.launcher.search('  notes '))).toEqual(['Notes', 'Search Brave for "notes"']);
+    expect(titles(await webos.launcher.search('  notes '))).toEqual(['Notes', 'Search DuckDuckGo for "notes"']);
   });
 
   it('keeps display order between equally good matches', async () => {
@@ -113,7 +113,7 @@ describe('Launcher', () => {
     const remote = await webos.links.addGroup('Remote');
     await webos.links.addLink(remote, { title: 'docs staging', url: 'docs.example.com' });
 
-    expect(titles(await webos.launcher.search('stag'))).toEqual(['web staging', 'api staging', 'docs staging', 'Search Brave for "stag"']);
+    expect(titles(await webos.launcher.search('stag'))).toEqual(['web staging', 'api staging', 'docs staging', 'Search DuckDuckGo for "stag"']);
   });
 
   it('puts every App before every Link, however well the Link matches', async () => {
@@ -121,7 +121,7 @@ describe('Launcher', () => {
     const group = await webos.links.addGroup('Dev');
     await webos.links.addLink(group, { title: 'Utilities box', url: 'example.com' });
 
-    expect(titles(await webos.launcher.search('ut'))).toEqual(['Dev Utilities', 'Utilities box', 'Search Brave for "ut"']);
+    expect(titles(await webos.launcher.search('ut'))).toEqual(['Dev Utilities', 'Utilities box', 'Search DuckDuckGo for "ut"']);
   });
 
   it('finds open Todos after Links', async () => {
@@ -156,7 +156,7 @@ describe('Launcher', () => {
       'Release checklist',
       'Draft release email',
       'Weekly sync',
-      'Search Brave for "release"',
+      'Search DuckDuckGo for "release"',
     ]);
   });
 
@@ -207,7 +207,7 @@ describe('Launcher', () => {
       ],
     });
 
-    expect(titles(await webos.launcher.search('react'))).toEqual(['React blog', 'React docs', 'An old react page', 'Search Brave for "react"']);
+    expect(titles(await webos.launcher.search('react'))).toEqual(['React blog', 'React docs', 'An old react page', 'Search DuckDuckGo for "react"']);
   });
 
   it('titles an untitled page by its URL, and ranks a page found only by its URL below pages whose title matches', async () => {
@@ -223,7 +223,7 @@ describe('Launcher', () => {
       'Svelte tutorial',
       'https://svelte.dev/repl',
       'Docs',
-      'Search Brave for "svelte"',
+      'Search DuckDuckGo for "svelte"',
     ]);
   });
 
@@ -238,7 +238,7 @@ describe('Launcher', () => {
       },
     });
 
-    expect(titles(await webos.launcher.search('notes'))).toEqual(['Notes', 'Search Brave for "notes"']);
+    expect(titles(await webos.launcher.search('notes'))).toEqual(['Notes', 'Search DuckDuckGo for "notes"']);
   });
 
   it('shows a page once, as the Link or bookmark it already is', async () => {
@@ -352,7 +352,7 @@ describe('Launcher actions', () => {
   it('runs "uuid" only on its own, so "uuid v7" is just a search', async () => {
     const webos = await webosWith();
 
-    expect(titles(await webos.launcher.search('uuid v7'))).toEqual(['Search Brave for "uuid v7"']);
+    expect(titles(await webos.launcher.search('uuid v7'))).toEqual(['Search DuckDuckGo for "uuid v7"']);
   });
 
   it('offers to finish "new todo" when its text is still missing', async () => {

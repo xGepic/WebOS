@@ -8,10 +8,10 @@ async function webosWith(storage = roomyStorage()) {
 }
 
 /** The Widgets this layout doesn't mention, which it therefore hides, in catalog order. */
-const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'recent', 'system', 'github'];
+const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'recent', 'system', 'github', 'search'];
 
 /**
- * The default (Stage) layout leaves only one 3 × 2 slot free, so most tests
+ * The default (Stage) layout leaves no room for a Widget to move into, so most tests
  * start from this one instead, which leaves room to move into:
  * Clock S (3×2) at 0,0; Links M (3×5) at 0,2; Todos M (3×5) at 9,0; Notes S (3×3) at 18,5.
  * Weather and Calendar are hidden, and so are the Widgets it doesn't mention.
@@ -111,6 +111,7 @@ describe('moving a Widget', () => {
       'world-clock': 'M@0,0',
       weather: 'S@3,0',
       clock: 'M@7,0',
+      search: 'M@7,2',
       calendar: 'S@15,0',
       sun: 'M@18,0',
       todos: 'M@0,3',

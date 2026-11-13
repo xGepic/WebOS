@@ -51,7 +51,7 @@ export interface StateDocument {
   };
 }
 
-const SCHEMA_VERSION = 13;
+const SCHEMA_VERSION = 14;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -198,6 +198,18 @@ const migrations: Record<number, Migration> = {
       ? saved.map((entry) => (isRecord(entry) && typeof entry['widget'] === 'string' && newBand[entry['widget']] ? { ...entry, ...newBand[entry['widget']] } : entry))
       : saved;
     return { ...document, schemaVersion: 13, layout };
+  },
+  // The Search Widget: the Clock at size M is two rows high instead of three, and the Search
+  // Widget, one row high and as wide, takes the row it frees, wherever the Clock is. With the
+  // Clock hidden or at another size, the Search Widget starts hidden, for Edit Mode to show.
+  13: (document) => {
+    const saved = Array.isArray(document['layout']) ? document['layout'] : [];
+    const clock = saved.find((entry) => isRecord(entry) && entry['widget'] === 'clock');
+    const under =
+      isRecord(clock) && clock['visible'] === true && clock['size'] === 'M' && isFiniteNumber(clock['column']) && isFiniteNumber(clock['row'])
+        ? { column: clock['column'], row: clock['row'] + 2, visible: true }
+        : { column: 0, row: 0, visible: false };
+    return { ...document, schemaVersion: 14, layout: [...saved, { widget: 'search', size: 'M', ...under }] };
   },
 };
 
