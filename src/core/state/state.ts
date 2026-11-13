@@ -1,5 +1,6 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
 import type { Storage } from '../edges';
+import { isFiniteNumber, isRecord, isText } from '../guards';
 import type { LinkGroup } from '../organizer/links';
 import type { Note } from '../organizer/notes';
 import type { Countdown } from '../time/countdown';
@@ -298,18 +299,14 @@ export async function loadState(storage: Storage): Promise<StateDocument> {
   return document;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-const isText = (value: unknown): value is string => typeof value === 'string';
-const isTime = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 const isCity = (city: unknown) =>
   isRecord(city) &&
   isText(city['name']) &&
   isText(city['region']) &&
   isText(city['country']) &&
-  isTime(city['latitude']) &&
-  isTime(city['longitude']);
+  isFiniteNumber(city['latitude']) &&
+  isFiniteNumber(city['longitude']);
 
 /** Whether `list` holds only objects that each pass `check`, with no two sharing an id. */
 function allRecords(list: unknown, check: (item: Record<string, unknown>) => boolean): list is Record<string, unknown>[] {
@@ -334,9 +331,9 @@ export function assertValidContents(document: StateDocument, subject: string): v
     document.dockedLinkIds.every(isText) &&
     allRecords(
       document.todos,
-      (todo) => isText(todo['text']) && isTime(todo['createdAt']) && (todo['completedAt'] === null || isTime(todo['completedAt'])),
+      (todo) => isText(todo['text']) && isFiniteNumber(todo['createdAt']) && (todo['completedAt'] === null || isFiniteNumber(todo['completedAt'])),
     ) &&
-    allRecords(document.notes, (note) => isText(note['body']) && isTime(note['createdAt']) && isTime(note['editedAt'])) &&
+    allRecords(document.notes, (note) => isText(note['body']) && isFiniteNumber(note['createdAt']) && isFiniteNumber(note['editedAt'])) &&
     (document.weather.city === null || isCity(document.weather.city)) &&
     allRecords(document.countdowns, (countdown) => isText(countdown['title']) && isText(countdown['date'])) &&
     allRecords(

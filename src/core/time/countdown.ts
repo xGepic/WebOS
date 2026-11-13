@@ -1,4 +1,4 @@
-import { daysFrom, parseIsoDate } from './calendar';
+import { daysFrom, parseIsoDate, relativeDayLabel } from './calendar';
 
 /** A day the user is counting down to, such as a race or a release. */
 export interface Countdown {
@@ -65,8 +65,7 @@ export function upcoming(list: readonly Countdown[], now: Date): CountdownView[]
         day: 'numeric',
         year: day.getFullYear() === now.getFullYear() ? undefined : 'numeric',
       });
-      const relative = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
-      return [{ ...countdown, label, days, relative }];
+      return [{ ...countdown, label, days, relative: relativeDayLabel(days) }];
     })
     .sort((a, b) => a.days - b.days || a.title.localeCompare(b.title));
 }

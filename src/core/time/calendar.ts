@@ -105,17 +105,28 @@ export function parseIsoDate(date: string): Date | undefined {
 /** Whole calendar days from the day of `now` to `day` (negative if it is before), unaffected by daylight saving. */
 export const daysFrom = (now: Date, day: Date) => dayNumber(day) - dayNumber(now);
 
+/** Whole days from today in words: "today", "tomorrow", "yesterday", "in 18 days" or "3 days ago". */
+export function relativeDay(days: number): string {
+  if (days === 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  if (days === -1) return 'yesterday';
+  return days > 0 ? `in ${days} days` : `${-days} days ago`;
+}
+
+/** `relativeDay` as a label on its own line, with "Today", "Tomorrow" and "Yesterday" capitalized: "Tomorrow", "in 18 days". */
+export function relativeDayLabel(days: number): string {
+  const words = relativeDay(days);
+  return Math.abs(days) <= 1 ? words.charAt(0).toUpperCase() + words.slice(1) : words;
+}
+
 /** A day as the line under the grid describes it, relative to `now`. Undefined for text that isn't a date. */
 export function describeDay(date: string, now: Date): CalendarDayDetails | undefined {
   const day = parseIsoDate(date);
   if (!day) return undefined;
-  const away = daysFrom(now, day);
-  const relative =
-    away === 0 ? 'today' : away === 1 ? 'tomorrow' : away === -1 ? 'yesterday' : away > 0 ? `in ${away} days` : `${-away} days ago`;
   return {
     date,
     label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-    relative,
+    relative: relativeDay(daysFrom(now, day)),
     week: isoWeek(day),
   };
 }

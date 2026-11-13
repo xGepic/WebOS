@@ -30,7 +30,7 @@ import { WindowState } from '../window/window-state';
       </p>
       <webos-markdown-preview class="preview" inert [markdown]="note.body" />
     } @else {
-      <div class="empty">
+      <div class="widget-empty">
         <p>Jot down ideas, snippets and meeting notes. Pin one to keep it here.</p>
         <button type="button" class="button" (click)="create()">New Note</button>
       </div>

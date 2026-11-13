@@ -35,7 +35,7 @@ import { WindowState } from '../window/window-state';
           }
         </ol>
       } @else {
-        <div class="empty">
+        <div class="widget-empty">
           <p>Count down to a race, a release or a holiday.</p>
           <button type="button" class="button" (click)="window.open('settings')">Add one in Settings</button>
         </div>

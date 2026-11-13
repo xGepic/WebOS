@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+label {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+.matches {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.match {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+.match:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.match:not(:disabled):hover,
+.match:focus-visible {
+  background: var(--selected-fill);
+  outline: none;
+}
+.hint {
+  margin-top: 0.5rem;
+}

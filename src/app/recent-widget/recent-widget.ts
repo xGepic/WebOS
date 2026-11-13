@@ -30,7 +30,7 @@ import { WebOSCore } from '../webos-core';
           }
         </ul>
       } @else {
-        <p class="empty">The pages you visit will show up here.</p>
+        <div class="widget-empty"><p>The pages you visit will show up here.</p></div>
       }
     }
   `,

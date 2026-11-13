@@ -1,4 +1,5 @@
 import { formatTime, isTimeZone } from '../format';
+import { isFiniteNumber, isRecord } from '../guards';
 
 /**
  * Weather for the Weather Widget, from Open-Meteo (free, no key). It is not a
@@ -118,9 +119,6 @@ export function citySearchUrl(query: string): string {
   return `https://geocoding-api.open-meteo.com/v1/search?${params}`;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const text = (value: unknown) => (typeof value === 'string' ? value : '');
 
 /** The report in a forecast response. Throws if the response isn't what webOS asked for. */
@@ -133,7 +131,7 @@ export function parseForecast(response: unknown, fetchedAt: number): WeatherRepo
   const code = current['weather_code'];
   const high = first(daily['temperature_2m_max']);
   const low = first(daily['temperature_2m_min']);
-  if (!isNumber(temperature) || !isNumber(code) || !isNumber(high) || !isNumber(low)) {
+  if (!isFiniteNumber(temperature) || !isFiniteNumber(code) || !isFiniteNumber(high) || !isFiniteNumber(low)) {
     throw new Error('The weather response has an unexpected shape.');
   }
   return { fetchedAt, temperature, high, low, condition: conditionFor(code), isDay: current['is_day'] !== 0 };
@@ -144,7 +142,7 @@ export function parseCities(response: unknown): WeatherCity[] {
   const results = isRecord(response) && Array.isArray(response['results']) ? response['results'] : [];
   return results
     .filter(isRecord)
-    .filter((result) => text(result['name']) && isNumber(result['latitude']) && isNumber(result['longitude']))
+    .filter((result) => text(result['name']) && isFiniteNumber(result['latitude']) && isFiniteNumber(result['longitude']))
     .slice(0, MAX_CITIES)
     .map((result) => ({
       name: text(result['name']),

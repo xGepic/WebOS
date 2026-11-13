@@ -1,4 +1,4 @@
-import { daysFrom } from '../time/calendar';
+import { daysFrom, relativeDayLabel } from '../time/calendar';
 
 /**
  * The Moon's phases, computed locally: no network. Phase times follow Jean
@@ -140,11 +140,10 @@ const PRINCIPAL: Record<Quarter, [MoonPhase, MoonPhase]> = {
 
 function describeEvent(time: number, now: Date): MoonEvent {
   const day = new Date(time);
-  const days = daysFrom(now, day);
   return {
     at: time,
     label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-    relative: days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`,
+    relative: relativeDayLabel(daysFrom(now, day)),
   };
 }
 

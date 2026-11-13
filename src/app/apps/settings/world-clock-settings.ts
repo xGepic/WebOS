@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { MAX_WORLD_CLOCKS, describeCity, type WeatherCity, type WorldClockCity } from '../../../core';
+import { MAX_WORLD_CLOCKS, type WeatherCity, type WorldClockCity } from '../../../core';
 import { WebOSCore } from '../../webos-core';
+import { CitySearch } from './city-search';
 
 /**
  * Settings › World Clock: the cities the World Clock Widget shows, in order.
@@ -9,6 +10,7 @@ import { WebOSCore } from '../../webos-core';
  */
 @Component({
   selector: 'webos-world-clock-settings',
+  imports: [CitySearch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section aria-labelledby="settings-world-clock">
@@ -28,33 +30,14 @@ import { WebOSCore } from '../../webos-core';
       @if (full()) {
         <p class="hint">The World Clock holds {{ max }} cities. Remove one to add another.</p>
       } @else {
-        <form (submit)="search(query.value, $event)">
-          <label for="settings-world-city">Add a city</label>
-          <div class="row">
-            <input
-              #query
-              id="settings-world-city"
-              class="text-field"
-              type="search"
-              autocomplete="off"
-              spellcheck="false"
-              maxlength="80"
-              placeholder="e.g. San Francisco"
-            />
-            <button type="submit" class="button" [disabled]="searching()">Search</button>
-          </div>
-        </form>
-        @if (matches().length) {
-          <ul class="matches" aria-label="Matching cities">
-            @for (city of matches(); track $index) {
-              <li>
-                <button type="button" class="match" [disabled]="!city.timeZone" (click)="add(city); query.value = ''">
-                  {{ describe(city) }}
-                </button>
-              </li>
-            }
-          </ul>
-        }
+        <!-- A city needs a time zone to be shown; matches without one can't be picked. -->
+        <webos-city-search
+          inputId="settings-world-city"
+          label="Add a city"
+          placeholder="e.g. San Francisco"
+          [selectable]="hasTimeZone"
+          (chosen)="add($event)"
+        />
       }
       @if (message(); as message) {
         <p class="hint" role="status">{{ message }}</p>
@@ -64,13 +47,6 @@ import { WebOSCore } from '../../webos-core';
   styles: `
     section {
       max-width: 26rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.375rem;
-      color: var(--text-secondary);
-      font-size: 0.8125rem;
-      font-weight: 600;
     }
     .list {
       margin: 0 0 1rem;
@@ -97,37 +73,6 @@ import { WebOSCore } from '../../webos-core';
       color: var(--text-secondary);
       font-size: 0.75rem;
     }
-    .row {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .matches {
-      margin: 0.5rem 0 0;
-      padding: 0;
-      list-style: none;
-    }
-    .match {
-      display: block;
-      width: 100%;
-      padding: 0.45rem 0.7rem;
-      border: 0;
-      border-radius: var(--radius-control);
-      background: none;
-      color: var(--text-primary);
-      font: inherit;
-      font-size: 0.875rem;
-      text-align: left;
-      cursor: pointer;
-    }
-    .match:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-    .match:not(:disabled):hover,
-    .match:focus-visible {
-      background: var(--selected-fill);
-      outline: none;
-    }
     .hint {
       margin-top: 0.5rem;
     }
@@ -141,31 +86,10 @@ export class WorldClockSettings {
   protected readonly max = MAX_WORLD_CLOCKS;
   protected readonly cities = computed(() => this.webos.worldClockCities() ?? []);
   protected readonly full = computed(() => this.cities().length >= MAX_WORLD_CLOCKS);
-  protected readonly matches = signal<WeatherCity[]>([]);
-  protected readonly searching = signal(false);
   protected readonly message = signal<string | undefined>(undefined);
-  protected readonly describe = describeCity;
-
-  protected async search(query: string, event: Event): Promise<void> {
-    event.preventDefault();
-    const typed = query.trim();
-    this.matches.set([]);
-    this.message.set(undefined);
-    if (!typed) return;
-    this.searching.set(true);
-    try {
-      const cities = await this.webos.searchCities(typed);
-      this.matches.set(cities);
-      if (!cities.length) this.message.set(`No city called “${typed}” was found.`);
-    } catch {
-      this.message.set("Couldn't search right now. Check your connection and try again.");
-    } finally {
-      this.searching.set(false);
-    }
-  }
+  protected readonly hasTimeZone = (city: WeatherCity) => !!city.timeZone;
 
   protected async add(city: WeatherCity): Promise<void> {
-    this.matches.set([]);
     const added = await this.webos.send((core) => core.worldClock.add(city));
     this.message.set(added ? undefined : `${city.name} is already on the World Clock.`);
   }

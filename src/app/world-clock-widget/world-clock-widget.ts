@@ -32,7 +32,7 @@ import { WindowState } from '../window/window-state';
           }
         </ul>
       } @else {
-        <div class="empty">
+        <div class="widget-empty">
           <p>See the time where your team is.</p>
           <button type="button" class="button" (click)="window.open('settings')">Add cities in Settings</button>
         </div>

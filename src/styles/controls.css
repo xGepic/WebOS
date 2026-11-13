@@ -149,6 +149,25 @@
   background: var(--selected-fill);
 }
 
+/*
+ * A Widget's empty state: what it is for, and usually a button to set it up,
+ * centred in the space under the Title Bar. The Widget's host is a flex column.
+ */
+.widget-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+.widget-empty p {
+  margin: 0;
+}
+
 /* A Widget's Title Bar: its name in small capitals across the top, above a hairline. */
 .title-bar {
   flex: none;

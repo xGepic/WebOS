@@ -64,12 +64,12 @@ const GAP = 3;
       } @else if (github.status === 'loading') {
         <p class="message">Loading your contributions…</p>
       } @else if (github.status === 'no-token') {
-        <div class="empty">
+        <div class="widget-empty">
           <p>See your GitHub contribution graph here.</p>
           <button type="button" class="button" (click)="window.open('settings')">Add a token in Settings</button>
         </div>
       } @else if (github.status === 'failed' && github.problem === 'token') {
-        <div class="empty">
+        <div class="widget-empty">
           <p>GitHub didn't accept the token.</p>
           <button type="button" class="button" (click)="window.open('settings')">Change the token</button>
         </div>

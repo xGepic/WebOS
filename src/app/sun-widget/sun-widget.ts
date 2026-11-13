@@ -18,7 +18,7 @@ const ARC = { left: 12, right: 188, horizon: 66, height: 54 };
     <h2 class="title-bar">{{ webos.widgetName('sun') }}</h2>
     @if (webos.sun(); as sun) {
       @if (sun.status === 'no-city') {
-        <div class="empty">
+        <div class="widget-empty">
           <p>See sunrise and sunset for your city here.</p>
           <button type="button" class="button" (click)="window.open('settings')">Choose a city</button>
         </div>
@@ -43,7 +43,7 @@ const ARC = { left: 12, right: 188, horizon: 66, height: 54 };
           }
         </div>
       } @else {
-        <div class="empty">
+        <div class="widget-empty">
           <p class="polar">{{ sun.kind === 'polar-day' ? 'Polar day' : 'Polar night' }} in {{ sun.city }}</p>
           <p>{{ sun.kind === 'polar-day' ? "The sun doesn't set today." : "The sun doesn't rise today." }}</p>
         </div>

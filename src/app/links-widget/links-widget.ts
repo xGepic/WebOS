@@ -30,7 +30,7 @@ import { LinkIcon } from './link-icon';
         </ul>
       </section>
     } @empty {
-      <div class="empty">
+      <div class="widget-empty">
         <p>Keep your dev servers, dashboards and docs one click away.</p>
         <button type="button" class="button" (click)="window.open('settings')">Add Links in Settings</button>
       </div>

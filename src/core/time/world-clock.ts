@@ -1,4 +1,5 @@
 import { formatDuration, formatTime, isTimeZone, utcOffsetMinutes, wallClock } from '../format';
+import { relativeDayLabel } from './calendar';
 
 /** A city on the World Clock, with the time zone its clock follows. */
 export interface WorldClockCity {
@@ -62,7 +63,7 @@ export function worldClockView(list: readonly WorldClockCity[], now: Date): Worl
     return {
       ...city,
       time: formatTime(now, city.timeZone),
-      day: daysAway > 0 ? 'Tomorrow' : daysAway < 0 ? 'Yesterday' : 'Today',
+      day: relativeDayLabel(daysAway),
       difference: offset === 0 ? 'Same time' : `${formatDuration(offset)} ${offset > 0 ? 'ahead' : 'behind'}`,
       daytime: there.hours >= 6 && there.hours < 18,
     };

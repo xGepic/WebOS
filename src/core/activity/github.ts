@@ -1,5 +1,6 @@
 import { isoDate } from '../time/calendar';
 import { formatWhen } from '../format';
+import { isRecord } from '../guards';
 
 /**
  * The GitHub Widget's contribution graph, from GitHub's GraphQL API with the
@@ -79,8 +80,6 @@ const LEVELS: Record<string, ContributionLevel> = {
   FOURTH_QUARTILE: 4,
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 const isCount = (value: unknown): value is number => typeof value === 'number' && Number.isInteger(value) && value >= 0;
 
 /** The contribution graph in a GraphQL response. Throws if the response holds errors or isn't what webOS asked for. */
