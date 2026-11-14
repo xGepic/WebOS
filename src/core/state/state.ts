@@ -1,4 +1,5 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
+import { DEFAULT_WALLPAPER } from '../desktop/wallpaper';
 import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
 import { isFiniteNumber, isRecord, isText } from '../guards';
@@ -45,9 +46,11 @@ export interface StateDocument {
     /** The parts of the System Widget the user hid. What is hidden is stored, so parts added later are shown. */
     hidden: string[];
   };
+  /** The Wallpaper chosen in Settings. One this build doesn't know shows as the default. */
+  wallpaper: string;
 }
 
-const SCHEMA_VERSION = 22;
+const SCHEMA_VERSION = 23;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -226,6 +229,8 @@ const migrations: Record<number, Migration> = {
   // Notes in the Dock: with the Notes Widget gone, nothing shows the Pinned Note, so it goes.
   // The layout's Notes entry is dropped when the layout is loaded, as for any Widget webOS no longer has.
   21: ({ pinnedNoteId: _, ...document }) => ({ ...document, schemaVersion: 22 }),
+  // Wallpapers: the one webOS had until now.
+  22: (document) => ({ ...document, schemaVersion: 23, wallpaper: 'midnight' }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -267,6 +272,7 @@ function freshDocument(): StateDocument {
     clips: [],
     appleCalendar: NO_APPLE_CALENDAR,
     systemWidget: { hidden: [] },
+    wallpaper: DEFAULT_WALLPAPER,
   };
 }
 
@@ -319,7 +325,8 @@ function assertCurrentShape(
     !Array.isArray(apple['calendars']) ||
     !(apple['sync'] === null || isRecord(apple['sync'])) ||
     !isRecord(systemWidget) ||
-    !Array.isArray(systemWidget['hidden'])
+    !Array.isArray(systemWidget['hidden']) ||
+    typeof document['wallpaper'] !== 'string'
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

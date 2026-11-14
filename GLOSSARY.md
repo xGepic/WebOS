@@ -5,8 +5,12 @@ A personal developer dashboard that replaces the browser's new tab and looks lik
 ## Shell
 
 **Desktop**:
-The full-screen surface shown on every new tab: a wallpaper with Widgets arranged on it.
+The full-screen surface shown on every new tab: a Wallpaper with Widgets arranged on it.
 _Avoid_: Home, dashboard, board
+
+**Wallpaper**:
+The dark background behind the Desktop, with a coloured light falling from the top: Midnight, Aurora, Ember, Violet or Graphite, chosen in Settings.
+_Avoid_: Theme, background colour, skin
 
 **Dock**:
 The bar of App icons used to open Apps.

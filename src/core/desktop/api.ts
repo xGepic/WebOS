@@ -1,6 +1,7 @@
 import type { Store } from '../store';
 import { apps } from './apps';
 import * as desktop from './desktop';
+import { wallpaperOf, wallpapers, type Wallpaper } from './wallpaper';
 
 export interface DesktopApi {
   /** Every App; those `docked` have a Dock icon, in this order. */
@@ -35,6 +36,13 @@ export interface DesktopApi {
      */
     show(widget: desktop.WidgetId): Promise<boolean>;
   };
+  readonly wallpaper: {
+    /** Every Wallpaper, in the order Settings offers them. */
+    readonly choices: typeof wallpapers;
+    /** The chosen Wallpaper; Midnight until one is chosen, or for one this build doesn't know. */
+    current(): Wallpaper;
+    choose(wallpaper: Wallpaper): Promise<void>;
+  };
 }
 
 /** The Apps, and the Desktop's Widget layout that Edit Mode changes. */
@@ -61,6 +69,14 @@ export function createDesktop(store: Store): DesktopApi {
         await commitLayout((entries) => desktop.hideWidget(entries, widget));
       },
       show: (widget) => commitLayout((entries) => desktop.showWidget(entries, widget)),
+    },
+    wallpaper: {
+      choices: wallpapers,
+      current: () => wallpaperOf(store.state().wallpaper),
+      async choose(wallpaper) {
+        if (wallpaperOf(store.state().wallpaper) === wallpaper) return;
+        await store.commit({ ...store.state(), wallpaper });
+      },
     },
   };
 }

@@ -15,6 +15,7 @@ import { clearPassed } from './time/countdown';
 
 export type { AppId } from './desktop/apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop/desktop';
+export type { Wallpaper } from './desktop/wallpaper';
 export type {
   BrowserLookup,
   CalendarAccount,

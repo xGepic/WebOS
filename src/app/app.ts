@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { Desktop } from './desktop/desktop';
 import { Dock } from './dock/dock';
 import { Toast } from './toast/toast';
@@ -46,4 +46,22 @@ import { WebOSCore } from './webos-core';
 })
 export class App {
   protected readonly webos = inject(WebOSCore);
+
+  constructor() {
+    // Paints the chosen Wallpaper, and keeps a copy where public/wallpaper.js finds it before
+    // webOS starts, so the next new tab opens on it rather than flashing the default first.
+    effect(() => {
+      const wallpaper = this.webos.wallpaper();
+      if (!wallpaper) return;
+      document.documentElement.dataset['wallpaper'] = wallpaper;
+      try {
+        localStorage.setItem(WALLPAPER_KEY, wallpaper);
+      } catch {
+        // Without the copy, a new tab shows the default until webOS starts. Nothing else is lost.
+      }
+    });
+  }
 }
+
+/** Where public/wallpaper.js reads the chosen Wallpaper. */
+const WALLPAPER_KEY = 'webos-wallpaper';

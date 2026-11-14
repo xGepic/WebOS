@@ -1,11 +1,38 @@
 /*
- * The one fixed webOS wallpaper ("Midnight Deep"): almost black, with a faint
- * blue light falling from the top centre, and film grain.
- * Original generated art (CSS gradients plus SVG noise), not configurable.
+ * The webOS Wallpapers: almost black, with a coloured light falling from the
+ * top centre, and film grain. Original generated art (CSS gradients plus SVG
+ * noise). Midnight, the default, is the one in tokens.css.
  *
  * It is painted from global CSS on the body, so it is on screen before
- * Angular starts and a new tab never flashes an empty page.
+ * Angular starts and a new tab never flashes an empty page. The chosen one is
+ * set as `data-wallpaper` on <html>, by public/wallpaper.js before webOS starts
+ * and by the App once it has.
  */
+/*
+ * Each Wallpaper's colours. Not only on <html>: Settings previews each one in
+ * an element of its own. All stay dark, so every Widget reads the same.
+ */
+[data-wallpaper='midnight'] {
+  --wallpaper-base: #010208;
+  --wallpaper-light: rgba(70, 110, 230, 0.09);
+}
+[data-wallpaper='aurora'] {
+  --wallpaper-base: #010706;
+  --wallpaper-light: rgba(30, 200, 150, 0.15);
+}
+[data-wallpaper='ember'] {
+  --wallpaper-base: #090403;
+  --wallpaper-light: rgba(240, 110, 40, 0.15);
+}
+[data-wallpaper='violet'] {
+  --wallpaper-base: #05030e;
+  --wallpaper-light: rgba(150, 90, 240, 0.17);
+}
+[data-wallpaper='graphite'] {
+  --wallpaper-base: #0a0b0d;
+  --wallpaper-light: rgba(220, 225, 235, 0.07);
+}
+
 body {
   position: relative;
   isolation: isolate;
