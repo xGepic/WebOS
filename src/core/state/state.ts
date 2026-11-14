@@ -43,9 +43,13 @@ export interface StateDocument {
   clips: Clip[];
   /** Apple Calendar: the account, its calendars and the last sync. Backups leave it out: it holds a password. */
   appleCalendar: AppleCalendarState;
+  systemWidget: {
+    /** The parts of the System Widget the user hid. What is hidden is stored, so parts added later are shown. */
+    hidden: string[];
+  };
 }
 
-const SCHEMA_VERSION = 20;
+const SCHEMA_VERSION = 21;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -219,6 +223,8 @@ const migrations: Record<number, Migration> = {
   18: ({ calendar: _, ...document }) => ({ ...document, schemaVersion: 19 }),
   // Apple Calendar: not connected.
   19: (document) => ({ ...document, schemaVersion: 20, appleCalendar: { account: null, calendars: [], sync: null } }),
+  // System details: every part of the System Widget shown.
+  20: (document) => ({ ...document, schemaVersion: 21, systemWidget: { hidden: [] } }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -260,6 +266,7 @@ function freshDocument(): StateDocument {
     worldClocks: [],
     clips: [],
     appleCalendar: NO_APPLE_CALENDAR,
+    systemWidget: { hidden: [] },
   };
 }
 
@@ -292,6 +299,7 @@ function assertCurrentShape(
   const apps = document['apps'];
   const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
   const apple = document['appleCalendar'];
+  const systemWidget = document['systemWidget'];
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -310,7 +318,9 @@ function assertCurrentShape(
     !isRecord(apple) ||
     !(apple['account'] === null || isRecord(apple['account'])) ||
     !Array.isArray(apple['calendars']) ||
-    !(apple['sync'] === null || isRecord(apple['sync']))
+    !(apple['sync'] === null || isRecord(apple['sync'])) ||
+    !isRecord(systemWidget) ||
+    !Array.isArray(systemWidget['hidden'])
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

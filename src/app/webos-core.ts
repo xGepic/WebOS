@@ -13,9 +13,11 @@ import {
   type WidgetSize,
 } from '../core';
 import { createBrowserLookup } from '../edges/browser-lookup';
+import { createDisplayMonitor } from '../edges/display-monitor';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createICloudCalendar, releaseICloudAccess, requestICloudAccess } from '../edges/icloud-calendar';
 import { createNetworkFetch } from '../edges/network';
+import { createNetworkMonitor } from '../edges/network-status';
 import { createSystemClock } from '../edges/system-clock';
 import { createSystemMonitor } from '../edges/system-monitor';
 
@@ -60,6 +62,7 @@ export class WebOSCore {
   readonly sun = this.read((core) => core.sun.view());
   readonly recentPages = this.read((core) => core.recent.pages());
   readonly system = this.read((core) => core.system.view());
+  readonly systemParts = this.read((core) => core.system.parts());
 
   /** Creates the core. Called once by the app initializer before the first render. */
   async start(): Promise<void> {
@@ -71,6 +74,8 @@ export class WebOSCore {
         fetch: createNetworkFetch(),
         system: createSystemMonitor(),
         calendars: createICloudCalendar(),
+        network: createNetworkMonitor(),
+        displays: createDisplayMonitor(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {

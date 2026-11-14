@@ -3,8 +3,12 @@ import type {
   CalendarAccount,
   CalendarServer,
   Clock,
+  DisplayMonitor,
+  DisplayReading,
   Fetch,
   FetchRequest,
+  NetworkMonitor,
+  NetworkReading,
   RemoteCalendar,
   Storage,
   SystemMonitor,
@@ -156,4 +160,46 @@ export function createTestCalendarServer(calendarList: RemoteCalendar[] = [], re
     },
   };
   return server;
+}
+
+/** A NetworkMonitor whose reading the test sets with `change`, which tells listeners. */
+export interface TestNetworkMonitor extends NetworkMonitor {
+  change(reading: NetworkReading): void;
+}
+
+export function createTestNetworkMonitor(first: NetworkReading): TestNetworkMonitor {
+  let current = first;
+  const listeners = new Set<() => void>();
+  return {
+    read: () => ({ ...current }),
+    onChange(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    change(reading) {
+      current = reading;
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+/** A DisplayMonitor listing what the test sets with `change`, which tells listeners. */
+export interface TestDisplayMonitor extends DisplayMonitor {
+  change(displays: DisplayReading[]): void;
+}
+
+export function createTestDisplayMonitor(first: DisplayReading[]): TestDisplayMonitor {
+  let current = first;
+  const listeners = new Set<() => void>();
+  return {
+    displays: async () => structuredClone(current),
+    onChange(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    change(displays) {
+      current = displays;
+      listeners.forEach((listener) => listener());
+    },
+  };
 }

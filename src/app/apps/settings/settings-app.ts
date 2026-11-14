@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { AppleCalendarSettings } from './apple-calendar-settings';
 import { BackupSettings } from './backup-settings';
 import { ProfileSettings } from './profile-settings';
+import { SystemSettings } from './system-settings';
 import { WeatherSettings } from './weather-settings';
 
 /** The Settings App: one place to configure webOS, one section per topic. */
@@ -11,6 +12,7 @@ import { WeatherSettings } from './weather-settings';
     ProfileSettings,
     WeatherSettings,
     AppleCalendarSettings,
+    SystemSettings,
     BackupSettings,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +20,7 @@ import { WeatherSettings } from './weather-settings';
     <webos-profile-settings />
     <webos-weather-settings />
     <webos-apple-calendar-settings />
+    <webos-system-settings />
     <webos-backup-settings />
   `,
   styles: `

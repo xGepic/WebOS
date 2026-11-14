@@ -1,7 +1,7 @@
 import type { SystemMonitor } from '../core';
 
 /**
- * The machine's processors and memory, through the extension `system.cpu` and
+ * The machine's processors (their use and name) and memory, through the extension `system.cpu` and
  * `system.memory` permissions. Outside the extension (`ng serve`) there is
  * none, and the System Widget says so.
  */
@@ -20,6 +20,7 @@ export function createSystemMonitor(): SystemMonitor | undefined {
         cores: processors.numOfProcessors,
         memoryCapacity: ram.capacity,
         memoryAvailable: ram.availableCapacity,
+        cpuModel: processors.modelName,
       };
     },
   };

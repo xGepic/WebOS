@@ -77,11 +77,50 @@ export interface SystemSample {
   /** Bytes. */
   memoryCapacity: number;
   memoryAvailable: number;
+  /** The processor's name as the system gives it, e.g. "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz". */
+  cpuModel?: string;
 }
 
 /** Reads the machine's processors and memory. Rejects when it can't. */
 export interface SystemMonitor {
   sample(): Promise<SystemSample>;
+}
+
+/** The network connection as the browser sees it. */
+export interface NetworkReading {
+  online: boolean;
+  /** The browser's estimate of the bandwidth, in megabits per second, if it gives one. Chromium caps it at 10. */
+  downlinkMbps?: number;
+  /** The browser's estimate of the round-trip time, in milliseconds, if it gives one. */
+  rttMs?: number;
+}
+
+/** Watches the network connection, for the System Widget. */
+export interface NetworkMonitor {
+  read(): NetworkReading;
+  /** Calls `listener` whenever the reading may have changed. Returns a function that stops it. */
+  onChange(listener: () => void): () => void;
+}
+
+/** One display attached to the machine. */
+export interface DisplayReading {
+  name: string;
+  /** In physical pixels. */
+  width: number;
+  height: number;
+  /** The scaling, e.g. 1.5 for 150%. */
+  scale: number;
+  primary: boolean;
+  /** In hertz, if known. */
+  refreshRate?: number;
+}
+
+/** Lists the displays, for the System Widget. */
+export interface DisplayMonitor {
+  /** Rejects when they can't be read. */
+  displays(): Promise<DisplayReading[]>;
+  /** Calls `listener` whenever a display is added, removed or changed. Returns a function that stops it. */
+  onChange(listener: () => void): () => void;
 }
 
 /** An Apple ID and app-specific password, as the CalendarServer signs in with them. */

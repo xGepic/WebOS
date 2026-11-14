@@ -12,7 +12,8 @@
     "clipboardWrite",
     "history",
     "system.cpu",
-    "system.memory"
+    "system.memory",
+    "system.display"
   ],
   "host_permissions": [
     "https://api.open-meteo.com/*",

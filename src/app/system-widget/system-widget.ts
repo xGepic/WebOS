@@ -7,8 +7,10 @@ const SAMPLE_EVERY_MS = 2000;
 
 /**
  * The System Widget: how busy the processors are, with a sparkline of the
- * last minute, and how much memory is in use. It takes a reading every two
- * seconds, only while it is on the Desktop and the tab is shown.
+ * last minute, and how much memory is in use; below them the processor's
+ * name, the network and the displays. Settings › System chooses which of
+ * these it shows. It takes a reading every two seconds, only while it is on
+ * the Desktop and the tab is shown.
  */
 @Component({
   selector: 'webos-system-widget',
@@ -17,27 +19,69 @@ const SAMPLE_EVERY_MS = 2000;
   template: `
     <h2 class="title-bar">{{ webos.widgetName('system') }}</h2>
     @if (webos.system(); as system) {
-      @if (system.status === 'ready') {
-        <div class="body">
-          <div class="meter cpu">
-            <p class="label">CPU <span class="cores">{{ system.cores }} cores</span></p>
-            <p class="value">{{ system.cpu }}<span class="unit">%</span></p>
-            <svg class="sparkline" [attr.viewBox]="'0 0 ' + width + ' 24'" preserveAspectRatio="none" aria-hidden="true">
-              <polyline [attr.points]="sparkline()" />
-            </svg>
-          </div>
-          <div class="meter memory">
-            <p class="label">Memory</p>
-            <p class="value">{{ percent(system.memory) }}<span class="unit">%</span></p>
-            <div class="bar" aria-hidden="true"><div class="fill" [style.width.%]="percent(system.memory)"></div></div>
-            <p class="detail">{{ system.memoryUsed }} of {{ system.memoryTotal }}</p>
-          </div>
-        </div>
-      } @else if (system.status === 'loading') {
-        <p class="message">Measuring…</p>
-      } @else {
-        <p class="message">CPU and memory use can't be read here.</p>
-      }
+      <div class="body">
+        @if (system.shown.cpu || system.shown.memory) {
+          @if (system.usage; as usage) {
+            @if (usage.status === 'ready') {
+              <div class="meters">
+                @if (system.shown.cpu) {
+                  <div class="meter cpu">
+                    <p class="label">CPU <span class="cores">{{ usage.cores }} cores</span></p>
+                    <p class="value">{{ usage.cpu }}<span class="unit">%</span></p>
+                    <svg class="sparkline" [attr.viewBox]="'0 0 ' + width + ' 24'" preserveAspectRatio="none" aria-hidden="true">
+                      <polyline [attr.points]="sparkline()" />
+                    </svg>
+                  </div>
+                }
+                @if (system.shown.memory) {
+                  <div class="meter memory">
+                    <p class="label">Memory</p>
+                    <p class="value">{{ percent(usage.memory) }}<span class="unit">%</span></p>
+                    <div class="bar" aria-hidden="true"><div class="fill" [style.width.%]="percent(usage.memory)"></div></div>
+                    <p class="detail">{{ usage.memoryUsed }} of {{ usage.memoryTotal }}</p>
+                  </div>
+                }
+              </div>
+            } @else if (usage.status === 'loading') {
+              <p class="message">Measuring…</p>
+            } @else {
+              <p class="message">CPU and memory use can't be read here.</p>
+            }
+          }
+        }
+
+        @if (details(); as details) {
+          @if (details.any) {
+            <dl class="details">
+              @if (details.processor; as processor) {
+                <div class="row">
+                  <dt>Processor</dt>
+                  <dd>{{ processor }}</dd>
+                </div>
+              }
+              @if (details.network; as network) {
+                <div class="row">
+                  <dt>Network</dt>
+                  <dd [class.offline]="!network.online">{{ network.summary }}</dd>
+                </div>
+              }
+              @for (display of details.displays; track $index) {
+                <div class="row">
+                  <dt>{{ $first ? (details.displays.length > 1 ? 'Displays' : 'Display') : '' }}</dt>
+                  <dd>
+                    <span class="display-name">{{ display.name }}</span>
+                    <span class="display-summary">{{ display.summary }}</span>
+                  </dd>
+                </div>
+              }
+            </dl>
+          }
+        }
+
+        @if (nothingShown()) {
+          <p class="message">Everything is hidden. Choose what to show in Settings › System.</p>
+        }
+      </div>
     }
   `,
   styleUrl: './system-widget.css',
@@ -50,10 +94,26 @@ export class SystemWidget {
 
   /** The last readings as a line, newest on the right, filled from the right while there are few. */
   protected readonly sparkline = computed(() => {
+    const usage = this.webos.system()?.usage;
+    if (usage?.status !== 'ready') return '';
+    const offset = CPU_HISTORY - usage.cpuHistory.length;
+    return usage.cpuHistory.map((busy, i) => `${offset + i},${(22 - busy * 20).toFixed(1)}`).join(' ');
+  });
+
+  /** The rows under the meters that are shown and known. */
+  protected readonly details = computed(() => {
     const system = this.webos.system();
-    if (system?.status !== 'ready') return '';
-    const offset = CPU_HISTORY - system.cpuHistory.length;
-    return system.cpuHistory.map((busy, i) => `${offset + i},${(22 - busy * 20).toFixed(1)}`).join(' ');
+    if (!system) return undefined;
+    const processor = system.shown.processor ? system.processor : undefined;
+    const network = system.shown.network ? system.network : undefined;
+    const displays = system.shown.displays ? system.displays : [];
+    return { processor, network, displays, any: !!processor || !!network || displays.length > 0 };
+  });
+
+  /** Whether the user hid every part. */
+  protected readonly nothingShown = computed(() => {
+    const shown = this.webos.system()?.shown;
+    return !!shown && Object.values(shown).every((on) => !on);
   });
 
   constructor() {

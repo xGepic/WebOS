@@ -252,7 +252,7 @@ describe('state document', () => {
     ]);
     expect(webos.desktop.hidden()).toEqual(['notes', 'today']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 20, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 21, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -338,7 +338,7 @@ describe('state document', () => {
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.view()).toEqual([]);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 20 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 21 });
     // The GitHub Widget is gone, and with it the token and the stored graph.
     expect(await storage.read()).not.toHaveProperty('github');
   });
@@ -413,7 +413,7 @@ describe('state document', () => {
 
     expect(webos.clips.list()).toEqual([]);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 20, profile: { name: 'Stefan' }, clips: [] });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 21, profile: { name: 'Stefan' }, clips: [] });
   });
 
   it('loads a v18 document from a pre-release build, dropping its holiday country and keeping everything else', async () => {
@@ -436,11 +436,11 @@ describe('state document', () => {
 
     expect(webos.clips.list().map((listed) => listed.text)).toEqual(['curl localhost']);
     const stored = await storage.read();
-    expect(stored).toMatchObject({ schemaVersion: 20, profile: { name: 'Stefan' } });
+    expect(stored).toMatchObject({ schemaVersion: 21, profile: { name: 'Stefan' } });
     expect(stored).not.toHaveProperty('calendar');
   });
 
-  it('migrates a v19 document to v20 with Apple Calendar not connected, keeping everything else', async () => {
+  it('migrates a v19 document with Apple Calendar not connected and every System part shown, keeping everything else', async () => {
     const storage = createMemoryStorage({
       schemaVersion: 19,
       profile: { name: 'Stefan' },
@@ -459,7 +459,7 @@ describe('state document', () => {
 
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Release']);
     expect(webos.appleCalendar.status()).toEqual({ connected: false });
-    expect(await storage.read()).toMatchObject({ schemaVersion: 20, appleCalendar: { account: null, calendars: [], sync: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 21, appleCalendar: { account: null, calendars: [], sync: null }, systemWidget: { hidden: [] } });
   });
 
   /** A version 12 document with `layout`, the first build with the 21-column Stage. */
@@ -514,7 +514,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     expect(webos.desktop.hidden()).toEqual(['sun', 'today']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 20 });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 21 });
   });
 
   it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers, with Search under the Clock", async () => {
