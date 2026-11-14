@@ -63,7 +63,7 @@ The sites the user visits most, as the browser's own new tab page lists them, ea
 _Avoid_: Shortcuts, bookmarks, favourites, speed dial
 
 **Countdown**:
-A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
+A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed. One added with a day that has already passed counts up instead, with the days since.
 _Avoid_: Event, deadline, timer
 
 **Day View**:

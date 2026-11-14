@@ -16,6 +16,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0010](docs/specs/0010-weather-forecast.md) | The Forecast on the Weather Widget |
 | [0011](docs/specs/0011-wallpapers.md) | Five Wallpapers to choose from |
 | [0012](docs/specs/0012-top-sites.md) | The Top Sites Widget |
+| [0013](docs/specs/0013-countdowns-count-up.md) | Countdowns added with a past day count up |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 

@@ -4,16 +4,16 @@ import { WebOSCore } from '../../webos-core';
 
 /**
  * The Countdowns App, opened from the Countdown Widget: the days the Widget
- * counts down to, soonest first with the days to go, and a form to add one or
- * change one picked with Edit.
+ * counts down to, soonest first with the days to go, then those it counts up
+ * from, and a form to add one or change one picked with Edit.
  */
 @Component({
   selector: 'webos-countdowns-app',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (webos.upcomingCountdowns()?.length) {
+    @if (webos.shownCountdowns()?.length) {
       <ul class="list" aria-label="Countdowns">
-        @for (countdown of webos.upcomingCountdowns(); track countdown.id) {
+        @for (countdown of webos.shownCountdowns(); track countdown.id) {
           <li [class.editing]="editing() === countdown.id">
             <span class="what">
               <span class="title">{{ countdown.title }}</span>
@@ -52,7 +52,10 @@ import { WebOSCore } from '../../webos-core';
       }
     </form>
 
-    <p class="hint">The Countdown Widget shows the days to go, soonest first. A Countdown is cleared once its day has passed.</p>
+    <p class="hint">
+      The Countdown Widget shows the days to go, soonest first. A Countdown is cleared once its day has passed, but one
+      you add with a day that has already passed counts up instead.
+    </p>
   `,
   styles: `
     :host {

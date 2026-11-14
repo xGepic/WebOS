@@ -3,8 +3,9 @@ import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 
 /**
- * The Countdown Widget: the days to go until each Countdown, soonest first.
- * The soonest one is shown large; a Countdown leaves once its day has passed.
+ * The Countdown Widget: the days to go until each Countdown, soonest first,
+ * then the days since those that count up, the most recent first. The first
+ * one is shown large; a Countdown that was ahead leaves once its day has passed.
  * Clicking it opens the Countdowns App, which springs out of this Widget, to
  * add, change and delete them.
  */
@@ -14,19 +15,19 @@ import { WindowState } from '../window/window-state';
   host: { class: 'material' },
   template: `
     <h2 class="title-bar">{{ webos.widgetName('countdown') }}</h2>
-    @if (webos.upcomingCountdowns(); as countdowns) {
+    @if (webos.shownCountdowns(); as countdowns) {
       @if (countdowns.length) {
         <!-- A click anywhere opens the Countdowns App; the list stays scrollable above the control. -->
         <button type="button" class="widget-open" aria-label="Edit Countdowns" (click)="window.open('countdowns')"></button>
         <ol class="widget-open-above" (click)="window.open('countdowns')">
           @for (countdown of countdowns; track countdown.id; let first = $first) {
-            <li [class.first]="first">
+            <li [class.first]="first" [class.counts-up]="countdown.countsUp">
               <span class="days" [attr.aria-hidden]="true">
                 @if (countdown.days === 0) {
                   Today
                 } @else {
                   <span class="number">{{ countdown.days }}</span>
-                  <span class="unit">{{ countdown.days === 1 ? 'day' : 'days' }}</span>
+                  <span class="unit">{{ countdown.days === 1 ? 'day' : 'days' }}{{ countdown.countsUp ? ' ago' : '' }}</span>
                 }
               </span>
               <span class="what">

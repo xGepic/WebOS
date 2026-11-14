@@ -61,15 +61,19 @@ export interface TimeApi {
     /** Forgets the account, its password and every stored event. */
     disconnect(): Promise<void>;
   };
-  /** Days the user counts down to, for the Countdown Widget, managed in Settings. */
+  /**
+   * Days the user counts down to, or up from, for the Countdown Widget, managed
+   * in the Countdowns App. One added with a day that has passed counts up; one
+   * that was ahead is cleared once its day has passed.
+   */
   readonly countdowns: {
-    /** Every Countdown, soonest first. */
+    /** Every Countdown, by day. */
     list(): readonly countdown.Countdown[];
-    /** Today's and later Countdowns, soonest first, with the days to go. */
-    upcoming(): readonly countdown.CountdownView[];
-    /** Adds a Countdown. Resolves to its id, or undefined if the title is blank or the date isn't a real one. */
+    /** The Countdowns the Widget shows: today's and later ones, soonest first, with the days to go, then those counting up, with the days since. */
+    shown(): readonly countdown.CountdownView[];
+    /** Adds a Countdown, counting up if its day has passed. Resolves to its id, or undefined if the title is blank or the date isn't a real one. */
     add(input: countdown.CountdownInput): Promise<string | undefined>;
-    /** Changes a Countdown. Resolves to whether it was changed: not with a blank title or a date that isn't real. */
+    /** Changes a Countdown, counting up if its new day has passed. Resolves to whether it was changed: not with a blank title or a date that isn't real. */
     edit(id: string, input: countdown.CountdownInput): Promise<boolean>;
     delete(id: string): Promise<void>;
   };
@@ -226,12 +230,12 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
     },
     countdowns: {
       list: () => [...state().countdowns].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title)),
-      upcoming: () => countdown.upcoming(state().countdowns, clock.now()),
+      shown: () => countdown.shown(state().countdowns, clock.now()),
       async add(input) {
         const id = crypto.randomUUID();
-        return (await commitCountdowns(countdown.addCountdown(state().countdowns, id, input))) ? id : undefined;
+        return (await commitCountdowns(countdown.addCountdown(state().countdowns, id, input, clock.now()))) ? id : undefined;
       },
-      edit: (id, input) => commitCountdowns(countdown.editCountdown(state().countdowns, id, input)),
+      edit: (id, input) => commitCountdowns(countdown.editCountdown(state().countdowns, id, input, clock.now())),
       delete: async (id) => {
         await commitCountdowns(countdown.deleteCountdown(state().countdowns, id));
       },

@@ -14,7 +14,7 @@ describe('Countdowns', () => {
     await webos.countdowns.add({ title: 'Release 2.0', date: '2026-12-01' });
     await webos.countdowns.add({ title: 'Holidays', date: '2026-11-13' });
 
-    expect(webos.countdowns.upcoming().map(({ title, label, days, relative }) => ({ title, label, days, relative }))).toEqual([
+    expect(webos.countdowns.shown().map(({ title, label, days, relative }) => ({ title, label, days, relative }))).toEqual([
       { title: 'Holidays', label: 'Fri, Nov 13', days: 1, relative: 'Tomorrow' },
       { title: 'Release 2.0', label: 'Tue, Dec 1', days: 19, relative: 'in 19 days' },
       { title: 'Vienna City Marathon', label: 'Sun, Apr 18, 2027', days: 157, relative: 'in 157 days' },
@@ -26,10 +26,10 @@ describe('Countdowns', () => {
     await webos.countdowns.add({ title: 'Demo day', date: '2026-11-13' });
 
     clock.advance(DAY);
-    expect(webos.countdowns.upcoming().map((countdown) => countdown.relative)).toEqual(['Today']);
+    expect(webos.countdowns.shown().map((countdown) => countdown.relative)).toEqual(['Today']);
 
     clock.advance(DAY);
-    expect(webos.countdowns.upcoming()).toEqual([]);
+    expect(webos.countdowns.shown()).toEqual([]);
   });
 
   it('counts whole calendar days across a daylight-saving change', async () => {
@@ -37,7 +37,7 @@ describe('Countdowns', () => {
     const { webos } = await setUp({ clock: createTestClock(new Date(2026, 9, 24, 23, 30)) });
     await webos.countdowns.add({ title: 'After the change', date: '2026-10-26' });
 
-    expect(webos.countdowns.upcoming()[0].days).toBe(2);
+    expect(webos.countdowns.shown()[0].days).toBe(2);
   });
 
   it('clears Countdowns whose day has passed when the Desktop loads, and keeps today\'s', async () => {
@@ -83,5 +83,57 @@ describe('Countdowns', () => {
     const nextTab = await createWebOS({ storage, clock });
 
     expect(nextTab.countdowns.list().map((countdown) => countdown.title)).toEqual(['A', 'B']);
+  });
+});
+
+describe('Countdowns that count up', () => {
+  const view = (webos: Awaited<ReturnType<typeof setUp>>['webos']) =>
+    webos.countdowns.shown().map(({ title, days, countsUp, relative }) => ({ title, days, countsUp, relative }));
+
+  it('counts up from a day that had passed when it was added, after the ones still to come', async () => {
+    const { webos } = await setUp();
+    await webos.countdowns.add({ title: 'Started running', date: '2026-10-01' });
+    await webos.countdowns.add({ title: 'Release 2.0', date: '2026-12-01' });
+    await webos.countdowns.add({ title: 'Moved to Vienna', date: '2026-11-11' });
+
+    expect(view(webos)).toEqual([
+      { title: 'Release 2.0', days: 19, countsUp: false, relative: 'in 19 days' },
+      { title: 'Moved to Vienna', days: 1, countsUp: true, relative: 'Yesterday' },
+      { title: 'Started running', days: 42, countsUp: true, relative: '42 days ago' },
+    ]);
+  });
+
+  it('keeps counting up in every new tab, while one that was ahead is still cleared once its day has passed', async () => {
+    const { webos, storage, clock } = await setUp();
+    await webos.countdowns.add({ title: 'Started running', date: '2026-10-01' });
+    await webos.countdowns.add({ title: 'Demo day', date: '2026-11-13' });
+
+    clock.advance(2 * DAY);
+    const nextTab = await createWebOS({ storage, clock });
+
+    expect(view(nextTab)).toEqual([{ title: 'Started running', days: 44, countsUp: true, relative: '44 days ago' }]);
+    expect(nextTab.countdowns.list().map((countdown) => countdown.title)).toEqual(['Started running']);
+  });
+
+  it('counts up or down after a change, by whether the new day has passed', async () => {
+    const { webos, storage, clock } = await setUp();
+    const id = (await webos.countdowns.add({ title: 'Race', date: '2026-12-01' }))!;
+
+    await webos.countdowns.edit(id, { title: 'Race', date: '2026-11-01' });
+    expect(view(webos)).toEqual([{ title: 'Race', days: 11, countsUp: true, relative: '11 days ago' }]);
+
+    await webos.countdowns.edit(id, { title: 'Race', date: '2026-11-13' });
+    expect(view(webos)).toEqual([{ title: 'Race', days: 1, countsUp: false, relative: 'Tomorrow' }]);
+
+    // Moved back to a coming day, it counts down again, and is cleared once that day has passed.
+    clock.advance(2 * DAY);
+    expect((await createWebOS({ storage, clock })).countdowns.list()).toEqual([]);
+  });
+
+  it('counts down to a day added for today', async () => {
+    const { webos } = await setUp();
+    await webos.countdowns.add({ title: 'Launch', date: '2026-11-12' });
+
+    expect(view(webos)).toEqual([{ title: 'Launch', days: 0, countsUp: false, relative: 'Today' }]);
   });
 });
