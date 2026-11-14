@@ -1,6 +1,6 @@
 # Spec 0007: The Today Widget
 
-Status: built (2026-11-14)
+Status: built (2026-11-14). Later the same day Today M grew to 4 × 5, as wide as the Calendar M, with Todos one column further right on a fresh Desktop; a Desktop saved before keeps Today in place and moves Todos on.
 Related: [Spec 0006: Apple Calendar and the Day View](0006-apple-calendar.md), [GLOSSARY](../../GLOSSARY.md)
 
 ## Problem Statement

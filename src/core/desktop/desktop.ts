@@ -104,12 +104,13 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
-  // One day in full: today, or the day picked in the Calendar. Tall, like Todos, for a full day's list.
+  // One day in full: today, or the day picked in the Calendar. Tall, like Todos, for a full day's
+  // list, and as wide as the Calendar at each size, which it works with.
   today: {
     name: 'Today',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 3, rows: 5 },
+      M: { columns: 4, rows: 5 },
       L: { columns: 4, rows: 6 },
     },
   },
@@ -174,7 +175,7 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'calendar', size: 'S', column: 15, row: 0, visible: true },
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'today', size: 'M', column: 0, row: 3, visible: true },
-  { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
+  { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
   { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
   { widget: 'system', size: 'S', column: 12, row: 6, visible: true },
@@ -351,6 +352,9 @@ const isEntry = (value: unknown): value is LayoutEntry => {
  * A saved layout made safe to use, whatever wrote it: unknown and repeated
  * entries are dropped (each Widget appears once), Widgets it doesn't mention
  * are added hidden, and visible Widgets are kept on the grid without overlaps.
+ * Where two overlap, as when a newer build makes a size bigger, the one first
+ * in reading order keeps its place and the other moves on, whatever order they
+ * are stored in. The entries keep their stored order.
  */
 export function normalizeLayout(saved: readonly unknown[]): LayoutEntry[] {
   const seen = new Set<WidgetId>();
@@ -358,12 +362,13 @@ export function normalizeLayout(saved: readonly unknown[]): LayoutEntry[] {
   for (const widget of Object.keys(widgets) as WidgetId[]) {
     if (!seen.has(widget)) entries.push({ widget, size: 'M', column: 0, row: 0, visible: false });
   }
+  const onTheGrid = entries.map((entry) => onGrid(entry));
   const occupied: Box[] = [];
-  return entries.map((entry) => {
-    if (!entry.visible) return onGrid(entry);
-    const placed = onGrid(entry);
-    const settled = occupied.some((box) => overlaps(boxOf(placed), box)) ? forceRoom(placed, occupied) : placed;
-    if (settled.visible) occupied.push(boxOf(settled));
-    return settled;
-  });
+  const settled = new Map<WidgetId, LayoutEntry>();
+  for (const placed of onTheGrid.filter((entry) => entry.visible).sort(readingOrder)) {
+    const entry = occupied.some((box) => overlaps(boxOf(placed), box)) ? forceRoom(placed, occupied) : placed;
+    if (entry.visible) occupied.push(boxOf(entry));
+    settled.set(entry.widget, entry);
+  }
+  return onTheGrid.map((entry) => settled.get(entry.widget) ?? entry);
 }

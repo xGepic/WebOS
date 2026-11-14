@@ -262,6 +262,22 @@ describe('one instance of each Widget', () => {
 });
 
 describe('the saved layout', () => {
+  it('lets the Widget first in reading order keep its place when a stored layout overlaps, whatever order it is stored in', async () => {
+    const storage = createMemoryStorage();
+    await webosWith(storage);
+    const stored = (await storage.read()) as { layout: { widget: string }[] };
+    // Saved when Today M was 3 columns wide, with Todos right beside it and stored first: at 4 wide, they overlap.
+    const layout = stored.layout.map((entry) =>
+      entry.widget === 'todos' ? { ...entry, column: 3, row: 3 } : entry.widget === 'today' ? { ...entry, size: 'M', column: 0, row: 3 } : entry,
+    );
+    const todosFirst = [...layout].sort((a, b) => (a.widget === 'todos' ? -1 : b.widget === 'todos' ? 1 : 0));
+
+    const webos = await webosWith(createMemoryStorage({ ...stored, layout: todosFirst }));
+
+    expect(where(webos)).toMatchObject({ today: 'M@0,3', todos: 'M@4,3' });
+    expectValidLayout(webos);
+  });
+
   it('follows changes made in another open tab', async () => {
     const storage = roomyStorage();
     const webos = await webosWith(storage);
