@@ -25,7 +25,7 @@ The thin bar across the top of the Desktop showing the open App's name, Data Sou
 _Avoid_: Top bar, header, status bar
 
 **Edit Mode**:
-The Desktop state in which Widgets can be moved, resized and added or removed on the snap grid.
+The Desktop state in which Widgets can be moved, resized and added or removed on the snap grid. A Widget added starts at size S.
 _Avoid_: Jiggle mode, customize mode, layout mode
 
 ## Building blocks
@@ -59,7 +59,7 @@ The Widget that shows the Day View of today, or of the day picked in the Calenda
 _Avoid_: Agenda, day widget, schedule
 
 **Top Sites**:
-The sites the user visits most, as the browser's own new tab page lists them, shown as tiles on the Top Sites Widget. The browser keeps the list; webOS only shows it.
+The sites the user visits most, as the browser's own new tab page lists them, each shown with its icon and name on the Top Sites Widget, at most 10. The browser keeps the list; webOS only shows it.
 _Avoid_: Shortcuts, bookmarks, favourites, speed dial
 
 **Countdown**:
