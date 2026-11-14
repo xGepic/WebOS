@@ -161,7 +161,7 @@ describe('resizing a Widget', () => {
 
     await webos.desktop.resize('today', 'L');
 
-    expect(where(webos).today).toBe('L@17,2');
+    expect(where(webos).today).toBe('L@17,3');
     expectValidLayout(webos);
   });
 

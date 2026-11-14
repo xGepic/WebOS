@@ -57,7 +57,7 @@ describe('default Desktop layout geometry', () => {
       'calendar S 3×3@15,0',
       'sun M 3×3@18,0',
       'search M 7×1@7,2',
-      'today M 4×5@0,3',
+      'today M 4×4@0,3',
       'todos M 3×5@4,3',
       'top-sites M 7×2@7,3',
       'recent M 3×5@18,3',
@@ -72,7 +72,7 @@ describe('default Desktop layout geometry', () => {
     const middle = desktop.layout().filter((p) => ['clock', 'search', 'top-sites'].includes(p.widget));
 
     for (const placed of middle) expect(placed.column).toBe(desktop.grid.columns - (placed.column + placed.columns));
-    // The two one-column gaps beside the Clock, the 2 × 5 space beside Todos and the 9 × 3 above the bottom row, less Top Sites' 7 × 2.
-    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - (2 * 3 + 2 * 5 + 9 * 3 - 7 * 2));
+    // The two one-column gaps beside the Clock, the 4 × 1 under Today, the 2 × 5 space beside Todos and the 9 × 3 above the bottom row, less Top Sites' 7 × 2.
+    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - (2 * 3 + 4 * 1 + 2 * 5 + 9 * 3 - 7 * 2));
   });
 });

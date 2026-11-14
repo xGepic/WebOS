@@ -104,14 +104,14 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
-  // One day in full: today, or the day picked in the Calendar. Tall, like Todos, for a full day's
-  // list, and as wide as the Calendar at each size, which it works with.
+  // One day in full: today, or the day picked in the Calendar. The Calendar's size at each size, so
+  // the two line up as the pair they are.
   today: {
     name: 'Today',
     sizes: {
       S: { columns: 3, rows: 3 },
-      M: { columns: 4, rows: 5 },
-      L: { columns: 4, rows: 6 },
+      M: { columns: 4, rows: 4 },
+      L: { columns: 4, rows: 5 },
     },
   },
   // The sites visited most, as tiles. M matches the Clock's width, to sit under the Search Widget.
