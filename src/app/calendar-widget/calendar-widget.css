@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: clamp(0.5625rem, min(5.3cqh, 6.3cqi), 2rem);
+  font-size: clamp(0.5625rem, min(4.5cqh, 5.4cqi), 1.625rem);
 }
 /* Too narrow for week numbers: drop them, and give the days their room. */
 @container (max-width: 190px) {
