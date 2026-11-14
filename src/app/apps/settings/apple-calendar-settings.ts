@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { WebOSCore } from '../../webos-core';
 
-/** Why the last Connect didn't sign in, for the section to say. */
-type Refusal = 'refused' | 'unreachable';
+/** Why the last Connect didn't sign in, for the section to say: Apple said no, iCloud didn't answer, or the browser wasn't allowed to ask. */
+type Refusal = 'refused' | 'unreachable' | 'denied';
 
 /**
  * Settings › Apple Calendar: sign in to iCloud with an Apple ID and an
@@ -87,11 +87,17 @@ type Refusal = 'refused' | 'unreachable';
               </button>
               @if (refusal(); as refusal) {
                 <p class="problem" role="alert">
-                  {{
-                    refusal === 'refused'
-                      ? 'Apple refused this Apple ID and password. Check both, and use an app-specific password, not your Apple ID password.'
-                      : 'iCloud couldn’t be reached. Check your connection and try again.'
-                  }}
+                  @switch (refusal) {
+                    @case ('refused') {
+                      Apple refused this Apple ID and password. Check both, and use an app-specific password, not your Apple ID password.
+                    }
+                    @case ('denied') {
+                      webOS needs your permission to reach iCloud. Connect again and choose Allow.
+                    }
+                    @default {
+                      iCloud couldn’t be reached. Check your connection and try again.
+                    }
+                  }
                 </p>
               }
             </div>
@@ -99,7 +105,8 @@ type Refusal = 'refused' | 'unreachable';
         }
       }
       <p class="hint">
-        Shows your iCloud events in the Calendar Widget, read-only. Make an app-specific password at
+        Shows your iCloud events in the Calendar Widget, read-only. Connecting asks your browser to let webOS reach
+        icloud.com. Make an app-specific password at
         <a href="https://account.apple.com/account/manage" target="_blank" rel="noopener noreferrer">account.apple.com</a>
         under Sign-In and Security › App-Specific Passwords; your Apple ID password is never asked for. webOS keeps the
         app-specific password unencrypted in this browser's extension storage, and leaves it out of backups. You can
@@ -201,6 +208,12 @@ export class AppleCalendarSettings {
     event.preventDefault();
     this.connecting.set(true);
     this.refusal.set(undefined);
+    // First, while the click still counts: the browser only asks for access during one.
+    if (!(await this.webos.allowICloud())) {
+      this.connecting.set(false);
+      this.refusal.set('denied');
+      return;
+    }
     const outcome = await this.webos.send((core) => core.appleCalendar.connect(appleId, password));
     this.connecting.set(false);
     if (outcome === 'refused' || outcome === 'unreachable') this.refusal.set(outcome);
@@ -218,6 +231,6 @@ export class AppleCalendarSettings {
 
   protected disconnect(): void {
     this.refusal.set(undefined);
-    this.webos.send((core) => core.appleCalendar.disconnect());
+    this.webos.send((core) => core.appleCalendar.disconnect()).then(() => this.webos.releaseICloud());
   }
 }

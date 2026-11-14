@@ -2,6 +2,8 @@ import { FetchError, type CalendarAccount, type CalendarServer, type RemoteCalen
 
 /** Where every iCloud account's CalDAV starts; each account's calendars then live on its own `pNN-caldav.icloud.com`. */
 const ICLOUD = 'https://caldav.icloud.com/';
+/** The hosts the extension asks to reach when the user connects; it holds none of them until then. */
+const ICLOUD_HOSTS = ['https://*.icloud.com/*'];
 /** How long one request may take before it counts as failed. A calendar with years of events can be slow. */
 const TIMEOUT_MS = 30_000;
 
@@ -12,14 +14,16 @@ const APPLE = 'http://apple.com/ns/ical/';
 /**
  * The user's iCloud calendars over CalDAV, read-only, for Apple Calendar.
  * Signs in with Basic authentication (Apple ID and app-specific password) and
- * sends no cookies. Works in the extension only, which may reach
- * `*.icloud.com`: a normal tab is stopped by CORS.
+ * sends no cookies. Works in the extension only, once the user has let it
+ * reach `*.icloud.com` (see `requestICloudAccess`): without that, and in a
+ * normal tab, the browser stops it with CORS.
  */
 export function createICloudCalendar(): CalendarServer {
   /** Each account's calendar home, found once per tab. */
   const homes = new Map<string, string>();
 
   async function home(account: CalendarAccount): Promise<string> {
+    if (!(await hasICloudAccess())) throw new Error('webOS may not reach iCloud: connect again in Settings › Apple Calendar to allow it.');
     const key = `${account.appleId}\n${account.password}`;
     const known = homes.get(key);
     if (known) return known;
@@ -83,6 +87,28 @@ export function createICloudCalendar(): CalendarServer {
       });
     },
   };
+}
+
+/**
+ * Asks the browser to let webOS reach iCloud, which it shows as a prompt.
+ * Call it straight from a click, before anything else is awaited: the browser
+ * only asks during one. Resolves to whether access was given; true outside the
+ * extension, where there is no one to ask.
+ */
+export async function requestICloudAccess(): Promise<boolean> {
+  const permissions = globalThis.chrome?.permissions;
+  if (!permissions) return true;
+  return permissions.request({ origins: ICLOUD_HOSTS });
+}
+
+/** Gives up access to iCloud, once the user disconnects. */
+export async function releaseICloudAccess(): Promise<void> {
+  await globalThis.chrome?.permissions?.remove({ origins: ICLOUD_HOSTS });
+}
+
+async function hasICloudAccess(): Promise<boolean> {
+  const permissions = globalThis.chrome?.permissions;
+  return !permissions || permissions.contains({ origins: ICLOUD_HOSTS });
 }
 
 /** A PROPFIND body asking for `props`. */

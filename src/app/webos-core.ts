@@ -14,7 +14,7 @@ import {
 } from '../core';
 import { createBrowserLookup } from '../edges/browser-lookup';
 import { createExtensionStorage } from '../edges/extension-storage';
-import { createICloudCalendar } from '../edges/icloud-calendar';
+import { createICloudCalendar, releaseICloudAccess, requestICloudAccess } from '../edges/icloud-calendar';
 import { createNetworkFetch } from '../edges/network';
 import { createSystemClock } from '../edges/system-clock';
 import { createSystemMonitor } from '../edges/system-monitor';
@@ -115,6 +115,22 @@ export class WebOSCore {
     addDays: (date: string, days: number): string => this.withCore((core) => core.calendar.addDays(date, days)) ?? date,
     addMonths: (date: string, months: number): string => this.withCore((core) => core.calendar.addMonths(date, months)) ?? date,
   };
+
+  /**
+   * Asks the browser to let webOS reach iCloud, for Settings › Apple Calendar.
+   * Call it straight from the Connect click. Resolves to whether access was given.
+   */
+  allowICloud(): Promise<boolean> {
+    return requestICloudAccess().catch((error) => {
+      console.error('webOS could not ask for access to iCloud', error);
+      return false;
+    });
+  }
+
+  /** Gives up access to iCloud, after disconnecting Apple Calendar. */
+  releaseICloud(): void {
+    releaseICloudAccess().catch((error) => console.error('webOS could not give up access to iCloud', error));
+  }
 
   /** Up to five cities matching `query`, for Settings. Rejects if the search can't be made. */
   searchCities(query: string): Promise<WeatherCity[]> {
