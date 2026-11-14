@@ -1,4 +1,4 @@
-import type { BrowserLookup, DisplayMonitor, DisplayReading, NetworkMonitor, SystemMonitor, VisitedPage } from '../edges';
+import type { BrowserLookup, NetworkMonitor, SystemMonitor, VisitedPage } from '../edges';
 import type { Store } from '../store';
 import * as recent from './recent';
 import * as system from './system';
@@ -12,9 +12,9 @@ export interface ActivityApi {
     refresh(): Promise<void>;
   };
   /**
-   * The System Widget: processor and memory use, the processor's name, the
-   * network and the displays. The readings are kept per tab and never saved;
-   * which parts are shown is saved.
+   * The System Widget: processor and memory use, the processor's name and the
+   * network. The readings are kept per tab and never saved; which parts are
+   * shown is saved.
    */
   readonly system: {
     view(): system.SystemView;
@@ -26,35 +26,21 @@ export interface ActivityApi {
   };
 }
 
-/** The Recent and System Widgets. The System Widget follows the network and the displays as they change. */
+/** The Recent and System Widgets. The System Widget follows the network as it changes. */
 export function createActivity(
   store: Store,
-  edges: { browser?: BrowserLookup; system?: SystemMonitor; network?: NetworkMonitor; displays?: DisplayMonitor },
+  edges: { browser?: BrowserLookup; system?: SystemMonitor; network?: NetworkMonitor },
 ): ActivityApi {
   const { clock } = store;
-  const { browser, system: monitor, network, displays: displayMonitor } = edges;
+  const { browser, system: monitor, network } = edges;
   const state = store.state;
 
   /** The pages visited last, as the browser gave them at this tab's last refresh. */
   let recentVisits: VisitedPage[] = [];
   /** This tab's processor and memory readings. */
   let readings = system.noReadings();
-  /** The displays as last read. */
-  let displays: DisplayReading[] = [];
 
   network?.onChange(() => store.notify());
-  const readDisplays = async () => {
-    try {
-      displays = await displayMonitor!.displays();
-      store.notify();
-    } catch {
-      // Keeps the displays there were.
-    }
-  };
-  if (displayMonitor) {
-    void readDisplays();
-    displayMonitor.onChange(() => void readDisplays());
-  }
 
   return {
     recent: {
@@ -79,7 +65,6 @@ export function createActivity(
           usage: system.usageView(readings, !!monitor),
           ...(model ? { processor: system.processorName(model) } : {}),
           ...(reading ? { network: { online: reading.online, summary: system.networkSummary(reading) } } : {}),
-          displays: system.displayViews(displays),
         };
       },
       parts: () => system.partChoices(state().systemWidget.hidden),

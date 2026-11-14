@@ -1,6 +1,6 @@
 # Spec 0008: System Details
 
-Status: built (2026-11-14)
+Status: built (2026-11-14); Displays removed again the same day, with the `system.display` permission and the `DisplayMonitor` edge. The rest of this spec still describes them, for the record.
 Related: [Spec 0002: More Widgets](0002-more-widgets.md), [GLOSSARY](../../GLOSSARY.md)
 
 ## Problem Statement

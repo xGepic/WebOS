@@ -51,9 +51,6 @@ dd {
 dd.offline {
   color: var(--danger);
 }
-.display-summary {
-  color: var(--text-secondary);
-}
 p {
   margin: 0;
 }

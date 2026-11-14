@@ -1,8 +1,7 @@
-import { createWebOS, type DisplayReading, type NetworkReading, type SystemSample } from '../index';
+import { createWebOS, type NetworkReading, type SystemSample } from '../index';
 import {
   createMemoryStorage,
   createTestClock,
-  createTestDisplayMonitor,
   createTestNetworkMonitor,
   createTestSystemMonitor,
   type MemoryStorage,
@@ -18,28 +17,15 @@ const sample = (cpuTotal: number, cpuIdle: number, memoryAvailable = 4 * GB, cpu
   ...(cpuModel ? { cpuModel } : {}),
 });
 
-const monitor4k: DisplayReading = { name: 'DELL U2723QE', width: 3840, height: 2160, scale: 1.5, primary: true, refreshRate: 144 };
-const laptop: DisplayReading = { name: 'Built-in display', width: 2560, height: 1600, scale: 2, primary: false };
-
 async function setUp({
   first = sample(1000, 800),
   network = { online: true, downlinkMbps: 10, rttMs: 50 } as NetworkReading,
-  displays = [monitor4k] as DisplayReading[],
   storage = createMemoryStorage() as MemoryStorage,
-}: { first?: SystemSample | Error; network?: NetworkReading; displays?: DisplayReading[]; storage?: MemoryStorage } = {}) {
+}: { first?: SystemSample | Error; network?: NetworkReading; storage?: MemoryStorage } = {}) {
   const system = createTestSystemMonitor(first);
   const networkMonitor = createTestNetworkMonitor(network);
-  const displayMonitor = createTestDisplayMonitor(displays);
-  const webos = await createWebOS({
-    storage,
-    clock: createTestClock(new Date(2026, 10, 12, 9, 0)),
-    system,
-    network: networkMonitor,
-    displays: displayMonitor,
-  });
-  // The displays are read as the core starts.
-  await Promise.resolve();
-  return { webos, system, network: networkMonitor, displays: displayMonitor, storage };
+  const webos = await createWebOS({ storage, clock: createTestClock(new Date(2026, 10, 12, 9, 0)), system, network: networkMonitor });
+  return { webos, system, network: networkMonitor, storage };
 }
 
 describe('the System Widget’s meters', () => {
@@ -155,32 +141,6 @@ describe('the network', () => {
   });
 });
 
-describe('the displays', () => {
-  it('lists each with its resolution, scaling and refresh rate, the primary first', async () => {
-    const { webos } = await setUp({ displays: [laptop, monitor4k] });
-
-    expect(webos.system.view().displays).toEqual([
-      { name: 'DELL U2723QE', summary: '3840 × 2160 · 150% · 144 Hz', primary: true },
-      { name: 'Built-in display', summary: '2560 × 1600 · 200%', primary: false },
-    ]);
-  });
-
-  it('follows a display being plugged in', async () => {
-    const { webos, displays } = await setUp();
-
-    displays.change([monitor4k, laptop]);
-    await Promise.resolve();
-
-    expect(webos.system.view().displays.map((display) => display.name)).toEqual(['DELL U2723QE', 'Built-in display']);
-  });
-
-  it('lists none without a way to tell', async () => {
-    const webos = await createWebOS({ storage: createMemoryStorage(), clock: createTestClock(new Date(2026, 10, 12, 9, 0)) });
-
-    expect(webos.system.view().displays).toEqual([]);
-  });
-});
-
 describe('choosing what the System Widget shows', () => {
   it('shows every part to begin with', async () => {
     const { webos } = await setUp();
@@ -190,21 +150,20 @@ describe('choosing what the System Widget shows', () => {
       { part: 'memory', name: 'Memory', shown: true },
       { part: 'processor', name: 'Processor name', shown: true },
       { part: 'network', name: 'Network', shown: true },
-      { part: 'displays', name: 'Displays', shown: true },
     ]);
-    expect(webos.system.view().shown).toEqual({ cpu: true, memory: true, processor: true, network: true, displays: true });
+    expect(webos.system.view().shown).toEqual({ cpu: true, memory: true, processor: true, network: true });
   });
 
   it('hides and shows parts, and remembers it in the next tab', async () => {
     const { webos, storage } = await setUp();
 
     await webos.system.setShown('memory', false);
-    await webos.system.setShown('displays', false);
+    await webos.system.setShown('network', false);
     await webos.system.setShown('memory', true);
 
-    expect(webos.system.view().shown).toMatchObject({ memory: true, displays: false });
+    expect(webos.system.view().shown).toMatchObject({ memory: true, network: false });
     const { webos: nextTab } = await setUp({ storage });
-    expect(nextTab.system.parts().filter((part) => !part.shown).map((part) => part.part)).toEqual(['displays']);
+    expect(nextTab.system.parts().filter((part) => !part.shown).map((part) => part.part)).toEqual(['network']);
   });
 
   it('shows parts it doesn’t know were hidden, and keeps names from other builds', async () => {
@@ -212,13 +171,14 @@ describe('choosing what the System Widget shows', () => {
     const { webos } = await setUp({ storage });
     await webos.system.setShown('network', false);
     const stored = (await storage.read()) as { systemWidget: { hidden: string[] } };
-    await storage.write({ ...stored, systemWidget: { hidden: ['battery', 'network'] } });
+    // "displays" is a part an earlier build had.
+    await storage.write({ ...stored, systemWidget: { hidden: ['displays', 'network'] } });
 
     const { webos: nextTab } = await setUp({ storage });
     await nextTab.system.setShown('cpu', false);
 
-    expect(nextTab.system.view().shown).toEqual({ cpu: false, memory: true, processor: true, network: false, displays: true });
-    expect(await storage.read()).toMatchObject({ systemWidget: { hidden: ['battery', 'network', 'cpu'] } });
+    expect(nextTab.system.view().shown).toEqual({ cpu: false, memory: true, processor: true, network: false });
+    expect(await storage.read()).toMatchObject({ systemWidget: { hidden: ['displays', 'network', 'cpu'] } });
   });
 
   it('keeps the choice in a backup', async () => {

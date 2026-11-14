@@ -8,8 +8,7 @@ const SAMPLE_EVERY_MS = 2000;
 /**
  * The System Widget: how busy the processors are, with a sparkline of the
  * last minute, and how much memory is in use; below them the processor's
- * name, the network and the displays. Settings › System chooses which of
- * these it shows. It takes a reading every two seconds, only while it is on
+ * name and the network. Settings › System chooses which of these it shows. It takes a reading every two seconds, only while it is on
  * the Desktop and the tab is shown.
  */
 @Component({
@@ -65,15 +64,6 @@ const SAMPLE_EVERY_MS = 2000;
                   <dd [class.offline]="!network.online">{{ network.summary }}</dd>
                 </div>
               }
-              @for (display of details.displays; track $index) {
-                <div class="row">
-                  <dt>{{ $first ? (details.displays.length > 1 ? 'Displays' : 'Display') : '' }}</dt>
-                  <dd>
-                    <span class="display-name">{{ display.name }}</span>
-                    <span class="display-summary">{{ display.summary }}</span>
-                  </dd>
-                </div>
-              }
             </dl>
           }
         }
@@ -106,8 +96,7 @@ export class SystemWidget {
     if (!system) return undefined;
     const processor = system.shown.processor ? system.processor : undefined;
     const network = system.shown.network ? system.network : undefined;
-    const displays = system.shown.displays ? system.displays : [];
-    return { processor, network, displays, any: !!processor || !!network || displays.length > 0 };
+    return { processor, network, any: !!processor || !!network };
   });
 
   /** Whether the user hid every part. */

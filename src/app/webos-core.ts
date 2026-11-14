@@ -13,7 +13,6 @@ import {
   type WidgetSize,
 } from '../core';
 import { createBrowserLookup } from '../edges/browser-lookup';
-import { createDisplayMonitor } from '../edges/display-monitor';
 import { createExtensionStorage } from '../edges/extension-storage';
 import { createICloudCalendar, releaseICloudAccess, requestICloudAccess } from '../edges/icloud-calendar';
 import { createNetworkFetch } from '../edges/network';
@@ -74,7 +73,6 @@ export class WebOSCore {
         system: createSystemMonitor(),
         calendars: createICloudCalendar(),
         network: createNetworkMonitor(),
-        displays: createDisplayMonitor(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {

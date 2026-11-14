@@ -3,8 +3,6 @@ import type {
   CalendarAccount,
   CalendarServer,
   Clock,
-  DisplayMonitor,
-  DisplayReading,
   Fetch,
   FetchRequest,
   NetworkMonitor,
@@ -178,27 +176,6 @@ export function createTestNetworkMonitor(first: NetworkReading): TestNetworkMoni
     },
     change(reading) {
       current = reading;
-      listeners.forEach((listener) => listener());
-    },
-  };
-}
-
-/** A DisplayMonitor listing what the test sets with `change`, which tells listeners. */
-export interface TestDisplayMonitor extends DisplayMonitor {
-  change(displays: DisplayReading[]): void;
-}
-
-export function createTestDisplayMonitor(first: DisplayReading[]): TestDisplayMonitor {
-  let current = first;
-  const listeners = new Set<() => void>();
-  return {
-    displays: async () => structuredClone(current),
-    onChange(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    change(displays) {
-      current = displays;
       listeners.forEach((listener) => listener());
     },
   };

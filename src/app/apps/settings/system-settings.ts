@@ -19,7 +19,7 @@ import { WebOSCore } from '../../webos-core';
         }
       </fieldset>
       <p class="hint">
-        The processor, memory and displays are read from this machine, and the network speed is the browser's own
+        The processor and memory are read from this machine, and the network speed is the browser's own
         estimate. Nothing is sent anywhere.
       </p>
     </section>

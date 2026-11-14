@@ -102,27 +102,6 @@ export interface NetworkMonitor {
   onChange(listener: () => void): () => void;
 }
 
-/** One display attached to the machine. */
-export interface DisplayReading {
-  name: string;
-  /** In physical pixels. */
-  width: number;
-  height: number;
-  /** The scaling, e.g. 1.5 for 150%. */
-  scale: number;
-  primary: boolean;
-  /** In hertz, if known. */
-  refreshRate?: number;
-}
-
-/** Lists the displays, for the System Widget. */
-export interface DisplayMonitor {
-  /** Rejects when they can't be read. */
-  displays(): Promise<DisplayReading[]>;
-  /** Calls `listener` whenever a display is added, removed or changed. Returns a function that stops it. */
-  onChange(listener: () => void): () => void;
-}
-
 /** An Apple ID and app-specific password, as the CalendarServer signs in with them. */
 export interface CalendarAccount {
   appleId: string;

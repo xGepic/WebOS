@@ -1,7 +1,7 @@
-import type { DisplayReading, NetworkReading, SystemSample } from '../edges';
+import type { NetworkReading, SystemSample } from '../edges';
 
 /** The parts the System Widget can show, in the order it shows them. */
-export const SYSTEM_PARTS = ['cpu', 'memory', 'processor', 'network', 'displays'] as const;
+export const SYSTEM_PARTS = ['cpu', 'memory', 'processor', 'network'] as const;
 export type SystemPart = (typeof SYSTEM_PARTS)[number];
 
 /** What Settings calls each part. */
@@ -10,7 +10,6 @@ const PART_NAMES: Record<SystemPart, string> = {
   memory: 'Memory',
   processor: 'Processor name',
   network: 'Network',
-  displays: 'Displays',
 };
 
 /** A part as Settings lists it. */
@@ -18,14 +17,6 @@ export interface SystemPartChoice {
   part: SystemPart;
   name: string;
   shown: boolean;
-}
-
-/** A display as the System Widget lists it. */
-export interface DisplayView {
-  name: string;
-  /** e.g. "3840 × 2160 · 150% · 144 Hz" */
-  summary: string;
-  primary: boolean;
 }
 
 /** What the System Widget shows: which parts, and what is known for each. */
@@ -37,8 +28,6 @@ export interface SystemView {
   processor?: string;
   /** "Offline", or "Online · 10+ Mbps · 50 ms". Undefined without a way to tell. */
   network?: { online: boolean; summary: string };
-  /** The primary display first. Empty without a way to tell. */
-  displays: readonly DisplayView[];
 }
 
 /** The CPU and memory meters. */
@@ -143,19 +132,4 @@ export function networkSummary(reading: NetworkReading): string {
   if (downlink) parts.push(downlink >= 10 ? '10+ Mbps' : `${downlink < 1 ? downlink.toFixed(1) : Math.round(downlink)} Mbps`);
   if (rtt) parts.push(`${Math.round(rtt)} ms`);
   return parts.join(' · ');
-}
-
-/** The displays as the Widget lists them, the primary first: "3840 × 2160 · 150% · 144 Hz". */
-export function displayViews(displays: readonly DisplayReading[]): DisplayView[] {
-  return [...displays]
-    .sort((a, b) => Number(b.primary) - Number(a.primary))
-    .map((display) => ({
-      name: display.name.trim() || 'Display',
-      summary: [
-        `${Math.round(display.width)} × ${Math.round(display.height)}`,
-        `${Math.round(display.scale * 100)}%`,
-        ...(display.refreshRate ? [`${Math.round(display.refreshRate)} Hz`] : []),
-      ].join(' · '),
-      primary: display.primary,
-    }));
 }
