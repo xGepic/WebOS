@@ -69,3 +69,17 @@ dt {
 .relative {
   color: var(--text-secondary);
 }
+/* Small screens: too narrow or short for the dates beside the disc, so just the phase. */
+@container (max-width: 240px) or (max-height: 160px) {
+  .body {
+    gap: 0.75rem;
+    padding: 0 0.25rem;
+  }
+  dl {
+    display: none;
+  }
+  .name {
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+}

@@ -16,7 +16,7 @@ import { WeatherIcon } from './weather-icon';
     @if (webos.weather(); as weather) {
       @if (weather.status === 'ready') {
         <p class="place">{{ weather.city }}</p>
-        <p class="now">
+        <p class="now" [style.--digits]="digits(weather.temperature)">
           <webos-weather-icon class="icon" [condition]="weather.condition" [isDay]="weather.isDay" />
           <span class="temperature">{{ weather.temperature }}°</span>
         </p>
@@ -41,4 +41,9 @@ import { WeatherIcon } from './weather-icon';
 export class WeatherWidget {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
+
+  /** Characters in the temperature, at least two, so 3° and 23° are one size and only -12° shrinks to fit. */
+  protected digits(temperature: number): number {
+    return Math.max(2, String(temperature).length);
+  }
 }

@@ -23,71 +23,74 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (month(); as month) {
-      <div class="header">
-        <button type="button" class="nav" aria-label="Previous month" (click)="showMonth(offset() - 1)">‹</button>
-        <p class="title" aria-live="polite">
-          {{ month.month }}
-          @if (!month.current) {
-            <span class="year">{{ month.year }}</span>
-          }
-        </p>
-        <button type="button" class="nav" aria-label="Next month" (click)="showMonth(offset() + 1)">›</button>
-      </div>
-      <table>
-        <caption class="visually-hidden">{{ month.month }} {{ month.year }}</caption>
-        <thead>
-          <tr>
-            <th scope="col" class="week"><abbr title="Week">W</abbr></th>
-            @for (weekday of month.weekdays; track weekday) {
-              <th scope="col">
-                <abbr [title]="weekday">{{ weekday.charAt(0) }}</abbr>
-              </th>
+      <!-- Sized by the Host's box (see the CSS), so everything inside scales with the Widget. -->
+      <div class="calendar">
+        <div class="header">
+          <button type="button" class="nav" aria-label="Previous month" (click)="showMonth(offset() - 1)">‹</button>
+          <p class="title" aria-live="polite">
+            {{ month.month }}
+            @if (!month.current) {
+              <span class="year">{{ month.year }}</span>
             }
-          </tr>
-        </thead>
-        <tbody>
-          @for (week of month.weeks; track week.number) {
+          </p>
+          <button type="button" class="nav" aria-label="Next month" (click)="showMonth(offset() + 1)">›</button>
+        </div>
+        <table>
+          <caption class="visually-hidden">{{ month.month }} {{ month.year }}</caption>
+          <thead>
             <tr>
-              <th scope="row" class="week">{{ week.number }}</th>
-              @for (day of week.days; track day.date) {
-                <td>
-                  <button
-                    type="button"
-                    class="day"
-                    [class.outside]="!day.inMonth"
-                    [class.today]="day.today"
-                    [class.day-off]="day.weekend || !!day.holiday"
-                    [attr.data-date]="day.date"
-                    [attr.aria-current]="day.today ? 'date' : null"
-                    [attr.aria-label]="labelFor(day)"
-                    [attr.title]="namesOf(day) || null"
-                    [tabindex]="day.date === tabStop() ? 0 : -1"
-                    (focus)="active.set(day.date)"
-                    (keydown)="onKey($event, day.date)"
-                    (click)="copy(day.date)"
-                  >
-                    {{ day.day }}
-                    @if (day.holiday || day.countdowns.length) {
-                      <span class="marks" aria-hidden="true">
-                        @if (day.holiday) {
-                          <span class="mark holiday-mark"></span>
-                        }
-                        @if (day.countdowns.length) {
-                          <span class="mark countdown-mark"></span>
-                        }
-                      </span>
-                    }
-                  </button>
-                </td>
+              <th scope="col" class="week"><abbr title="Week">W</abbr></th>
+              @for (weekday of month.weekdays; track weekday) {
+                <th scope="col">
+                  <abbr [title]="weekday">{{ weekday.charAt(0) }}</abbr>
+                </th>
               }
             </tr>
-          }
-        </tbody>
-      </table>
-      <!-- Hidden, not removed, on the current month, so the grid stays put when it appears. -->
-      <button type="button" class="button today-button" [class.hidden]="month.current" [attr.aria-hidden]="month.current" [tabindex]="month.current ? -1 : 0" (click)="showMonth(0)">
-        Today
-      </button>
+          </thead>
+          <tbody>
+            @for (week of month.weeks; track week.number) {
+              <tr>
+                <th scope="row" class="week">{{ week.number }}</th>
+                @for (day of week.days; track day.date) {
+                  <td>
+                    <button
+                      type="button"
+                      class="day"
+                      [class.outside]="!day.inMonth"
+                      [class.today]="day.today"
+                      [class.day-off]="day.weekend || !!day.holiday"
+                      [attr.data-date]="day.date"
+                      [attr.aria-current]="day.today ? 'date' : null"
+                      [attr.aria-label]="labelFor(day)"
+                      [attr.title]="namesOf(day) || null"
+                      [tabindex]="day.date === tabStop() ? 0 : -1"
+                      (focus)="active.set(day.date)"
+                      (keydown)="onKey($event, day.date)"
+                      (click)="copy(day.date)"
+                    >
+                      {{ day.day }}
+                      @if (day.holiday || day.countdowns.length) {
+                        <span class="marks" aria-hidden="true">
+                          @if (day.holiday) {
+                            <span class="mark holiday-mark"></span>
+                          }
+                          @if (day.countdowns.length) {
+                            <span class="mark countdown-mark"></span>
+                          }
+                        </span>
+                      }
+                    </button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+        <!-- Hidden, not removed, on the current month, so the grid stays put when it appears. -->
+        <button type="button" class="button today-button" [class.hidden]="month.current" [attr.aria-hidden]="month.current" [tabindex]="month.current ? -1 : 0" (click)="showMonth(0)">
+          Today
+        </button>
+      </div>
     }
   `,
   styleUrl: './calendar-widget.css',

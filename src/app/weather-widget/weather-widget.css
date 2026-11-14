@@ -1,3 +1,8 @@
+/*
+ * Everything scales with the Widget's box, so a big screen gets a big
+ * temperature. Container units here measure the Host, which is narrower than it
+ * is tall at most sizes, so the width usually decides.
+ */
 :host {
   container-type: size;
   display: flex;
@@ -14,14 +19,15 @@ p {
 }
 .place {
   color: var(--text-secondary);
-  font-size: 0.9375rem;
+  font-size: clamp(0.8125rem, min(5.5cqh, 6cqi), 1.75rem);
   font-weight: 500;
 }
 .now {
   display: flex;
   align-items: center;
   gap: 0.15em;
-  font-size: clamp(2rem, min(30cqh, 24cqi), 4.5rem);
+  /* As wide as fits: the icon and ° take about 1.2em, each digit 0.55em. Capped near the Clock's size. */
+  font-size: clamp(2rem, min(34cqh, 85cqi / (1.2 + 0.55 * var(--digits, 3))), 7rem);
   line-height: 1;
 }
 .icon {
@@ -33,9 +39,10 @@ p {
   letter-spacing: var(--tracking-display);
   font-variant-numeric: tabular-nums;
 }
-.details {
+.details,
+.message {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: clamp(0.75rem, min(5cqh, 5.4cqi), 1.5rem);
 }
 .range {
   display: block;
@@ -43,14 +50,18 @@ p {
 }
 .updated {
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: clamp(0.6875rem, min(4cqh, 4.4cqi), 1.125rem);
   opacity: 0.8;
 }
 .message {
-  max-width: 14rem;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  max-width: 14em;
 }
 .button {
   margin-top: 0.5rem;
+}
+/* Short: the time of the last update is the first to go. */
+@container (max-height: 150px) {
+  .updated {
+    display: none;
+  }
 }

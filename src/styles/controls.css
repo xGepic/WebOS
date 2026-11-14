@@ -167,6 +167,15 @@
 .widget-empty p {
   margin: 0;
 }
+/* A Widget too short for both on a small screen keeps just the button, which says what it does. */
+@container (max-height: 160px) {
+  .widget-empty {
+    gap: 0;
+  }
+  .widget-empty p {
+    display: none;
+  }
+}
 
 /*
  * A control across a whole Widget that opens its App, e.g. the Countdowns
