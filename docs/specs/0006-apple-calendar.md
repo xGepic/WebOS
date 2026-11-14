@@ -72,6 +72,9 @@ Clicking a day opens the **Day View** in the Widget: the day's holiday, Countdow
 
 ### Widget
 
+_Spec 0007 moved the Day View to the Today Widget; clicking a day now shows it there._
+
+
 - Clicking a day (or Enter) opens the Day View in the Widget instead of copying; the Day View has a Copy button. Its list scrolls when the day is full.
 - Its header: ‹ (back to the month, named after it), the weekday and date, and "in 3 days · Week 48". Then the holiday, the Countdowns, the events, and sunrise and sunset.
 - An event: a bar in its calendar's colour, the time ("All day", "10:00 AM – 11:30 AM", "Until 9:00 AM", "From 10:00 PM"), the title and the place.

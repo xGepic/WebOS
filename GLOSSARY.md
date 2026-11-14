@@ -54,12 +54,16 @@ _Avoid_: Task, item, ticket
 A text the user pasted into the Clipboard App to copy again later. It can be pinned, so it is never dropped.
 _Avoid_: Snippet, clipping, history entry
 
+**Today Widget**:
+The Widget that shows the Day View of today, or of the day picked in the Calendar Widget until the user goes back to today.
+_Avoid_: Agenda, day widget, schedule
+
 **Countdown**:
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
 _Avoid_: Event, deadline, timer
 
 **Day View**:
-One day in full in the Calendar Widget, in place of the month: its holiday, Countdowns and Events, and sunrise and sunset. Opened by clicking a day.
+One day in full: its holiday, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
 
 **World Clock city**:

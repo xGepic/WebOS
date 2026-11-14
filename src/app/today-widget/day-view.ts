@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, ElementRef, afterNextRender, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type { CalendarDayView } from '../../core';
 
 /**
- * The Calendar Widget's Day View: one day in full, in place of the month. Its
- * holiday and Countdowns, the shown Apple Calendar events (all-day first, then
- * by time), and sunrise and sunset in the Weather city.
+ * The Day View, the body of the Today Widget: one day in full. Its holiday and
+ * Countdowns, the shown Apple Calendar events (all-day first, then by time),
+ * and sunrise and sunset in the Weather city.
  *
- * ‹ (or Esc) goes back to the month; ← and → step through days; Copy copies
- * the date as `2026-11-24`. The list scrolls when the day is full.
+ * ‹ and › (or ← and →) step through days; on another day, ‹ Today (or Esc)
+ * goes back to today. Copy copies the date as `2026-11-24`. The list scrolls
+ * when the day is full.
  */
 @Component({
   selector: 'webos-day-view',
@@ -20,9 +21,9 @@ import type { CalendarDayView } from '../../core';
   template: `
     @let today = day();
     <div class="top">
-      <button type="button" class="back" (click)="back.emit()">
-        <span aria-hidden="true">‹</span> {{ today.month }}
-      </button>
+      @if (!isToday()) {
+        <button type="button" class="back" (click)="back.emit()"><span aria-hidden="true">‹</span> Today</button>
+      }
       <div class="steps">
         <button type="button" class="step" aria-label="Previous day" (click)="step.emit(-1)">‹</button>
         <button type="button" class="step" aria-label="Next day" (click)="step.emit(1)">›</button>
@@ -33,7 +34,12 @@ import type { CalendarDayView } from '../../core';
       <span class="short">{{ today.shortLabel }}</span>
     </h3>
     <p class="date">{{ today.label }}</p>
-    <p class="meta">{{ today.relative }} · Week {{ today.week }}</p>
+    <p class="meta">
+      @if (!isToday()) {
+        {{ today.relative }} ·
+      }
+      Week {{ today.week }}
+    </p>
 
     <ul class="items">
       @if (today.holiday) {
@@ -90,20 +96,17 @@ import type { CalendarDayView } from '../../core';
   styleUrl: './day-view.css',
 })
 export class DayView {
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-
   readonly day = input.required<CalendarDayView>();
+  /** Whether the day is today, so there is no way back to show. */
+  readonly isToday = input(true);
   readonly back = output<void>();
   readonly step = output<number>();
   readonly copy = output<void>();
 
-  constructor() {
-    // Opening the Day View moves focus into it, onto the way back.
-    afterNextRender(() => this.host.querySelector<HTMLElement>('.back')?.focus());
-  }
-
   protected onKey(event: KeyboardEvent): void {
+    if (event.target instanceof HTMLInputElement) return;
     if (event.key === 'Escape') {
+      if (this.isToday()) return;
       event.preventDefault();
       event.stopPropagation();
       this.back.emit();

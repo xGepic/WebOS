@@ -112,6 +112,15 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
+  // One day in full: today, or the day picked in the Calendar. Tall, like Todos, for a full day's list.
+  today: {
+    name: 'Today',
+    sizes: {
+      S: { columns: 3, rows: 3 },
+      M: { columns: 3, rows: 5 },
+      L: { columns: 4, rows: 6 },
+    },
+  },
   // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
   search: {
     name: 'Search',
@@ -149,10 +158,10 @@ export interface LayoutEntry extends Placement {
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
  * the World Clock, Weather, the Clock with the Search Widget under it,
  * Calendar and Sun, with the Clock and Search in the exact middle and a
- * one-column gap on either side of them; beneath it a free 3 × 5 slot, so Edit
- * Mode has room to move things, then Todos, Notes, a Countdown, System and
- * Moon side by side along the bottom, and Recent. Every Widget is visible, and
- * the 9 × 3 space above the Countdown, System and Moon is free too.
+ * one-column gap on either side of them; beneath it Today, then Todos, Notes,
+ * a Countdown, System and Moon side by side along the bottom, and Recent.
+ * Every Widget is visible, and the 9 × 3 space above the Countdown, System and
+ * Moon is free, so Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
@@ -161,6 +170,7 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'search', size: 'M', column: 7, row: 2, visible: true },
   { widget: 'calendar', size: 'S', column: 15, row: 0, visible: true },
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
+  { widget: 'today', size: 'M', column: 0, row: 3, visible: true },
   { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
   { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },

@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import type { CalendarDay } from '../../core';
 import { Toasts } from '../toast/toasts';
+import { SelectedDay } from '../today-widget/selected-day';
 import { WebOSCore } from '../webos-core';
-import { DayView } from './day-view';
 
 /** Keys that move the active day, and by how much. */
 const DAY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
@@ -15,18 +15,17 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
  * day, named on hover. Like the Clock it has no surface.
  *
  * ‹ and › browse months, and Today, shown under the grid while another
- * month is, goes back to the current one. Clicking a day (or Enter) opens it
- * in the Day View, which can copy it. Arrow keys move by day and week, Page Up
- * and Page Down by month. Every new tab starts on the current month.
+ * month is, goes back to the current one. Clicking a day (or Enter) shows it
+ * in the Today Widget, ringed here, and clicking it again goes back to today;
+ * with the Today Widget hidden, it copies the day as `2026-11-30`. Arrow keys
+ * move by day and week, Page Up and Page Down by month. Every new tab starts
+ * on the current month.
  */
 @Component({
   selector: 'webos-calendar-widget',
-  imports: [DayView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (viewing() && dayView(); as day) {
-      <webos-day-view [day]="day" (back)="closeDay()" (step)="stepDay($event)" (copy)="copy(day.date)" />
-    } @else if (month(); as month) {
+    @if (month(); as month) {
       <!-- Sized by the Host's box (see the CSS), so everything inside scales with the Widget. -->
       <div class="calendar">
         <div class="header">
@@ -63,6 +62,8 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
                       [class.outside]="!day.inMonth"
                       [class.today]="day.today"
                       [class.day-off]="day.weekend || !!day.holiday"
+                      [class.picked]="day.date === selected.pickedDate()"
+                      [attr.aria-pressed]="selected.shown() ? day.date === selected.pickedDate() : null"
                       [attr.data-date]="day.date"
                       [attr.aria-current]="day.today ? 'date' : null"
                       [attr.aria-label]="labelFor(day)"
@@ -70,7 +71,7 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
                       [tabindex]="day.date === tabStop() ? 0 : -1"
                       (focus)="active.set(day.date)"
                       (keydown)="onKey($event, day.date)"
-                      (click)="openDay(day.date)"
+                      (click)="choose(day.date)"
                     >
                       {{ day.day }}
                       @if (day.holiday || day.countdowns.length || day.events.length) {
@@ -112,14 +113,17 @@ export class CalendarWidget {
   protected readonly offset = signal(0);
   /** The day the keyboard last moved to or focused, if any. */
   protected readonly active = signal<string | undefined>(undefined);
-  /** The day the Day View shows, or undefined while the month is shown. */
-  protected readonly viewing = signal<string | undefined>(undefined);
+  protected readonly selected = inject(SelectedDay);
 
   protected readonly month = computed(() => this.webos.calendar.month(this.offset()));
-  protected readonly dayView = computed(() => {
-    const date = this.viewing();
-    return date ? this.webos.calendar.day(date) : undefined;
-  });
+
+  constructor() {
+    // A day picked, here or by stepping in the Today Widget, brings its month into view.
+    effect(() => {
+      const picked = this.selected.pickedDate();
+      if (picked) untracked(() => this.offset.set(this.webos.calendar.offsetOf(picked)));
+    });
+  }
   /** The one day Tab lands on in the grid: the active day if it is in this month, else today, else the 1st. */
   protected readonly tabStop = computed(() => {
     const days = this.month()?.weeks.flatMap((week) => week.days) ?? [];
@@ -132,7 +136,8 @@ export class CalendarWidget {
     const details = this.webos.calendar.describe(day.date);
     if (!details) return day.date;
     const names = this.namesOf(day);
-    return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''}`;
+    const action = this.selected.shown() ? 'Show in Today' : `Copy ${day.date}`;
+    return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''} ${action}`;
   }
 
   /** The day's holiday, Countdowns and events, for its tooltip: "Christmas Day · Release · Standup". Empty for a plain day. */
@@ -140,24 +145,11 @@ export class CalendarWidget {
     return [...(day.holiday ? [day.holiday] : []), ...day.countdowns, ...day.events].join(' · ');
   }
 
-  protected openDay(date: string): void {
+  /** Shows the day in the Today Widget, or copies it while the Today Widget is hidden. */
+  protected choose(date: string): void {
     this.active.set(date);
-    this.viewing.set(date);
-  }
-
-  protected stepDay(days: number): void {
-    const date = this.viewing();
-    if (date) this.viewing.set(this.webos.calendar.addDays(date, days));
-  }
-
-  /** Back to the month of the day last shown, with that day focused. */
-  protected closeDay(): void {
-    const date = this.viewing();
-    this.viewing.set(undefined);
-    if (!date) return;
-    this.offset.set(this.webos.calendar.offsetOf(date));
-    this.active.set(date);
-    afterNextRender(() => this.host.querySelector<HTMLElement>(`[data-date="${date}"]`)?.focus(), { injector: this.injector });
+    if (this.selected.shown()) this.selected.pick(date);
+    else void this.copy(date);
   }
 
   protected showMonth(offset: number): void {

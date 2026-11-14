@@ -21,6 +21,7 @@ import { RecentWidget } from '../recent-widget/recent-widget';
 import { SearchWidget } from '../search-widget/search-widget';
 import { SunWidget } from '../sun-widget/sun-widget';
 import { SystemWidget } from '../system-widget/system-widget';
+import { TodayWidget } from '../today-widget/today-widget';
 import { TodosWidget } from '../todos-widget/todos-widget';
 import { WeatherWidget } from '../weather-widget/weather-widget';
 import { WorldClockWidget } from '../world-clock-widget/world-clock-widget';
@@ -64,6 +65,7 @@ const MENU_MARGIN = 8;
     SunWidget,
     RecentWidget,
     SystemWidget,
+    TodayWidget,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -129,6 +131,9 @@ const MENU_MARGIN = 8;
                 }
                 @case ('system') {
                   <webos-system-widget />
+                }
+                @case ('today') {
+                  <webos-today-widget />
                 }
               }
             </div>

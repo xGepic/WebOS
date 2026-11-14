@@ -214,7 +214,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual([]);
+    expect(webos.desktop.hidden()).toEqual(['today']);
   });
 
   it('moves a v8 layout (ticket 11 to 14 builds) to the newest Stage layout once, keeping hidden Widgets hidden', async () => {
@@ -250,7 +250,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['notes']);
+    expect(webos.desktop.hidden()).toEqual(['notes', 'today']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(await storage.read()).toMatchObject({ schemaVersion: 20, weather: { city: null, report: null } });
 
@@ -293,7 +293,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['todos']);
+    expect(webos.desktop.hidden()).toEqual(['todos', 'today']);
     expect(webos.weather.city()).toBeNull();
   });
 
@@ -333,7 +333,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['notes', 'weather']);
+    expect(webos.desktop.hidden()).toEqual(['notes', 'weather', 'today']);
     expect(webos.weather.city()).toEqual(vienna);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
@@ -390,7 +390,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Calendar was hidden by the user; the newer Widgets were hidden only for lack of room.
-    expect(webos.desktop.hidden()).toEqual(['calendar']);
+    expect(webos.desktop.hidden()).toEqual(['calendar', 'today']);
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Race']);
     expect(await storage.read()).not.toHaveProperty('github');
   });
@@ -513,7 +513,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['sun']);
+    expect(webos.desktop.hidden()).toEqual(['sun', 'today']);
     expect(await storage.read()).toMatchObject({ schemaVersion: 20 });
   });
 
