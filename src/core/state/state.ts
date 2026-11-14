@@ -25,8 +25,6 @@ export interface StateDocument {
   todos: Todo[];
   /** Every Note, in the order they were created. */
   notes: Note[];
-  /** The Note the Notes Widget previews, or null when none is pinned. */
-  pinnedNoteId: string | null;
   /** Every Widget once: where it sits, its size, and whether it is shown. */
   layout: LayoutEntry[];
   weather: {
@@ -49,7 +47,7 @@ export interface StateDocument {
   };
 }
 
-const SCHEMA_VERSION = 21;
+const SCHEMA_VERSION = 22;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -225,6 +223,9 @@ const migrations: Record<number, Migration> = {
   19: (document) => ({ ...document, schemaVersion: 20, appleCalendar: { account: null, calendars: [], sync: null } }),
   // System details: every part of the System Widget shown.
   20: (document) => ({ ...document, schemaVersion: 21, systemWidget: { hidden: [] } }),
+  // Notes in the Dock: with the Notes Widget gone, nothing shows the Pinned Note, so it goes.
+  // The layout's Notes entry is dropped when the layout is loaded, as for any Widget webOS no longer has.
+  21: ({ pinnedNoteId: _, ...document }) => ({ ...document, schemaVersion: 22 }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -259,7 +260,6 @@ function freshDocument(): StateDocument {
     apps: {},
     todos: [],
     notes: [],
-    pinnedNoteId: null,
     layout: [...defaultLayout],
     weather: { city: null, report: null },
     countdowns: [],
@@ -307,7 +307,6 @@ function assertCurrentShape(
     Array.isArray(apps) ||
     !Array.isArray(document['todos']) ||
     !Array.isArray(document['notes']) ||
-    (typeof document['pinnedNoteId'] !== 'string' && document['pinnedNoteId'] !== null) ||
     !Array.isArray(document['layout']) ||
     !isRecord(weather) ||
     !(weather.city === null || isRecord(weather.city)) ||

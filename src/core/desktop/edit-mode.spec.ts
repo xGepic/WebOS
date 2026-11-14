@@ -8,12 +8,12 @@ async function webosWith(storage = roomyStorage()) {
 }
 
 /** The Widgets this layout doesn't mention, which it therefore hides, in catalog order. */
-const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'search'];
+const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'search'];
 
 /**
  * The default (Stage) layout leaves no room for a Widget to move into, so most tests
  * start from this one instead, which leaves room to move into:
- * Clock S (3×2) at 0,0; Recent M (3×5) at 0,2; Todos M (3×5) at 9,0; Notes S (3×3) at 18,5.
+ * Clock S (3×2) at 0,0; Recent M (3×5) at 0,2; Todos M (3×5) at 9,0; Today S (3×3) at 18,5.
  * Weather and Calendar are hidden, and so are the Widgets it doesn't mention.
  */
 function roomyStorage() {
@@ -30,7 +30,7 @@ function roomyStorage() {
       { widget: 'clock', size: 'S', column: 0, row: 0, visible: true },
       { widget: 'recent', size: 'M', column: 0, row: 2, visible: true },
       { widget: 'todos', size: 'M', column: 9, row: 0, visible: true },
-      { widget: 'notes', size: 'S', column: 18, row: 5, visible: true },
+      { widget: 'today', size: 'S', column: 18, row: 5, visible: true },
       { widget: 'weather', size: 'S', column: 0, row: 0, visible: false },
       { widget: 'calendar', size: 'S', column: 0, row: 0, visible: false },
     ],
@@ -70,7 +70,7 @@ describe('moving a Widget', () => {
 
     await webos.desktop.move('clock', 4, 3);
 
-    expect(where(webos)).toEqual({ clock: 'S@4,3', recent: 'M@0,2', todos: 'M@9,0', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'S@4,3', recent: 'M@0,2', todos: 'M@9,0', today: 'S@18,5' });
   });
 
   it('pushes a Widget it lands on to the next free position', async () => {
@@ -79,7 +79,7 @@ describe('moving a Widget', () => {
     await webos.desktop.move('clock', 0, 2);
 
     // Links no longer fits at 0,2; reading on from there, the first place it fits is 3,2.
-    expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0', today: 'S@18,5' });
     expectValidLayout(webos);
   });
 
@@ -96,7 +96,7 @@ describe('moving a Widget', () => {
     const webos = await webosWith(createMemoryStorage());
     const before = where(webos);
 
-    // On the Stage Desktop, the Clock dropped onto Todos and Notes pushes them out, and no space five rows tall is left for them.
+    // On the Stage Desktop, the Clock dropped onto Today and Todos pushes them out, and no space five rows tall is left for them.
     expect(await webos.desktop.move('clock', 0, 3)).toBe(false);
 
     expect(where(webos)).toEqual(before);
@@ -105,8 +105,8 @@ describe('moving a Widget', () => {
   it('swaps two Widgets of the same size on the Stage Desktop', async () => {
     const webos = await webosWith(createMemoryStorage());
 
-    // Notes onto Todos: Todos takes the place Notes left, the next free place along.
-    expect(await webos.desktop.move('notes', 3, 3)).toBe(true);
+    // Today onto Todos: Todos moves on to the next free place along, the 3 × 5 space beside it.
+    expect(await webos.desktop.move('today', 3, 3)).toBe(true);
 
     expect(where(webos)).toEqual({
       'world-clock': 'M@0,0',
@@ -115,8 +115,7 @@ describe('moving a Widget', () => {
       search: 'M@7,2',
       calendar: 'S@15,0',
       sun: 'M@18,0',
-      today: 'M@0,3',
-      notes: 'M@3,3',
+      today: 'M@3,3',
       todos: 'M@6,3',
       recent: 'M@18,3',
       countdown: 'S@9,6',
@@ -138,8 +137,8 @@ describe('moving a Widget', () => {
 
     await webos.desktop.move('recent', 18, 3);
 
-    // Links covers Notes. Nothing after 18,5 fits a 3 × 3 Widget, so Notes wraps to the top and lands at 3,0.
-    expect(where(webos)).toEqual({ clock: 'S@0,0', recent: 'M@18,3', todos: 'M@9,0', notes: 'S@3,0' });
+    // Recent covers Today. Nothing after 18,5 fits a 3 × 3 Widget, so Today wraps to the top and lands at 3,0.
+    expect(where(webos)).toEqual({ clock: 'S@0,0', recent: 'M@18,3', todos: 'M@9,0', today: 'S@3,0' });
     expectValidLayout(webos);
   });
 });
@@ -151,7 +150,7 @@ describe('resizing a Widget', () => {
     await webos.desktop.resize('clock', 'L');
 
     // The wide Clock covers Todos and Links; in reading order they move to the first free places, beside it.
-    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@12,0', recent: 'M@15,2', notes: 'S@18,5' });
+    expect(where(webos)).toEqual({ clock: 'L@0,0', todos: 'M@12,0', recent: 'M@15,2', today: 'S@18,5' });
     expectValidLayout(webos);
   });
 
@@ -159,9 +158,9 @@ describe('resizing a Widget', () => {
     const webos = await webosWith();
     await webos.desktop.hide('todos');
 
-    await webos.desktop.resize('notes', 'L');
+    await webos.desktop.resize('today', 'L');
 
-    expect(where(webos).notes).toBe('L@15,3');
+    expect(where(webos).today).toBe('L@17,2');
     expectValidLayout(webos);
   });
 
@@ -180,24 +179,24 @@ describe('hiding and showing Widgets', () => {
   it('hides a Widget and shows it again where it was', async () => {
     const webos = await webosWith();
 
-    await webos.desktop.hide('notes');
-    expect(Object.keys(where(webos))).not.toContain('notes');
-    expect(webos.desktop.hidden()).toEqual(['notes', 'weather', 'calendar', ...UNMENTIONED]);
+    await webos.desktop.hide('today');
+    expect(Object.keys(where(webos))).not.toContain('today');
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'search']);
 
-    expect(await webos.desktop.show('notes')).toBe(true);
-    expect(where(webos).notes).toBe('S@18,5');
+    expect(await webos.desktop.show('today')).toBe(true);
+    expect(where(webos).today).toBe('S@18,5');
     expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', ...UNMENTIONED]);
   });
 
   it('shows a Widget at the next free position when its place was taken meanwhile', async () => {
     const webos = await webosWith();
-    await webos.desktop.hide('notes');
+    await webos.desktop.hide('today');
     await webos.desktop.move('recent', 18, 3);
 
-    await webos.desktop.show('notes');
+    await webos.desktop.show('today');
 
     // Links took 18,5; reading on from there wraps to the top, where 3,0 is the first place a 3 × 3 Widget fits.
-    expect(where(webos).notes).toBe('S@3,0');
+    expect(where(webos).today).toBe('S@3,0');
     expectValidLayout(webos);
   });
 });
@@ -254,10 +253,10 @@ describe('the saved layout', () => {
     const otherTab = await webosWith(storage.openTab());
 
     await otherTab.desktop.move('clock', 0, 2);
-    await otherTab.desktop.hide('notes');
+    await otherTab.desktop.hide('today');
 
     expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0' });
-    expect(webos.desktop.hidden()).toEqual(['notes', 'weather', 'calendar', ...UNMENTIONED]);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'search']);
   });
 
   it('makes a layout from another tab safe before using it', async () => {
@@ -278,8 +277,8 @@ describe('the saved layout', () => {
     });
 
     expectValidLayout(webos);
-    // Notes, Weather, Calendar and the others aren't in that layout, so they are hidden.
-    expect(webos.desktop.hidden()).toEqual(['notes', 'weather', 'calendar', ...UNMENTIONED]);
+    // Weather, Calendar and the others aren't in that layout, so they are hidden, in catalog order.
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'search']);
   });
 
   it('is the same in the next tab', async () => {
@@ -287,11 +286,11 @@ describe('the saved layout', () => {
     const webos = await webosWith(storage);
     await webos.desktop.move('clock', 0, 2);
     await webos.desktop.resize('todos', 'S');
-    await webos.desktop.hide('notes');
+    await webos.desktop.hide('today');
 
     const nextTab = await webosWith(storage);
 
     expect(where(nextTab)).toEqual(where(webos));
-    expect(nextTab.desktop.hidden()).toEqual(['notes', 'weather', 'calendar', ...UNMENTIONED]);
+    expect(nextTab.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'search']);
   });
 });

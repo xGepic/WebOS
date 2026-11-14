@@ -40,14 +40,6 @@ export const widgets = {
       L: { columns: 4, rows: 6 },
     },
   },
-  notes: {
-    name: 'Notes',
-    sizes: {
-      S: { columns: 3, rows: 3 },
-      M: { columns: 3, rows: 5 },
-      L: { columns: 6, rows: 5 },
-    },
-  },
   weather: {
     name: 'Weather',
     sizes: {
@@ -158,10 +150,11 @@ export interface LayoutEntry extends Placement {
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
  * the World Clock, Weather, the Clock with the Search Widget under it,
  * Calendar and Sun, with the Clock and Search in the exact middle and a
- * one-column gap on either side of them; beneath it Today, then Todos, Notes,
- * a Countdown, System and Moon side by side along the bottom, and Recent.
- * Every Widget is visible, and the 9 × 3 space above the Countdown, System and
- * Moon is free, so Edit Mode has room to move things.
+ * one-column gap on either side of them; beneath it Today and Todos, then a
+ * Countdown, System and Moon side by side along the bottom, and Recent. Every
+ * Widget is visible. The 3 × 5 space beside Todos (where the Notes Widget was)
+ * and the 9 × 3 space above the Countdown, System and Moon are free, so Edit
+ * Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
@@ -172,7 +165,6 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'today', size: 'M', column: 0, row: 3, visible: true },
   { widget: 'todos', size: 'M', column: 3, row: 3, visible: true },
-  { widget: 'notes', size: 'M', column: 6, row: 3, visible: true },
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
   { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
   { widget: 'system', size: 'S', column: 12, row: 6, visible: true },

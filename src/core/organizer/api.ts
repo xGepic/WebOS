@@ -48,15 +48,6 @@ export interface OrganizerApi {
     selected(): notes.ListedNote | undefined;
     /** Selects a Note in this tab, and remembers it for the next time the Notes App opens in any tab. */
     select(id: string): Promise<void>;
-    /** Makes a Note the Pinned Note, replacing any other. */
-    pin(id: string): Promise<void>;
-    /** Leaves no Note pinned. */
-    unpin(): Promise<void>;
-    /**
-     * The Note the Notes Widget previews: the Pinned Note, or the most recently
-     * edited Note when none is pinned. Undefined when there are no Notes.
-     */
-    forWidget(): notes.ListedNote | undefined;
   };
 }
 
@@ -73,11 +64,9 @@ export function createOrganizer(store: Store): OrganizerApi {
     shownNoteId = notes.shownNoteId(next.notes, imported ? next.apps.notes?.selectedNoteId : shownNoteId);
   });
 
-  /** Applies a change to the Notes. Deleting the Pinned Note leaves none pinned. */
-  const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) => {
-    const list = change(state().notes);
-    return store.commit({ ...state(), notes: list, pinnedNoteId: notes.prunePin(list, state().pinnedNoteId) });
-  };
+  /** Applies a change to the Notes. */
+  const commitNotes = (change: (list: readonly notes.Note[]) => notes.Note[]) =>
+    store.commit({ ...state(), notes: change(state().notes) });
 
   /** Shows a Note in this tab and remembers it as the Notes App's selection, saved with `next`. */
   const commitSelection = (id: string, next: StateDocument = state()) => {
@@ -121,9 +110,6 @@ export function createOrganizer(store: Store): OrganizerApi {
       delete: (id) => commitNotes((list) => notes.deleteNote(list, id)),
       selected: () => notes.listedNote(state(), shownNoteId, clock.now()),
       select: (id) => commitSelection(id),
-      pin: (id) => store.commit({ ...state(), pinnedNoteId: notes.pinNote(state(), id) }),
-      unpin: () => store.commit({ ...state(), pinnedNoteId: null }),
-      forWidget: () => notes.listedNote(state(), notes.shownNoteId(state().notes, state().pinnedNoteId), clock.now()),
     },
   };
 }

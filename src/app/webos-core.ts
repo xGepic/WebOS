@@ -45,7 +45,6 @@ export class WebOSCore {
   readonly completedTodos = this.read((core) => core.todos.completed());
   readonly notes = this.read((core) => core.notes.list());
   readonly selectedNote = this.read((core) => core.notes.selected());
-  readonly widgetNote = this.read((core) => core.notes.forWidget());
   readonly clips = this.read((core) => core.clips.list());
   readonly devUtilitiesTab = this.read((core) => core.devUtilities.activeTab());
   /** The Dev Utilities conversions. They are pure, so views call them directly. */

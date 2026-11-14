@@ -16,8 +16,6 @@ export interface ListedNote extends Note {
   title: string;
   /** When it was last edited, e.g. "9:05 AM", "Yesterday" or "Nov 10". */
   edited: string;
-  /** Whether it is the Pinned Note. */
-  pinned: boolean;
 }
 
 /** An ATX heading's opening `#`s. Without a space after them, `#` is text, not a heading. */
@@ -46,25 +44,20 @@ function titleOf(body: string): string {
 const mostRecentlyEditedFirst = (a: Note, b: Note) => b.editedAt - a.editedAt || b.createdAt - a.createdAt;
 
 /** The part of the state document that Notes are listed from. */
-type NotesState = Pick<StateDocument, 'notes' | 'pinnedNoteId'>;
+type NotesState = Pick<StateDocument, 'notes'>;
 
-function toListed(note: Note, { pinnedNoteId }: NotesState, now: Date): ListedNote {
-  return {
-    ...note,
-    title: titleOf(note.body),
-    edited: formatWhen(new Date(note.editedAt), now),
-    pinned: note.id === pinnedNoteId,
-  };
+function toListed(note: Note, now: Date): ListedNote {
+  return { ...note, title: titleOf(note.body), edited: formatWhen(new Date(note.editedAt), now) };
 }
 
 export function listNotes(state: NotesState, now: Date): ListedNote[] {
-  return state.notes.map((note) => toListed(note, state, now)).sort(mostRecentlyEditedFirst);
+  return state.notes.map((note) => toListed(note, now)).sort(mostRecentlyEditedFirst);
 }
 
 /** The Note with `id`, as the sidebar lists it. */
 export function listedNote(state: NotesState, id: string | undefined, now: Date): ListedNote | undefined {
   const note = state.notes.find((candidate) => candidate.id === id);
-  return note && toListed(note, state, now);
+  return note && toListed(note, now);
 }
 
 export function createNote(notes: readonly Note[], note: Pick<Note, 'id' | 'body'>, now: number): Note[] {
@@ -80,19 +73,9 @@ export function deleteNote(notes: readonly Note[], id: string): Note[] {
   return notes.filter((note) => note.id !== id);
 }
 
-/** The Pinned Note's id after a change to the Notes: kept while that Note exists, otherwise null. */
-export function prunePin(notes: readonly Note[], pinnedNoteId: string | null): string | null {
-  return notes.some((note) => note.id === pinnedNoteId) ? pinnedNoteId : null;
-}
-
-/** The Pinned Note's id after pinning `id`. Only a Note can be pinned; any other id leaves the pin as it was. */
-export function pinNote({ notes, pinnedNoteId }: NotesState, id: string): string | null {
-  return notes.some((note) => note.id === id) ? id : pinnedNoteId;
-}
-
 /**
- * Which Note to show, in the Notes App or on the Notes Widget: `id` while that
- * Note exists, otherwise the most recently edited Note. Undefined when there are no Notes.
+ * Which Note the Notes App shows: `id` while that Note exists, otherwise the
+ * most recently edited Note. Undefined when there are no Notes.
  */
 export function shownNoteId(notes: readonly Note[], id: string | null | undefined): string | undefined {
   const existing = notes.find((note) => note.id === id);

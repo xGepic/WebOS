@@ -15,7 +15,6 @@ function everything(webos: WebOS) {
     completed: webos.todos.completed(),
     notes: webos.notes.list(),
     selected: webos.notes.selected()?.id,
-    pinned: webos.notes.forWidget()?.id,
     layout: webos.desktop.layout(),
     hidden: webos.desktop.hidden(),
     devUtilitiesTab: webos.devUtilities.activeTab(),
@@ -30,9 +29,9 @@ async function webosWithData() {
   await webos.todos.add('Ship the Launcher');
   const done = await webos.todos.add('Write the spec');
   await webos.todos.complete(done!);
-  await webos.notes.create('# Ideas');
-  const pinned = await webos.notes.create('Release plan');
-  await webos.notes.pin(pinned);
+  const ideas = await webos.notes.create('# Ideas');
+  await webos.notes.create('Release plan');
+  await webos.notes.select(ideas);
   await webos.desktop.hide('clock');
   await webos.devUtilities.setActiveTab('diff');
   await webos.clips.save('curl localhost:4200');
@@ -151,9 +150,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 22 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 23 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 22, this build knows 21).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 23, this build knows 22).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -190,8 +189,8 @@ describe('Backup', () => {
 
     expect(webos.profile.name()).toBe('Stefan');
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
-    expect(webos.notes.forWidget()?.title).toBe('Old Note');
+    expect(webos.notes.list().map((note) => note.title)).toEqual(['Old Note']);
     expect(webos.desktop.hidden()).toEqual(['today']);
-    expect(webos.desktop.layout()).toHaveLength(12);
+    expect(webos.desktop.layout()).toHaveLength(11);
   });
 });

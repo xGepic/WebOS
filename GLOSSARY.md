@@ -35,16 +35,12 @@ The thin strip across the top of a Widget that shows the Widget's name.
 _Avoid_: Task bar, header
 
 **App**:
-A tool you open into the Window for focused work, from its Dock icon or, for Notes, Countdowns and World Clock, from its Widget.
+A tool you open into the Window for focused work, from its Dock icon or, for Countdowns and World Clock, from its Widget.
 _Avoid_: Program, tool, module
 
 **Note**:
 A Markdown document written in the Notes App.
 _Avoid_: Memo, page, document
-
-**Pinned Note**:
-The one Note whose preview is shown on the Notes Widget.
-_Avoid_: Favorite note, featured note
 
 **Todo**:
 A single item on the one flat to-do list. It is either open or completed.

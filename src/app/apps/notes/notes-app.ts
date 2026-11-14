@@ -15,7 +15,6 @@ import {
 import type { ListedNote } from '../../../core';
 import { WebOSCore } from '../../webos-core';
 import { MarkdownPreview } from './markdown-preview';
-import { PinIcon } from './pin-icon';
 
 /** How long typing pauses before the Note is saved. */
 const AUTOSAVE_DELAY_MS = 400;
@@ -30,11 +29,11 @@ interface PendingEdit {
 /**
  * The Notes App: a sidebar of Notes, most recently edited first; a Markdown
  * editor that saves as you type; and a live, sanitised preview beside it.
- * The Pin control chooses the Note the Notes Widget previews.
+ * It opens from the Dock.
  */
 @Component({
   selector: 'webos-notes-app',
-  imports: [MarkdownPreview, PinIcon],
+  imports: [MarkdownPreview],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(window:pagehide)': 'saveNow()', '(document:visibilitychange)': 'saveNow()' },
   template: `
@@ -50,12 +49,7 @@ interface PendingEdit {
               (click)="select(note)"
             >
               <span class="title">{{ note.title }}</span>
-              <span class="edited">
-                @if (note.pinned) {
-                  <webos-pin-icon /><span class="visually-hidden">Pinned, </span>
-                }
-                {{ note.edited }}
-              </span>
+              <span class="edited">{{ note.edited }}</span>
             </button>
           </li>
         }
@@ -71,16 +65,6 @@ interface PendingEdit {
         </div>
       } @else {
         <div class="toolbar">
-          <button
-            type="button"
-            class="button"
-            title="Show this Note on the Notes Widget"
-            [attr.aria-pressed]="note.pinned"
-            (click)="togglePin(note)"
-          >
-            <webos-pin-icon />
-            Pin
-          </button>
           <button type="button" class="button danger" (click)="askToDelete(note)">Delete</button>
         </div>
       }
@@ -161,9 +145,6 @@ interface PendingEdit {
       white-space: nowrap;
     }
     .edited {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
       color: var(--text-secondary);
       font-size: 0.75rem;
     }
@@ -307,11 +288,6 @@ export class NotesApp {
     this.saveNow();
     this.webos.send((core) => core.notes.create());
     afterNextRender(() => this.editor()?.nativeElement.focus(), { injector: this.injector });
-  }
-
-  /** Pins the Note to the Notes Widget, or unpins it if it already is the Pinned Note. */
-  protected togglePin(note: ListedNote): void {
-    this.webos.send((core) => (note.pinned ? core.notes.unpin() : core.notes.pin(note.id)));
   }
 
   /** Asks before deleting a Note with text in it. An empty Note goes straight away. */
