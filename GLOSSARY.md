@@ -62,6 +62,10 @@ _Avoid_: Event, deadline, timer
 One day in full: its holiday, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
 
+**Forecast**:
+The weather for today and the six days after it in the Weather city, each with its condition, any chance of rain or snow, and its low and high. The Weather Widget shows it in place of the current weather when clicked.
+_Avoid_: Outlook, week view, prediction
+
 **World Clock city**:
 A city on the World Clock Widget, kept with its time zone.
 _Avoid_: Time zone, location

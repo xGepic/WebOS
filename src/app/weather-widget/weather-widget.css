@@ -17,6 +17,50 @@
 p {
   margin: 0;
 }
+/* The whole Widget is one button that turns it between the current weather and the Forecast. */
+.face {
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: -0.5rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: var(--radius-inset);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.face:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.current {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+.current,
+.forecast {
+  animation: turn 180ms ease-out;
+}
+@keyframes turn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .current,
+  .forecast {
+    animation: none;
+  }
+}
 .place {
   color: var(--text-secondary);
   font-size: clamp(0.8125rem, min(5.5cqh, 6cqi), 1.75rem);
@@ -62,6 +106,105 @@ p {
 /* Short: the time of the last update is the first to go. */
 @container (max-height: 150px) {
   .updated {
+    display: none;
+  }
+}
+
+/*
+ * The Forecast: a row per day, its columns lined up across the rows. Sized in
+ * em off the Host's box: about 12.5em tall (the city and seven rows) and 14.5em
+ * wide.
+ */
+.forecast {
+  display: grid;
+  grid-template-columns: auto auto auto auto minmax(1.5em, 1fr) auto;
+  column-gap: 0.45em;
+  align-items: center;
+  width: 100%;
+  /* Wide sizes would stretch the bars too far to compare. */
+  max-width: 20em;
+  font-size: clamp(0.625rem, min(7.4cqh, 6.6cqi), 1.375rem);
+  font-variant-numeric: tabular-nums;
+}
+.forecast-place {
+  grid-column: 1 / -1;
+  margin-bottom: 0.3em;
+  font-size: 0.9em;
+}
+.day {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  height: 1.55em;
+}
+/* Each in its own column, so hiding the chance of rain leaves its column empty rather than shifting the rest. */
+.day-name {
+  grid-column: 1;
+}
+.day-icon {
+  grid-column: 2;
+}
+.rain {
+  grid-column: 3;
+}
+.low {
+  grid-column: 4;
+}
+.bar {
+  grid-column: 5;
+}
+.high {
+  grid-column: 6;
+}
+.day-name {
+  min-width: 2.6em;
+  font-weight: 500;
+  text-align: left;
+}
+.today .day-name {
+  font-weight: 650;
+}
+.day-icon {
+  font-size: 1.15em;
+  color: var(--text-secondary);
+}
+.rain {
+  min-width: 2.2em;
+  color: var(--accent);
+  font-size: 0.8em;
+  font-weight: 600;
+  text-align: left;
+}
+.low {
+  color: var(--text-secondary);
+  text-align: right;
+}
+.high {
+  text-align: right;
+}
+.bar {
+  position: relative;
+  height: 0.28em;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text-secondary) 22%, transparent);
+}
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--text-secondary), var(--text-primary));
+}
+/* Too narrow for every column: the chance of rain goes first. */
+@container (max-width: 190px) {
+  .rain {
+    display: none;
+  }
+}
+/* Too short for the whole week: five days (the city is the first child). */
+@container (max-height: 175px) {
+  .day:nth-child(n + 7) {
     display: none;
   }
 }

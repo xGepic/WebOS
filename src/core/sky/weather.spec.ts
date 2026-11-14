@@ -5,10 +5,28 @@ const MINUTE = 60_000;
 const vienna: WeatherCity = { name: 'Vienna', region: 'Vienna', country: 'Austria', latitude: 48.20849, longitude: 16.37208 };
 const oslo: WeatherCity = { name: 'Oslo', region: 'Oslo', country: 'Norway', latitude: 59.91273, longitude: 10.74609 };
 
-/** An Open-Meteo forecast response. */
+const DAY = 24 * 60 * MINUTE;
+
+/** The six days after today (Thursday 12 November) in a forecast response: date, weather code, high, low, chance of rain. */
+const laterDays: [string, number, number, number, number | null][] = [
+  ['2026-11-13', 61, 10.4, 5.6, 84],
+  ['2026-11-14', 2, 12.5, 4.1, 14],
+  ['2026-11-15', 0, 13.2, 3.8, 0],
+  ['2026-11-16', 3, 9.6, 2.5, 25],
+  ['2026-11-17', 71, 4.4, -1.2, 66],
+  ['2026-11-18', 45, 6.1, 0.4, null],
+];
+
+/** An Open-Meteo forecast response: now, and seven days from today, which has the given code, high and low. */
 const forecast = ({ temperature = 11.6, code = 3, isDay = 1, high = 14.8, low = 7.2 } = {}) => ({
   current: { temperature_2m: temperature, weather_code: code, is_day: isDay },
-  daily: { temperature_2m_max: [high], temperature_2m_min: [low] },
+  daily: {
+    time: ['2026-11-12', ...laterDays.map((day) => day[0])],
+    weather_code: [code, ...laterDays.map((day) => day[1])],
+    temperature_2m_max: [high, ...laterDays.map((day) => day[2])],
+    temperature_2m_min: [low, ...laterDays.map((day) => day[3])],
+    precipitation_probability_max: [5, ...laterDays.map((day) => day[4])],
+  },
 });
 
 /** An Open-Meteo geocoding response. */
@@ -108,11 +126,58 @@ describe('the Weather Widget', () => {
       label: 'Cloudy',
       isDay: true,
       updatedAt: undefined,
+      days: expect.any(Array),
     });
     const [request] = forecasts(fetch);
     expect(request.searchParams.get('latitude')).toBe('48.2085');
     expect(request.searchParams.get('longitude')).toBe('16.3721');
     expect(request.searchParams.get('timezone')).toBe('auto');
+  });
+
+  it('forecasts today and the six days after it, with the chance of rain or snow when it is worth showing', async () => {
+    const { webos, fetch } = await setUp();
+
+    await webos.weather.setCity(vienna);
+    await webos.weather.refresh();
+
+    expect(webos.weather.view()).toMatchObject({
+      days: [
+        { date: '2026-11-12', day: 'Today', dayName: 'Today', high: 15, low: 7, condition: 'cloudy', label: 'Cloudy', rainChance: undefined },
+        { date: '2026-11-13', day: 'Fri', dayName: 'Friday', high: 10, low: 6, condition: 'rain', label: 'Rain', rainChance: 80 },
+        { date: '2026-11-14', day: 'Sat', high: 13, low: 4, condition: 'partly-cloudy', rainChance: undefined },
+        { date: '2026-11-15', day: 'Sun', high: 13, low: 4, condition: 'clear', rainChance: undefined },
+        { date: '2026-11-16', day: 'Mon', high: 10, low: 3, condition: 'cloudy', rainChance: 30 },
+        { date: '2026-11-17', day: 'Tue', high: 4, low: -1, condition: 'snow', rainChance: 70 },
+        { date: '2026-11-18', day: 'Wed', high: 6, low: 0, condition: 'fog', rainChance: undefined },
+      ],
+    });
+    const [request] = forecasts(fetch);
+    expect(request.searchParams.get('daily')).toContain('precipitation_probability_max');
+    expect(request.searchParams.get('forecast_days')).toBe('7');
+  });
+
+  it("starts the Forecast on today in the city's own time zone", async () => {
+    const tokyo: WeatherCity = { name: 'Tokyo', region: 'Tokyo', country: 'Japan', latitude: 35.6895, longitude: 139.69171, timeZone: 'Asia/Tokyo' };
+    const { webos } = await setUp();
+
+    // 6 PM in Vienna is already 2 AM on Friday in Tokyo.
+    await webos.weather.setCity(tokyo);
+    await webos.weather.refresh();
+
+    const view = webos.weather.view();
+    expect(view.status === 'ready' && view.days.map((day) => day.day)).toEqual(['Today', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed']);
+  });
+
+  it('stops the Forecast at the first day the response gives without its numbers', async () => {
+    const response = forecast();
+    response.daily.temperature_2m_max[3] = null as unknown as number;
+    const { webos } = await setUp({ fetch: openMeteo(() => response) });
+
+    await webos.weather.setCity(vienna);
+    await webos.weather.refresh();
+
+    const view = webos.weather.view();
+    expect(view.status === 'ready' && view.days.map((day) => day.day)).toEqual(['Today', 'Fri', 'Sat']);
   });
 
   it.each([
@@ -172,6 +237,37 @@ describe('keeping the weather fresh', () => {
     await later.webos.weather.refresh();
     expect(later.webos.weather.view()).toMatchObject({ temperature: 9 });
     expect(forecasts(fetch)).toHaveLength(1);
+  });
+
+  it('leaves out the days already past when it can only show an old Forecast', async () => {
+    const storage = createMemoryStorage();
+    const clock = createTestClock(new Date(2026, 10, 12, 18, 0));
+    const first = await setUp({ storage, clock });
+    await first.webos.weather.setCity(vienna);
+    await first.webos.weather.refresh();
+
+    clock.advance(2 * DAY);
+    const offline = await setUp({ storage, clock, fetch: createTestFetch(failing) });
+    await offline.webos.weather.refresh();
+
+    const view = offline.webos.weather.view();
+    expect(view.status === 'ready' && view.days.map((day) => day.day)).toEqual(['Today', 'Sun', 'Mon', 'Tue', 'Wed']);
+  });
+
+  it('fetches again, however fresh, weather stored before webOS had the Forecast', async () => {
+    const clock = createTestClock(new Date(2026, 10, 12, 18, 0));
+    const first = await setUp({ clock });
+    await first.webos.weather.setCity(vienna);
+    await first.webos.weather.refresh();
+    const document = JSON.parse(first.webos.backup.export().text);
+    document.weather.report = { fetchedAt: clock.now().getTime(), temperature: 11.6, high: 14.8, low: 7.2, condition: 'cloudy', isDay: true };
+
+    const older = await setUp({ clock, storage: createMemoryStorage(document) });
+    expect(older.webos.weather.view()).toMatchObject({ status: 'ready', temperature: 12, days: [] });
+    await older.webos.weather.refresh();
+
+    expect(forecasts(older.fetch)).toHaveLength(1);
+    expect(older.webos.weather.view()).toMatchObject({ status: 'ready', days: expect.arrayContaining([expect.objectContaining({ day: 'Today' })]) });
   });
 
   it('fetches once when asked again while a fetch is under way', async () => {

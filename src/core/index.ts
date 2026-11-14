@@ -41,7 +41,7 @@ export type { SystemPart, SystemPartChoice, SystemView, UsageView } from './acti
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
 export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, CalendarDayView, DayEvent } from './time/apple-calendar';
-export type { WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
+export type { ForecastDayView, WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
 export { describeCity } from './sky/weather';
 export type { Base64Result } from './dev-utilities/base64';
 export type { DevUtilitiesTab } from './dev-utilities/dev-utilities';
