@@ -7,6 +7,9 @@ const ICLOUD_HOSTS = ['https://*.icloud.com/*'];
 /** How long one request may take before it counts as failed. A calendar with years of events can be slow. */
 const TIMEOUT_MS = 30_000;
 
+/** The most events one calendar-multiget asks for. */
+const MULTIGET_BATCH = 100;
+
 const DAV = 'DAV:';
 const CALDAV = 'urn:ietf:params:xml:ns:caldav';
 const APPLE = 'http://apple.com/ns/ical/';
@@ -63,15 +66,17 @@ export function createICloudCalendar(): CalendarServer {
       return calendars;
     },
 
+    // Two steps, as iCloud needs: a calendar-query finds the events in the range, and a
+    // calendar-multiget fetches the data of any it named without their data.
     async events(account, calendarUrl, { start, end }) {
-      const report = await dav(
+      const query = await dav(
         account,
         calendarUrl,
         'REPORT',
         '1',
         `<?xml version="1.0" encoding="utf-8"?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="${CALDAV}">
-  <d:prop><c:calendar-data/></d:prop>
+  <d:prop><d:getetag/><c:calendar-data/></d:prop>
   <c:filter>
     <c:comp-filter name="VCALENDAR">
       <c:comp-filter name="VEVENT">
@@ -81,10 +86,33 @@ export function createICloudCalendar(): CalendarServer {
   </c:filter>
 </c:calendar-query>`,
       );
-      return responses(report).flatMap(({ prop }) => {
-        const data = text(child(prop, CALDAV, 'calendar-data'));
-        return data ? [data] : [];
-      });
+      const calendar = new URL(calendarUrl).href;
+      const found: string[] = [];
+      const missing: string[] = [];
+      for (const { href, prop } of responses(query)) {
+        if (href === calendar || href.endsWith('/')) continue;
+        const data = calendarData(prop);
+        if (data) found.push(data);
+        else missing.push(href);
+      }
+      for (let at = 0; at < missing.length; at += MULTIGET_BATCH) {
+        const hrefs = missing
+          .slice(at, at + MULTIGET_BATCH)
+          .map((href) => `<d:href>${escapeXml(new URL(href).pathname)}</d:href>`)
+          .join('');
+        const multiget = await dav(
+          account,
+          calendarUrl,
+          'REPORT',
+          '1',
+          `<?xml version="1.0" encoding="utf-8"?><c:calendar-multiget xmlns:d="DAV:" xmlns:c="${CALDAV}"><d:prop><d:getetag/><c:calendar-data/></d:prop>${hrefs}</c:calendar-multiget>`,
+        );
+        for (const { prop } of responses(multiget)) {
+          const data = calendarData(prop);
+          if (data) found.push(data);
+        }
+      }
+      return found;
     },
   };
 }
@@ -163,6 +191,14 @@ function child(parent: Element | undefined, namespace: string, name: string): El
 }
 
 const text = (element: Element | undefined) => element?.textContent?.trim() ?? '';
+
+/** The iCalendar text in a response's properties, if it holds an event. */
+function calendarData(prop: Element | undefined): string | undefined {
+  const data = text(child(prop, CALDAV, 'calendar-data'));
+  return data.includes('BEGIN:VCALENDAR') ? data : undefined;
+}
+
+const escapeXml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** Apple's "#1BADF8FF" (with alpha) as "#1badf8"; anything that isn't a hex colour as undefined. */
 function cssColor(value: string): string | undefined {
