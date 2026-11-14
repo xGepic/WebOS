@@ -11,7 +11,7 @@ As a developer, what I want at a glance on a new tab is my day: what's on today.
 
 A **Today Widget** shows the **Day View** of today: its holiday, Countdowns, Apple Calendar events, and sunrise and sunset. The Calendar Widget goes back to showing only the month.
 
-The two work together: clicking a day in the Calendar shows it in the Today Widget and rings it in the month; ‹ Today, clicking the day again, or Esc goes back to today. ‹ and › in the Today Widget step through days, and the Calendar follows to their month. With the Today Widget hidden, clicking a day copies it, as before Spec 0006.
+The two work together: clicking a day in the Calendar shows it in the Today Widget and rings it in the month; ‹ Today, clicking the day again, Esc, or the Calendar's Today goes back to today. The Calendar's Today shows while a day is picked, too, not only on another month. ‹ and › in the Today Widget step through days, and the Calendar follows to their month. With the Today Widget hidden, clicking a day copies it, as before Spec 0006.
 
 ## User Stories
 

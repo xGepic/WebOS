@@ -15,7 +15,8 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
  * day, named on hover. Like the Clock it has no surface.
  *
  * ‹ and › browse months, and Today, shown under the grid while another
- * month is, goes back to the current one. Clicking a day (or Enter) shows it
+ * month or a picked day is, goes back to the current month and shows today
+ * in the Today Widget. Clicking a day (or Enter) shows it
  * in the Today Widget, ringed here, and clicking it again goes back to today;
  * with the Today Widget hidden, it copies the day as `2026-11-30`. Arrow keys
  * move by day and week, Page Up and Page Down by month. Every new tab starts
@@ -94,8 +95,8 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
             }
           </tbody>
         </table>
-        <!-- Hidden, not removed, on the current month, so the grid stays put when it appears. -->
-        <button type="button" class="button today-button" [class.hidden]="month.current" [attr.aria-hidden]="month.current" [tabindex]="month.current ? -1 : 0" (click)="showMonth(0)">
+        <!-- Hidden, not removed, on today, so the grid stays put when it appears. -->
+        <button type="button" class="button today-button" [class.hidden]="onToday()" [attr.aria-hidden]="onToday()" [tabindex]="onToday() ? -1 : 0" (click)="goToToday()">
           Today
         </button>
       </div>
@@ -116,6 +117,8 @@ export class CalendarWidget {
   protected readonly selected = inject(SelectedDay);
 
   protected readonly month = computed(() => this.webos.calendar.month(this.offset()));
+  /** Whether the current month is in view and no other day is picked, so Today has nothing to do. */
+  protected readonly onToday = computed(() => (this.month()?.current ?? true) && !this.selected.pickedDate());
 
   constructor() {
     // A day picked, here or by stepping in the Today Widget, brings its month into view.
@@ -154,6 +157,12 @@ export class CalendarWidget {
 
   protected showMonth(offset: number): void {
     this.offset.set(offset);
+  }
+
+  /** Back to the current month, and the Today Widget back to today. */
+  protected goToToday(): void {
+    this.selected.reset();
+    this.showMonth(0);
   }
 
   protected async copy(date: string): Promise<void> {
