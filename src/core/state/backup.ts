@@ -1,3 +1,4 @@
+import { NO_APPLE_CALENDAR } from '../time/apple-calendar';
 import { StateDocumentError, assertValidContents, toCurrentDocument, type StateDocument } from './state';
 
 /** What every StateDocumentError about a backup file calls it. */
@@ -12,13 +13,14 @@ export interface BackupFile {
 /**
  * A backup file of `document`, named after the local date `now`: `webos-backup-2026-11-12.json`.
  * The cached weather is left out: it is stale by the time the file is used.
+ * So is Apple Calendar, which holds the account's password.
  */
 export function exportFile(document: StateDocument, now: Date): BackupFile {
   const pad = (n: number) => String(n).padStart(2, '0');
   return {
     fileName: `webos-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`,
     text: JSON.stringify(
-      { ...document, weather: { ...document.weather, report: null } },
+      { ...document, weather: { ...document.weather, report: null }, appleCalendar: NO_APPLE_CALENDAR },
       null,
       2,
     ),

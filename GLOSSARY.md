@@ -58,6 +58,10 @@ _Avoid_: Snippet, clipping, history entry
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
 _Avoid_: Event, deadline, timer
 
+**Day View**:
+One day in full in the Calendar Widget, in place of the month: its holiday, Countdowns and Events, and sunrise and sunset. Opened by clicking a day.
+_Avoid_: Day detail, agenda, popover
+
 **World Clock city**:
 A city on the World Clock Widget, kept with its time zone.
 _Avoid_: Time zone, location
@@ -67,3 +71,11 @@ _Avoid_: Time zone, location
 **Data Source**:
 An external API that supplies personal data to webOS, such as sleep data or a training plan. The weather is not a Data Source: it is public data, not the user's own.
 _Avoid_: Integration, plugin, connector, feed
+
+**Apple Calendar**:
+The Data Source of the user's iCloud calendars, read-only, connected in Settings with an Apple ID and an app-specific password.
+_Avoid_: iCloud sync, calendar integration
+
+**Event**:
+One occurrence of something in Apple Calendar, such as a meeting or a training. A recurring one is an Event per occurrence. Not a Countdown, which the user makes in webOS.
+_Avoid_: Appointment, meeting, entry

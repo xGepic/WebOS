@@ -3,6 +3,7 @@ import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
 import { isFiniteNumber, isRecord, isText } from '../guards';
 import type { Note } from '../organizer/notes';
+import { NO_APPLE_CALENDAR, type AppleCalendarState } from '../time/apple-calendar';
 import type { Countdown } from '../time/countdown';
 import type { Todo } from '../organizer/todos';
 import type { WeatherCity, WeatherReport } from '../sky/weather';
@@ -40,9 +41,11 @@ export interface StateDocument {
   worldClocks: WorldClockCity[];
   /** The Clipboard App's Clips, newest first. */
   clips: Clip[];
+  /** Apple Calendar: the account, its calendars and the last sync. Backups leave it out: it holds a password. */
+  appleCalendar: AppleCalendarState;
 }
 
-const SCHEMA_VERSION = 19;
+const SCHEMA_VERSION = 20;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -214,6 +217,8 @@ const migrations: Record<number, Migration> = {
   // Austria's holidays without one, so version 19 drops it. Version 17 documents have none to drop.
   17: (document) => ({ ...document, schemaVersion: 18 }),
   18: ({ calendar: _, ...document }) => ({ ...document, schemaVersion: 19 }),
+  // Apple Calendar: not connected.
+  19: (document) => ({ ...document, schemaVersion: 20, appleCalendar: { account: null, calendars: [], sync: null } }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -254,6 +259,7 @@ function freshDocument(): StateDocument {
     countdowns: [],
     worldClocks: [],
     clips: [],
+    appleCalendar: NO_APPLE_CALENDAR,
   };
 }
 
@@ -285,6 +291,7 @@ function assertCurrentShape(
   const profile = document['profile'] as { name?: unknown } | undefined;
   const apps = document['apps'];
   const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
+  const apple = document['appleCalendar'];
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -299,7 +306,11 @@ function assertCurrentShape(
     !(weather.report === null || isRecord(weather.report)) ||
     !Array.isArray(document['countdowns']) ||
     !Array.isArray(document['worldClocks']) ||
-    !Array.isArray(document['clips'])
+    !Array.isArray(document['clips']) ||
+    !isRecord(apple) ||
+    !(apple['account'] === null || isRecord(apple['account'])) ||
+    !Array.isArray(apple['calendars']) ||
+    !(apple['sync'] === null || isRecord(apple['sync']))
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

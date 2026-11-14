@@ -3,7 +3,7 @@ import { createClipboard, type ClipboardApi } from './clipboard/api';
 import { createDesktop, type DesktopApi } from './desktop/api';
 import { normalizeLayout } from './desktop/desktop';
 import { createDevUtilities, type DevUtilitiesApi } from './dev-utilities/api';
-import type { BrowserLookup, Clock, Fetch, Storage, SystemMonitor } from './edges';
+import type { BrowserLookup, CalendarServer, Clock, Fetch, Storage, SystemMonitor } from './edges';
 import { createOrganizer, type OrganizerApi } from './organizer/api';
 import { clearCompleted } from './organizer/todos';
 import { createSky, type SkyApi } from './sky/api';
@@ -15,7 +15,7 @@ import { clearPassed } from './time/countdown';
 
 export type { AppId } from './desktop/apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop/desktop';
-export type { BrowserLookup, Clock, Fetch, FetchRequest, Storage, SystemMonitor, SystemSample, VisitedPage } from './edges';
+export type { BrowserLookup, CalendarAccount, CalendarServer, Clock, Fetch, FetchRequest, RemoteCalendar, Storage, SystemMonitor, SystemSample, VisitedPage } from './edges';
 export { FetchError } from './edges';
 export type { Countdown, CountdownInput, CountdownView } from './time/countdown';
 export type { WorldClockCity, WorldClockView } from './time/world-clock';
@@ -26,6 +26,7 @@ export type { RecentPage } from './activity/recent';
 export type { SystemView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
+export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, CalendarDayView, DayEvent } from './time/apple-calendar';
 export type { WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
 export { describeCity } from './sky/weather';
 export type { Base64Result } from './dev-utilities/base64';
@@ -49,6 +50,8 @@ export interface WebOSEdges {
   fetch?: Fetch;
   /** The machine's processors and memory, for the System Widget. Without it, the Widget says they are unavailable. */
   system?: SystemMonitor;
+  /** iCloud's calendars, for Apple Calendar. Without it, nothing is synced. */
+  calendars?: CalendarServer;
 }
 
 /** The webOS core: everything the Angular layer reads and every command it sends. Each area's part is documented in its `api.ts`. */
@@ -68,7 +71,7 @@ export interface WebOS extends DesktopApi, OrganizerApi, ClipboardApi, DevUtilit
  * with a `StateDocumentError` if the stored state can't be used, without
  * touching it.
  */
-export async function createWebOS({ storage, clock, browser, fetch, system }: WebOSEdges): Promise<WebOS> {
+export async function createWebOS({ storage, clock, browser, fetch, system, calendars }: WebOSEdges): Promise<WebOS> {
   /** A document with its layout made safe to use; see `desktop.normalizeLayout`. */
   const withSafeLayout = (document: StateDocument): StateDocument => ({ ...document, layout: normalizeLayout(document.layout) });
   let state = withSafeLayout(await loadState(storage));
@@ -126,7 +129,7 @@ export async function createWebOS({ storage, clock, browser, fetch, system }: We
     ...createClipboard(store),
     ...createDevUtilities(store),
     ...createBackup(store),
-    ...createTime(store),
+    ...createTime(store, calendars),
     ...createSky(store, fetch),
     ...createActivity(store, { browser, system }),
     subscribe(listener) {

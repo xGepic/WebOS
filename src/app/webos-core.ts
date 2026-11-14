@@ -4,6 +4,7 @@ import {
   type AppId,
   type BackupFile,
   type CalendarDayDetails,
+  type CalendarDayView,
   type CalendarMonth,
   type Cell,
   type WeatherCity,
@@ -13,6 +14,7 @@ import {
 } from '../core';
 import { createBrowserLookup } from '../edges/browser-lookup';
 import { createExtensionStorage } from '../edges/extension-storage';
+import { createICloudCalendar } from '../edges/icloud-calendar';
 import { createNetworkFetch } from '../edges/network';
 import { createSystemClock } from '../edges/system-clock';
 import { createSystemMonitor } from '../edges/system-monitor';
@@ -50,6 +52,7 @@ export class WebOSCore {
   readonly date = this.read((core) => core.clock.date());
   readonly weather = this.read((core) => core.weather.view());
   readonly weatherCity = this.read((core) => core.weather.city());
+  readonly appleCalendar = this.read((core) => core.appleCalendar.status());
   readonly countdowns = this.read((core) => core.countdowns.list());
   readonly upcomingCountdowns = this.read((core) => core.countdowns.upcoming());
   readonly worldClock = this.read((core) => core.worldClock.view());
@@ -67,6 +70,7 @@ export class WebOSCore {
         browser: createBrowserLookup(),
         fetch: createNetworkFetch(),
         system: createSystemMonitor(),
+        calendars: createICloudCalendar(),
       });
       const unsubscribe = core.subscribe(() => this.changes.update((n) => n + 1));
       this.destroyRef.onDestroy(() => {
@@ -105,6 +109,7 @@ export class WebOSCore {
   readonly calendar = {
     month: (offset: number): CalendarMonth | undefined => this.withCore((core) => core.calendar.month(offset)),
     describe: (date: string): CalendarDayDetails | undefined => this.withCore((core) => core.calendar.describe(date)),
+    day: (date: string): CalendarDayView | undefined => this.withCore((core) => core.calendar.day(date)),
     today: (): string | undefined => this.withCore((core) => core.calendar.today()),
     offsetOf: (date: string): number => this.withCore((core) => core.calendar.offsetOf(date)) ?? 0,
     addDays: (date: string, days: number): string => this.withCore((core) => core.calendar.addDays(date, days)) ?? date,

@@ -1,0 +1,189 @@
+/*
+ * Fills the Calendar Widget, sized off its box like the month: container units
+ * here measure the Calendar's Host.
+ */
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  font-size: clamp(0.75rem, min(4.5cqh, 5.5cqi), 1.375rem);
+}
+button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+p,
+h3,
+ul {
+  margin: 0;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4em;
+}
+.back {
+  padding: 0.15em 0.5em 0.15em 0.25em;
+  border-radius: var(--radius-pill);
+  color: var(--accent);
+  font-size: 0.875em;
+  font-weight: 600;
+}
+.back span {
+  font-size: 1.2em;
+  line-height: 1;
+}
+.steps {
+  display: flex;
+  gap: 0.15em;
+}
+.step {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: 1.05em;
+  line-height: 1;
+}
+.back:hover,
+.step:hover {
+  background: var(--control-fill);
+}
+.step:hover {
+  color: var(--text-primary);
+}
+.weekday {
+  font-size: 1.5em;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.15;
+}
+.weekday .short {
+  display: none;
+}
+.date {
+  font-size: 0.9375em;
+}
+.meta {
+  color: var(--text-secondary);
+  font-size: 0.8125em;
+}
+/* The day's list: the only part that scrolls. */
+.items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.55em;
+  min-height: 0;
+  margin-top: 0.7em;
+  padding: 0.6em 0 0;
+  border-top: 1px solid var(--material-border);
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.item {
+  display: flex;
+  gap: 0.55em;
+}
+.bar {
+  flex: none;
+  width: 0.2em;
+  border-radius: var(--radius-pill);
+}
+.bar.holiday {
+  background: var(--text-secondary);
+}
+.bar.countdown {
+  background: var(--accent);
+}
+.what {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.time,
+.location {
+  color: var(--text-secondary);
+  font-size: 0.8125em;
+  font-variant-numeric: tabular-nums;
+}
+.title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.location {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.empty,
+.notice {
+  color: var(--text-secondary);
+  font-size: 0.875em;
+}
+.notice {
+  margin-top: 0.5em;
+  font-size: 0.75em;
+}
+.bottom {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3em 0.75em;
+  margin-top: 0.6em;
+}
+.sun {
+  color: var(--text-secondary);
+  font-size: 0.8125em;
+  font-variant-numeric: tabular-nums;
+}
+.copy {
+  margin-left: auto;
+  padding: 0.25em 0.85em;
+  border-radius: var(--radius-pill);
+  background: var(--control-fill);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+.copy:hover {
+  background: var(--control-fill-hover);
+}
+/* A small Widget: the date on one line, and no sunrise, so the list keeps its room. */
+@container (max-height: 260px) {
+  .top {
+    margin-bottom: 0.15em;
+  }
+  .weekday {
+    font-size: 1.1em;
+  }
+  .weekday .long,
+  .date,
+  .meta,
+  .sun {
+    display: none;
+  }
+  .weekday .short {
+    display: inline;
+  }
+  .items {
+    margin-top: 0.35em;
+    padding-top: 0.4em;
+  }
+  .bottom {
+    margin-top: 0.35em;
+  }
+}

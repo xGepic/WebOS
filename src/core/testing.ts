@@ -1,8 +1,11 @@
 import type {
   BrowserLookup,
+  CalendarAccount,
+  CalendarServer,
   Clock,
   Fetch,
   FetchRequest,
+  RemoteCalendar,
   Storage,
   SystemMonitor,
   SystemSample,
@@ -123,4 +126,34 @@ export function createTestSystemMonitor(first: SystemSample | Error): TestSystem
     },
   };
   return monitor;
+}
+
+/** A CalendarServer serving what the test sets, and recording every request. */
+export interface TestCalendarServer extends CalendarServer {
+  /** The account's calendars. */
+  calendarList: RemoteCalendar[];
+  /** The iCalendar resources in each calendar, by its url. */
+  resources: Record<string, string[]>;
+  /** While set, every request rejects with it. */
+  failure?: Error;
+  readonly requests: { kind: 'calendars' | 'events'; account: CalendarAccount; url?: string; range?: { start: Date; end: Date } }[];
+}
+
+export function createTestCalendarServer(calendarList: RemoteCalendar[] = [], resources: Record<string, string[]> = {}): TestCalendarServer {
+  const server: TestCalendarServer = {
+    calendarList,
+    resources,
+    requests: [],
+    async calendars(account) {
+      server.requests.push({ kind: 'calendars', account: { ...account } });
+      if (server.failure) throw server.failure;
+      return structuredClone(server.calendarList);
+    },
+    async events(account, url, range) {
+      server.requests.push({ kind: 'events', account: { ...account }, url, range });
+      if (server.failure) throw server.failure;
+      return [...(server.resources[url] ?? [])];
+    },
+  };
+  return server;
 }

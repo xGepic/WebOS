@@ -64,7 +64,7 @@ describe('the Calendar Widget', () => {
     const month = webos.calendar.month();
     expect(month.month).toBe('December');
     expect(month.weeks.flatMap((w) => w.days).filter((day) => day.today)).toEqual([
-      { date: '2026-12-01', day: 1, inMonth: true, today: true, weekend: false, countdowns: [] },
+      { date: '2026-12-01', day: 1, inMonth: true, today: true, weekend: false, countdowns: [], events: [] },
     ]);
   });
 });

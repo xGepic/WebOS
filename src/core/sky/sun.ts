@@ -72,6 +72,18 @@ function cityDay(now: Date, timeZone: string | undefined, offset: number) {
   return { year: date.getUTCFullYear(), month: date.getUTCMonth(), day: date.getUTCDate() };
 }
 
+/** Sunrise and sunset on a calendar day (month 0-based) in the Weather `city`, for the Calendar's Day View. */
+export type SunOnDay = { kind: 'day'; sunrise: string; sunset: string } | { kind: 'polar-day' | 'polar-night' };
+
+export function sunOnDay(city: WeatherCity, year: number, month: number, day: number): SunOnDay {
+  const times = sunTimes(year, month, day, city.latitude, city.longitude);
+  if (times.kind !== 'day') return times;
+  return {
+    kind: 'day',
+    sunrise: formatTime(new Date(times.sunrise), city.timeZone),
+    sunset: formatTime(new Date(times.sunset), city.timeZone),
+  };
+}
 
 
 /**

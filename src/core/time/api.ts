@@ -1,6 +1,9 @@
+import { FetchError, type CalendarServer } from '../edges';
 import { formatDate, formatTime } from '../format';
+import { createRefresher } from '../refresher';
 import type { WeatherCity } from '../sky/weather';
 import type { Store } from '../store';
+import * as apple from './apple-calendar';
 import * as calendar from './calendar';
 import * as countdown from './countdown';
 import * as holidays from './holidays';
@@ -22,6 +25,12 @@ export interface TimeApi {
     month(offset?: number): calendar.CalendarMonth;
     /** A day (`2026-11-30`) for the line under the grid: "Mon, Nov 30", "in 18 days", week 49. Undefined for text that isn't a date. */
     describe(date: string): calendar.CalendarDayDetails | undefined;
+    /**
+     * A day (`2026-11-30`) in full, for the Day View: its holiday, Countdowns,
+     * shown Apple Calendar events, and sunrise and sunset in the Weather city.
+     * Undefined for text that isn't a date.
+     */
+    day(date: string): apple.CalendarDayView | undefined;
     /** The date `days` days after `date`, for moving through the grid with the keyboard. */
     addDays(date: string, days: number): string;
     /** The same day `months` months after `date`, or the last day of a shorter month. */
@@ -30,6 +39,27 @@ export interface TimeApi {
     offsetOf(date: string): number;
     /** Today, as `2026-11-12`. */
     today(): string;
+  };
+  /**
+   * Apple Calendar, read-only from iCloud, managed in Settings. The last sync
+   * is stored, so a new tab shows it at once; a new tab syncs again once it is
+   * 15 minutes old.
+   */
+  readonly appleCalendar: {
+    /** What Settings shows: signed out, or the account, its calendars and the last sync. */
+    status(): apple.AppleCalendarStatus;
+    /**
+     * Signs in and, if Apple accepts, stores the account with all its calendars
+     * shown, and syncs. Stores nothing if Apple refuses the sign-in (`refused`)
+     * or can't be reached (`unreachable`).
+     */
+    connect(appleId: string, password: string): Promise<'connected' | 'refused' | 'unreachable'>;
+    /** Shows or hides a calendar's events. */
+    setShown(calendarUrl: string, shown: boolean): Promise<void>;
+    /** Syncs now, unless a sync is already under way. A failed sync keeps the last one and doesn't reject. */
+    sync(): Promise<void>;
+    /** Forgets the account, its password and every stored event. */
+    disconnect(): Promise<void>;
   };
   /** Days the user counts down to, for the Countdown Widget, managed in Settings. */
   readonly countdowns: {
@@ -59,10 +89,52 @@ export interface TimeApi {
   };
 }
 
-/** The Clock, the Calendar, Countdowns and the World Clock. */
-export function createTime(store: Store): TimeApi {
+/** The Clock, the Calendar with Apple Calendar, Countdowns and the World Clock. The Desktop loading syncs Apple Calendar if it is due. */
+export function createTime(store: Store, server?: CalendarServer): TimeApi {
   const { clock } = store;
   const state = store.state;
+
+  const sync = createRefresher(store, {
+    source: (current) => (server ? (current.appleCalendar.account ?? undefined) : undefined),
+    same: apple.sameAccount,
+    isDue: (current, now) => apple.isDue(current.appleCalendar.sync, now),
+    async load(account) {
+      const found = await server!.calendars(account);
+      const range = apple.syncRange(clock.now());
+      const fetchedAt = clock.now().getTime();
+      const perCalendar = await Promise.all(
+        found.map(async ({ url }) => apple.readEvents(url, await server!.events(account, url, range), range.start, range.end)),
+      );
+      return { found, latest: { fetchedAt, from: range.from, to: range.to, events: perCalendar.flat() } };
+    },
+    store: (current, { found, latest }) => ({
+      ...current,
+      appleCalendar: { ...current.appleCalendar, calendars: apple.mergeCalendars(current.appleCalendar.calendars, found), sync: latest },
+    }),
+    problemOf: (error): apple.AppleCalendarProblem => (error instanceof FetchError && error.status === 401 ? 'refused' : 'failed'),
+  });
+  /** Whether this tab's sync is under way, for Settings. */
+  let syncing = false;
+  const syncNow = async (force: boolean) => {
+    if (!server || !state().appleCalendar.account) return;
+    syncing = true;
+    store.notify();
+    try {
+      await sync.refresh(force);
+    } finally {
+      syncing = false;
+      store.notify();
+    }
+  };
+  void syncNow(false);
+
+  /** The shown events' titles by date, worked out again only when Apple Calendar's state changes. */
+  let eventTitles: { for: apple.AppleCalendarState; byDate: Map<string, string[]> } | undefined;
+  const eventsByDate = () => {
+    const current = state().appleCalendar;
+    if (eventTitles?.for !== current) eventTitles = { for: current, byDate: apple.eventTitlesByDate(current) };
+    return eventTitles.byDate;
+  };
 
   /** Applies a change to the Countdowns, unless it was refused (undefined). Resolves to whether it was applied. */
   const commitCountdowns = async (list: countdown.Countdown[] | undefined) => {
@@ -88,7 +160,26 @@ export function createTime(store: Store): TimeApi {
     for (const { date, title } of [...state().countdowns].sort((a, b) => a.title.localeCompare(b.title))) {
       countdownDays.set(date, [...(countdownDays.get(date) ?? []), title]);
     }
-    return { holidays: holidayDays, countdowns: countdownDays };
+    return { holidays: holidayDays, countdowns: countdownDays, events: eventsByDate() };
+  };
+
+  /** The Day View of `date`, with its holiday and Countdowns. */
+  const day = (date: string) => {
+    const details = calendar.describeDay(date, clock.now());
+    if (!details) return undefined;
+    const holiday = holidays.holidays(Number(date.slice(0, 4))).find((candidate) => candidate.date === date)?.name;
+    const countdowns = state()
+      .countdowns.filter((candidate) => candidate.date === date)
+      .map((candidate) => candidate.title)
+      .sort((a, b) => a.localeCompare(b));
+    return apple.dayView(date, clock.now(), {
+      week: details.week,
+      holiday,
+      countdowns,
+      apple: state().appleCalendar,
+      problem: sync.problem(),
+      city: state().weather.city,
+    });
   };
 
   return {
@@ -99,10 +190,39 @@ export function createTime(store: Store): TimeApi {
     calendar: {
       month: (offset = 0) => calendar.monthView(clock.now(), offset, marksFor(offset)),
       describe: (date) => calendar.describeDay(date, clock.now()),
+      day,
       addDays: calendar.addDays,
       addMonths: calendar.addMonths,
       offsetOf: (date) => calendar.monthOffset(date, clock.now()),
       today: () => calendar.isoDate(clock.now()),
+    },
+    appleCalendar: {
+      status: () => apple.appleCalendarStatus(state().appleCalendar, { syncing, problem: sync.problem(), now: clock.now() }),
+      async connect(appleId, password) {
+        const account = { appleId: appleId.trim(), password: password.trim() };
+        if (!server || !account.appleId || !account.password) return 'refused';
+        let found;
+        try {
+          found = await server.calendars(account);
+        } catch (error) {
+          return error instanceof FetchError && error.status === 401 ? 'refused' : 'unreachable';
+        }
+        sync.forget();
+        await store.commit({ ...state(), appleCalendar: { account, calendars: apple.mergeCalendars([], found), sync: null } });
+        void syncNow(true);
+        return 'connected';
+      },
+      async setShown(calendarUrl, shown) {
+        const current = state().appleCalendar;
+        if (!current.calendars.some((choice) => choice.url === calendarUrl && choice.shown !== shown)) return;
+        const calendars = current.calendars.map((choice) => (choice.url === calendarUrl ? { ...choice, shown } : choice));
+        await store.commit({ ...state(), appleCalendar: { ...current, calendars } });
+      },
+      sync: () => syncNow(true),
+      async disconnect() {
+        sync.forget();
+        await store.commit({ ...state(), appleCalendar: apple.NO_APPLE_CALENDAR });
+      },
     },
     countdowns: {
       list: () => [...state().countdowns].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title)),

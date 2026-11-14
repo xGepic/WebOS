@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRend
 import type { CalendarDay } from '../../core';
 import { Toasts } from '../toast/toasts';
 import { WebOSCore } from '../webos-core';
+import { DayView } from './day-view';
 
 /** Keys that move the active day, and by how much. */
 const DAY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
@@ -10,19 +11,22 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
 /**
  * The Calendar Widget: a month in weeks starting on Monday, with ISO week
  * numbers and today marked. Weekends and public holidays are quieter; a
- * holiday and a Countdown each put a dot under their day, named on hover.
- * Like the Clock it has no surface.
+ * holiday, a Countdown and an Apple Calendar event each put a dot under their
+ * day, named on hover. Like the Clock it has no surface.
  *
  * ‹ and › browse months, and Today, shown under the grid while another
- * month is, goes back to the current one. Clicking a day (or Enter) copies
- * it as `2026-11-30`. Arrow keys move by day and week, Page Up and Page Down
- * by month. Every new tab starts on the current month.
+ * month is, goes back to the current one. Clicking a day (or Enter) opens it
+ * in the Day View, which can copy it. Arrow keys move by day and week, Page Up
+ * and Page Down by month. Every new tab starts on the current month.
  */
 @Component({
   selector: 'webos-calendar-widget',
+  imports: [DayView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (month(); as month) {
+    @if (viewing() && dayView(); as day) {
+      <webos-day-view [day]="day" (back)="closeDay()" (step)="stepDay($event)" (copy)="copy(day.date)" />
+    } @else if (month(); as month) {
       <!-- Sized by the Host's box (see the CSS), so everything inside scales with the Widget. -->
       <div class="calendar">
         <div class="header">
@@ -66,16 +70,19 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
                       [tabindex]="day.date === tabStop() ? 0 : -1"
                       (focus)="active.set(day.date)"
                       (keydown)="onKey($event, day.date)"
-                      (click)="copy(day.date)"
+                      (click)="openDay(day.date)"
                     >
                       {{ day.day }}
-                      @if (day.holiday || day.countdowns.length) {
+                      @if (day.holiday || day.countdowns.length || day.events.length) {
                         <span class="marks" aria-hidden="true">
                           @if (day.holiday) {
                             <span class="mark holiday-mark"></span>
                           }
                           @if (day.countdowns.length) {
                             <span class="mark countdown-mark"></span>
+                          }
+                          @if (day.events.length) {
+                            <span class="mark event-mark"></span>
                           }
                         </span>
                       }
@@ -105,8 +112,14 @@ export class CalendarWidget {
   protected readonly offset = signal(0);
   /** The day the keyboard last moved to or focused, if any. */
   protected readonly active = signal<string | undefined>(undefined);
+  /** The day the Day View shows, or undefined while the month is shown. */
+  protected readonly viewing = signal<string | undefined>(undefined);
 
   protected readonly month = computed(() => this.webos.calendar.month(this.offset()));
+  protected readonly dayView = computed(() => {
+    const date = this.viewing();
+    return date ? this.webos.calendar.day(date) : undefined;
+  });
   /** The one day Tab lands on in the grid: the active day if it is in this month, else today, else the 1st. */
   protected readonly tabStop = computed(() => {
     const days = this.month()?.weeks.flatMap((week) => week.days) ?? [];
@@ -119,12 +132,32 @@ export class CalendarWidget {
     const details = this.webos.calendar.describe(day.date);
     if (!details) return day.date;
     const names = this.namesOf(day);
-    return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''} Copy ${day.date}`;
+    return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''}`;
   }
 
-  /** The day's holiday and Countdowns, for its tooltip: "Christmas Day · Release". Empty for a plain day. */
+  /** The day's holiday, Countdowns and events, for its tooltip: "Christmas Day · Release · Standup". Empty for a plain day. */
   protected namesOf(day: CalendarDay): string {
-    return [...(day.holiday ? [day.holiday] : []), ...day.countdowns].join(' · ');
+    return [...(day.holiday ? [day.holiday] : []), ...day.countdowns, ...day.events].join(' · ');
+  }
+
+  protected openDay(date: string): void {
+    this.active.set(date);
+    this.viewing.set(date);
+  }
+
+  protected stepDay(days: number): void {
+    const date = this.viewing();
+    if (date) this.viewing.set(this.webos.calendar.addDays(date, days));
+  }
+
+  /** Back to the month of the day last shown, with that day focused. */
+  protected closeDay(): void {
+    const date = this.viewing();
+    this.viewing.set(undefined);
+    if (!date) return;
+    this.offset.set(this.webos.calendar.offsetOf(date));
+    this.active.set(date);
+    afterNextRender(() => this.host.querySelector<HTMLElement>(`[data-date="${date}"]`)?.focus(), { injector: this.injector });
   }
 
   protected showMonth(offset: number): void {

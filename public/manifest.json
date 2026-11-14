@@ -16,6 +16,7 @@
   ],
   "host_permissions": [
     "https://api.open-meteo.com/*",
-    "https://geocoding-api.open-meteo.com/*"
+    "https://geocoding-api.open-meteo.com/*",
+    "https://*.icloud.com/*"
   ]
 }

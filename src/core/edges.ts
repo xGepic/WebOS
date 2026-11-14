@@ -83,3 +83,30 @@ export interface SystemSample {
 export interface SystemMonitor {
   sample(): Promise<SystemSample>;
 }
+
+/** An Apple ID and app-specific password, as the CalendarServer signs in with them. */
+export interface CalendarAccount {
+  appleId: string;
+  password: string;
+}
+
+/** One of an account's event calendars. */
+export interface RemoteCalendar {
+  /** Its address on the server, which `events` takes. */
+  url: string;
+  name: string;
+  /** A CSS colour, if the server gives one. */
+  color?: string;
+}
+
+/**
+ * The user's calendars on iCloud, read-only, for Apple Calendar. Rejects when
+ * a request fails, and with a `FetchError` with status 401 when Apple refuses
+ * the sign-in.
+ */
+export interface CalendarServer {
+  /** Signs in and lists the account's event calendars. */
+  calendars(account: CalendarAccount): Promise<RemoteCalendar[]>;
+  /** The iCalendar text of each event resource in the calendar at `calendarUrl` with an occurrence overlapping `start`–`end`. */
+  events(account: CalendarAccount, calendarUrl: string, range: { start: Date; end: Date }): Promise<string[]>;
+}

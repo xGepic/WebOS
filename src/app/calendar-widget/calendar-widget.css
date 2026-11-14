@@ -130,6 +130,9 @@ td {
 .countdown-mark {
   background: var(--accent);
 }
+.event-mark {
+  background: var(--text-primary);
+}
 .today,
 .today:hover {
   background: var(--accent);

@@ -13,15 +13,18 @@ export interface CalendarDay {
   holiday?: string;
   /** The titles of the Countdowns on this day, if any. */
   countdowns: readonly string[];
+  /** The titles of the shown Apple Calendar events on this day, all-day ones first, then by time. */
+  events: readonly string[];
 }
 
 /** What the Calendar marks on its days, by date (`2026-12-25`). */
 export interface DayMarks {
   holidays: ReadonlyMap<string, string>;
   countdowns: ReadonlyMap<string, readonly string[]>;
+  events: ReadonlyMap<string, readonly string[]>;
 }
 
-const NO_MARKS: DayMarks = { holidays: new Map(), countdowns: new Map() };
+const NO_MARKS: DayMarks = { holidays: new Map(), countdowns: new Map(), events: new Map() };
 
 /** A row of the grid: Monday to Sunday, with its ISO week number. */
 export interface CalendarWeek {
@@ -112,6 +115,7 @@ export function monthView(now: Date, offset = 0, marks: DayMarks = NO_MARKS): Ca
         weekend: weekday >= 5,
         ...(holiday ? { holiday } : {}),
         countdowns: marks.countdowns.get(iso) ?? [],
+        events: marks.events.get(iso) ?? [],
       });
     }
     weeks.push({ number: isoWeek(new Date(year, month, 1 - leading + week * 7)), days });

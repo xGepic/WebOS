@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AppleCalendarSettings } from './apple-calendar-settings';
 import { BackupSettings } from './backup-settings';
 import { ProfileSettings } from './profile-settings';
 import { WeatherSettings } from './weather-settings';
@@ -9,12 +10,14 @@ import { WeatherSettings } from './weather-settings';
   imports: [
     ProfileSettings,
     WeatherSettings,
+    AppleCalendarSettings,
     BackupSettings,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <webos-profile-settings />
     <webos-weather-settings />
+    <webos-apple-calendar-settings />
     <webos-backup-settings />
   `,
   styles: `
