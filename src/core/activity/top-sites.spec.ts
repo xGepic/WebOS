@@ -53,14 +53,14 @@ describe('the Top Sites Widget', () => {
     expect(webos.topSites.sites().map((s) => s.title)).toEqual(['GitHub']);
   });
 
-  it('shows at most twelve', async () => {
+  it('shows at most ten, as many as the Recent Widget', async () => {
     const many = Array.from({ length: 20 }, (_, i) => site(`https://site${i}.example/`, `Site ${i}`));
     const webos = await setUp(createTestBrowser({ topSites: many }));
 
     await webos.topSites.refresh();
 
-    expect(webos.topSites.sites()).toHaveLength(12);
-    expect(webos.topSites.sites().at(-1)?.title).toBe('Site 11');
+    expect(webos.topSites.sites()).toHaveLength(10);
+    expect(webos.topSites.sites().at(-1)?.title).toBe('Site 9');
   });
 
   it('follows the browser when asked again, and keeps the sites it had when asking fails', async () => {

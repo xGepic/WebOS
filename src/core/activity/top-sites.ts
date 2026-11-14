@@ -9,8 +9,8 @@ export interface TopSite {
   site: string;
 }
 
-/** The most sites the Top Sites Widget shows; it shows fewer when its box fits fewer. */
-export const TOP_SITES = 12;
+/** The most sites the Top Sites Widget shows, as many as the Recent Widget lists; it shows fewer when its box fits fewer. */
+export const TOP_SITES = 10;
 
 /** Pages on the web: settings and extension pages aren't sites to open from here. */
 const onTheWeb = (page: TopSitePage) => /^https?:\/\//i.test(page.url);
