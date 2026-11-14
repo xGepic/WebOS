@@ -190,7 +190,7 @@ describe('Backup', () => {
     expect(webos.profile.name()).toBe('Stefan');
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.list().map((note) => note.title)).toEqual(['Old Note']);
-    expect(webos.desktop.hidden()).toEqual(['today']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites']);
     expect(webos.desktop.layout()).toHaveLength(11);
   });
 });

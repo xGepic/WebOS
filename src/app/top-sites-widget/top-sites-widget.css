@@ -1,0 +1,85 @@
+/*
+ * Tiles sized off the Widget's box, so a big screen gets big tiles: a tile is
+ * about 5.5em wide and 5.25em tall (the icon's square and a line for the name).
+ */
+:host {
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.5rem;
+}
+/*
+ * Rows of tiles, each row centred like the browser's own shortcuts. Only whole
+ * rows show: the list is cut to as many tile heights as fit, and the Host
+ * centres what is left.
+ */
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-height: round(down, 100cqh, 5.25em);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  font-size: clamp(0.6875rem, min(9cqh, 4cqi), 1.125rem);
+}
+li {
+  width: 5.5em;
+  height: 5.25em;
+}
+.site {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  height: 100%;
+  padding: 0.35em 0.25em;
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.site:hover {
+  background: var(--control-fill);
+}
+.site:active {
+  background: var(--control-fill-hover);
+}
+.site:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3em;
+  height: 3em;
+  border-radius: 28%;
+  background: var(--control-fill);
+  box-shadow: inset 0 0 0 1px var(--material-border);
+}
+.site:hover .tile {
+  background: var(--control-fill-hover);
+}
+.icon {
+  width: 1.5em;
+  height: 1.5em;
+}
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.8em;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(0.75rem, min(9cqh, 4cqi), 1.125rem);
+  text-align: center;
+}

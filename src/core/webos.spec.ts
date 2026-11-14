@@ -212,7 +212,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['today']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites']);
   });
 
   it('moves a v8 layout (ticket 11 to 14 builds) to the newest Stage layout once, keeping hidden Widgets hidden', async () => {
@@ -249,7 +249,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Notes was hidden, but webOS no longer has a Notes Widget.
-    expect(webos.desktop.hidden()).toEqual(['today']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(await storage.read()).toMatchObject({ schemaVersion: 23, weather: { city: null, report: null } });
 
@@ -291,7 +291,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['todos', 'today']);
+    expect(webos.desktop.hidden()).toEqual(['todos', 'today', 'top-sites']);
     expect(webos.weather.city()).toBeNull();
   });
 
@@ -332,7 +332,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Notes was hidden too, but webOS no longer has a Notes Widget.
-    expect(webos.desktop.hidden()).toEqual(['weather', 'today']);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'today', 'top-sites']);
     expect(webos.weather.city()).toEqual(vienna);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
@@ -388,7 +388,7 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Calendar was hidden by the user; the newer Widgets were hidden only for lack of room.
-    expect(webos.desktop.hidden()).toEqual(['calendar', 'today']);
+    expect(webos.desktop.hidden()).toEqual(['calendar', 'today', 'top-sites']);
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Race']);
     expect(await storage.read()).not.toHaveProperty('github');
   });
@@ -513,7 +513,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['sun', 'today']);
+    expect(webos.desktop.hidden()).toEqual(['sun', 'today', 'top-sites']);
     expect(await storage.read()).toMatchObject({ schemaVersion: 23 });
   });
 

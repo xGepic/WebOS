@@ -29,6 +29,7 @@ export type {
   Storage,
   SystemMonitor,
   SystemSample,
+  TopSitePage,
   VisitedPage,
 } from './edges';
 export { FetchError } from './edges';
@@ -38,6 +39,7 @@ export { MAX_WORLD_CLOCKS } from './time/world-clock';
 export type { MoonEvent, MoonPhase, MoonView } from './sky/moon';
 export type { SunView } from './sky/sun';
 export type { RecentPage } from './activity/recent';
+export type { TopSite } from './activity/top-sites';
 export type { SystemPart, SystemPartChoice, SystemView, UsageView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
@@ -59,7 +61,7 @@ export { StateDocumentError } from './state/state';
 export interface WebOSEdges {
   storage: Storage;
   clock: Clock;
-  /** The browser's history, for the Recent Widget. Without it, the Widget lists no pages. */
+  /** The browser's history, for the Recent and Top Sites Widgets. Without it, they list no pages. */
   browser?: BrowserLookup;
   /** The network, for the Weather Widget. Without it, nothing is fetched. */
   fetch?: Fetch;

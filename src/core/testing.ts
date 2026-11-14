@@ -11,6 +11,7 @@ import type {
   Storage,
   SystemMonitor,
   SystemSample,
+  TopSitePage,
   VisitedPage,
 } from './edges';
 
@@ -81,10 +82,14 @@ export function createMemoryStorage(initial?: unknown): MemoryStorage {
   return openTab();
 }
 
-/** A BrowserLookup over the given history. */
-export function createTestBrowser({ history = [] }: { history?: VisitedPage[] } = {}): BrowserLookup {
+/** A BrowserLookup over the given history and most visited sites. `topSites` may be a function, to change its answer or fail. */
+export function createTestBrowser({
+  history = [],
+  topSites = [],
+}: { history?: VisitedPage[]; topSites?: TopSitePage[] | (() => TopSitePage[]) } = {}): BrowserLookup {
   return {
     recent: async (count) => structuredClone([...history].sort((a, b) => b.visitedAt - a.visitedAt).slice(0, count)),
+    topSites: async () => structuredClone(typeof topSites === 'function' ? topSites() : topSites),
   };
 }
 

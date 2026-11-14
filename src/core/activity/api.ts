@@ -1,7 +1,8 @@
-import type { BrowserLookup, NetworkMonitor, SystemMonitor, VisitedPage } from '../edges';
+import type { BrowserLookup, NetworkMonitor, SystemMonitor, TopSitePage, VisitedPage } from '../edges';
 import type { Store } from '../store';
 import * as recent from './recent';
 import * as system from './system';
+import * as top from './top-sites';
 
 export interface ActivityApi {
   /** The pages visited last, for the Recent Widget. Kept per tab and never saved. */
@@ -9,6 +10,13 @@ export interface ActivityApi {
     /** The pages from the last `refresh`, latest first; none before one. */
     pages(): readonly recent.RecentPage[];
     /** Asks the browser for the pages visited last. Resolves when they are in; a failure keeps the ones there were. */
+    refresh(): Promise<void>;
+  };
+  /** The sites visited most, for the Top Sites Widget. Kept per tab and never saved. */
+  readonly topSites: {
+    /** The sites from the last `refresh`, most visited first; none before one. */
+    sites(): readonly top.TopSite[];
+    /** Asks the browser for its most visited sites. Resolves when they are in; a failure keeps the ones there were. */
     refresh(): Promise<void>;
   };
   /**
@@ -26,7 +34,7 @@ export interface ActivityApi {
   };
 }
 
-/** The Recent and System Widgets. The System Widget follows the network as it changes. */
+/** The Recent, Top Sites and System Widgets. The System Widget follows the network as it changes. */
 export function createActivity(
   store: Store,
   edges: { browser?: BrowserLookup; system?: SystemMonitor; network?: NetworkMonitor },
@@ -37,6 +45,8 @@ export function createActivity(
 
   /** The pages visited last, as the browser gave them at this tab's last refresh. */
   let recentVisits: VisitedPage[] = [];
+  /** The most visited sites, as the browser gave them at this tab's last refresh. */
+  let mostVisited: TopSitePage[] = [];
   /** This tab's processor and memory readings. */
   let readings = system.noReadings();
 
@@ -53,6 +63,18 @@ export function createActivity(
           store.notify();
         } catch {
           // Keeps the pages there were.
+        }
+      },
+    },
+    topSites: {
+      sites: () => top.topSites(mostVisited),
+      async refresh() {
+        if (!browser) return;
+        try {
+          mostVisited = await browser.topSites();
+          store.notify();
+        } catch {
+          // Keeps the sites there were.
         }
       },
     },

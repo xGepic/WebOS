@@ -59,6 +59,7 @@ export class WebOSCore {
   readonly moon = this.read((core) => core.moon.view());
   readonly sun = this.read((core) => core.sun.view());
   readonly recentPages = this.read((core) => core.recent.pages());
+  readonly topSites = this.read((core) => core.topSites.sites());
   readonly system = this.read((core) => core.system.view());
   readonly systemParts = this.read((core) => core.system.parts());
   readonly wallpaper = this.read((core) => core.wallpaper.current());

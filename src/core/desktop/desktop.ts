@@ -113,6 +113,15 @@ export const widgets = {
       L: { columns: 4, rows: 6 },
     },
   },
+  // The sites visited most, as tiles. M matches the Clock's width, to sit under the Search Widget.
+  'top-sites': {
+    name: 'Top Sites',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 7, rows: 2 },
+      L: { columns: 12, rows: 2 },
+    },
+  },
   // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
   search: {
     name: 'Search',
@@ -150,17 +159,18 @@ export interface LayoutEntry extends Placement {
  * Where each Widget sits on a fresh Desktop: the Stage layout. A top band of
  * the World Clock, Weather, the Clock with the Search Widget under it,
  * Calendar and Sun, with the Clock and Search in the exact middle and a
- * one-column gap on either side of them; beneath it Today and Todos, then a
- * Countdown, System and Moon side by side along the bottom, and Recent. Every
- * Widget is visible. The 3 × 5 space beside Todos (where the Notes Widget was)
- * and the 9 × 3 space above the Countdown, System and Moon are free, so Edit
- * Mode has room to move things.
+ * one-column gap on either side of them; Top Sites under the Search Widget;
+ * beneath it Today and Todos, then a Countdown, System and Moon side by side
+ * along the bottom, and Recent. Every Widget is visible. The space beside
+ * Todos (where the Notes Widget was) and either side of Top Sites is free, so
+ * Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
   { widget: 'weather', size: 'S', column: 3, row: 0, visible: true },
   { widget: 'clock', size: 'M', column: 7, row: 0, visible: true },
   { widget: 'search', size: 'M', column: 7, row: 2, visible: true },
+  { widget: 'top-sites', size: 'M', column: 7, row: 3, visible: true },
   { widget: 'calendar', size: 'S', column: 15, row: 0, visible: true },
   { widget: 'sun', size: 'M', column: 18, row: 0, visible: true },
   { widget: 'today', size: 'M', column: 0, row: 3, visible: true },

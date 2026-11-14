@@ -58,6 +58,10 @@ _Avoid_: Snippet, clipping, history entry
 The Widget that shows the Day View of today, or of the day picked in the Calendar Widget until the user goes back to today.
 _Avoid_: Agenda, day widget, schedule
 
+**Top Sites**:
+The sites the user visits most, as the browser's own new tab page lists them, shown as tiles on the Top Sites Widget. The browser keeps the list; webOS only shows it.
+_Avoid_: Shortcuts, bookmarks, favourites, speed dial
+
 **Countdown**:
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed.
 _Avoid_: Event, deadline, timer

@@ -32,10 +32,18 @@ export interface VisitedPage {
   visitedAt: number;
 }
 
-/** Looks up the browser's history, for the Recent Widget. */
+/** A page from the browser's most visited sites. */
+export interface TopSitePage {
+  title: string;
+  url: string;
+}
+
+/** Looks up the browser's history, for the Recent and Top Sites Widgets. */
 export interface BrowserLookup {
   /** The `count` pages visited last, latest first. */
   recent(count: number): Promise<VisitedPage[]>;
+  /** The browser's most visited sites, most visited first, as its own new tab page lists them. */
+  topSites(): Promise<TopSitePage[]>;
 }
 
 /** How a request is sent; a plain GET without one. */
