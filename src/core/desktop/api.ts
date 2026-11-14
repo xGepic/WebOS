@@ -31,8 +31,8 @@ export interface DesktopApi {
     resize(widget: desktop.WidgetId, size: desktop.WidgetSize): Promise<boolean>;
     hide(widget: desktop.WidgetId): Promise<void>;
     /**
-     * Shows a hidden Widget where it was, or at the next free position. Resolves
-     * to whether it is shown: with no room for it, it stays hidden.
+     * Shows a hidden Widget at size S, where it was or at the next free position.
+     * Resolves to whether it is shown: with no room for it, it stays hidden.
      */
     show(widget: desktop.WidgetId): Promise<boolean>;
   };

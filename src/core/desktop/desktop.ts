@@ -321,14 +321,15 @@ export function hideWidget(entries: readonly LayoutEntry[], widget: WidgetId): L
 }
 
 /**
- * Shows a hidden Widget where it was, or at the next free position from there.
- * It doesn't push anything aside. Undefined if there is no room for it at its size.
+ * Shows a hidden Widget at size S, whatever size it had, where it was or at the
+ * next free position from there; Edit Mode can make it bigger. It doesn't push
+ * anything aside. Undefined if there is no room for it at size S.
  */
 export function showWidget(entries: readonly LayoutEntry[], widget: WidgetId): LayoutEntry[] | undefined {
   const entry = entryOf(entries, widget);
   if (!entry) return undefined;
   if (entry.visible) return [...entries];
-  const room = findRoom(onGrid(entry), entries.filter((other) => other.visible).map(boxOf));
+  const room = findRoom(onGrid({ ...entry, size: 'S' }), entries.filter((other) => other.visible).map(boxOf));
   return room && replace(entries, room);
 }
 

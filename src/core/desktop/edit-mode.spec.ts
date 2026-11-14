@@ -189,6 +189,20 @@ describe('hiding and showing Widgets', () => {
     expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', ...UNMENTIONED]);
   });
 
+  it('shows a Widget at size S, whatever size it had, so it starts small', async () => {
+    const webos = await webosWith();
+    expect(webos.desktop.hidden()).toContain('top-sites');
+    expect(await webos.desktop.resize('today', 'M')).toBe(true);
+    await webos.desktop.hide('today');
+
+    expect(await webos.desktop.show('top-sites')).toBe(true);
+    expect(await webos.desktop.show('today')).toBe(true);
+
+    expect(where(webos)['top-sites']).toMatch(/^S@/);
+    expect(where(webos).today).toMatch(/^S@/);
+    expectValidLayout(webos);
+  });
+
   it('shows a Widget at the next free position when its place was taken meanwhile', async () => {
     const webos = await webosWith();
     await webos.desktop.hide('today');
