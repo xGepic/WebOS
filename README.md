@@ -25,6 +25,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0019](docs/specs/0019-about-webos.md) | About webOS, from the webOS mark: the version, the data and its storage, and the last backup |
 | [0020](docs/specs/0020-accent-follows-wallpaper.md) | The accent colour follows the Wallpaper |
 | [0021](docs/specs/0021-widget-stacks.md) | Widget stacks: Widgets of the same size sharing one place, one shown at a time |
+| [0022](docs/specs/0022-coming-up.md) | Coming Up in the Today Widget: the next Event after the day and how many days away it is, in place of Copy date |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 

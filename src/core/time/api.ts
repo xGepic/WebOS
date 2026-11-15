@@ -28,7 +28,8 @@ export interface TimeApi {
     describe(date: string): calendar.CalendarDayDetails | undefined;
     /**
      * A day (`2026-11-30`) in full, for the Day View: its holiday or bridge day, Countdowns,
-     * shown Apple Calendar events, and sunrise and sunset in the Weather city.
+     * shown Apple Calendar events, sunrise and sunset in the Weather city, and
+     * Coming Up, the first shown Event on a later day.
      * Undefined for text that isn't a date.
      */
     day(date: string): dayView.CalendarDayView | undefined;
@@ -194,6 +195,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       countdowns,
       events: apple.eventsOn(appleCalendar, date),
       notice: apple.eventsNotice(appleCalendar, date, { problem: sync.problem(), now: clock.now() }),
+      comingUp: apple.comingUp(appleCalendar, date, clock.now()),
       city: weather.city,
     });
   };

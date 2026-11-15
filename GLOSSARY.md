@@ -79,8 +79,12 @@ A working day with a day off on each side, a weekend day or an Austrian public h
 _Avoid_: Fenstertag, bridge holiday, long weekend
 
 **Day View**:
-One day in full: its holiday or bridge day, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
+One day in full: its holiday or bridge day, Countdowns and Events, Coming Up, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
+
+**Coming Up**:
+The first Event on a later day than the one the Day View shows, with how many days from today it is, e.g. "Coming up · in 6 days". Only the synced range is known.
+_Avoid_: Next entry, next appointment, upcoming
 
 **Wallpaper Weather**:
 Rain, snow or fog drawn faintly on the Wallpaper while the Weather city has it now. Drizzle falls as light rain and a thunderstorm as heavier rain, never with lightning. It can be turned off in Settings, and rain and snow stay off under reduced motion.

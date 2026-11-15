@@ -144,32 +144,26 @@ ul {
   margin-top: 0.5em;
   font-size: 0.75em;
 }
-.bottom {
-  display: flex;
+/* Coming Up: the first Event on a later day, under the day's list. */
+.coming-up {
   flex: none;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.3em 0.75em;
   margin-top: 0.6em;
+  padding-top: 0.6em;
+  border-top: 1px solid var(--material-border);
+}
+.coming-up .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sun {
+  flex: none;
+  margin-top: 0.6em;
   color: var(--text-secondary);
   font-size: 0.8125em;
   font-variant-numeric: tabular-nums;
 }
-.copy {
-  margin-left: auto;
-  padding: 0.25em 0.85em;
-  border-radius: var(--radius-pill);
-  background: var(--control-fill);
-  font-size: 0.75em;
-  font-weight: 600;
-}
-.copy:hover {
-  background: var(--control-fill-hover);
-}
-/* A small Widget: the date on one line, and no sunrise, so the list keeps its room. */
+/* A small Widget: the date on one line, Coming Up without its date, and no sunrise, so the list keeps its room. */
 @container (max-height: 260px) {
   .top {
     margin-bottom: 0.15em;
@@ -180,6 +174,7 @@ ul {
   .weekday .long,
   .date,
   .meta,
+  .coming-up .location,
   .sun {
     display: none;
   }
@@ -190,7 +185,8 @@ ul {
     margin-top: 0.35em;
     padding-top: 0.4em;
   }
-  .bottom {
+  .coming-up {
     margin-top: 0.35em;
+    padding-top: 0.4em;
   }
 }

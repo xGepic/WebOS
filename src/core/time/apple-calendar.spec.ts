@@ -296,6 +296,69 @@ describe('the Day View', () => {
   });
 });
 
+describe('Coming Up', () => {
+  it('is the first Event on a later day, with how far it is from today', async () => {
+    const { webos } = await connected();
+
+    expect(webos.calendar.day('2026-11-14')!.comingUp).toEqual({
+      title: 'Standup',
+      when: 'in 2 days',
+      date: 'Mon, Nov 16, 9:30 AM',
+      calendar: 'Work',
+      color: '#1badf8',
+    });
+  });
+
+  it('says "Tomorrow" for one tomorrow', async () => {
+    const { webos } = await connected({ clock: createTestClock(new Date(2026, 10, 15, 9, 0)) });
+
+    expect(webos.calendar.day('2026-11-15')!.comingUp).toMatchObject({ title: 'Standup', when: 'Tomorrow' });
+  });
+
+  it('follows the day shown, still counting from today', async () => {
+    const { webos } = await connected();
+
+    expect(webos.calendar.day('2026-11-16')!.comingUp).toMatchObject({ title: 'Call with New York', when: 'in 3 days' });
+    expect(webos.calendar.day('2026-11-26')!.comingUp).toEqual({
+      title: 'Ski trip',
+      when: 'in 13 days',
+      date: 'Fri, Nov 27',
+      calendar: 'Work',
+      color: '#1badf8',
+    });
+  });
+
+  it('leaves out an Event that started on the day shown and goes on past it', async () => {
+    const { webos } = await connected();
+
+    expect(webos.calendar.day('2026-11-20')!.comingUp).toMatchObject({ title: 'Training (moved)', date: 'Wed, Nov 25, 7:00 PM' });
+  });
+
+  it('puts an all-day Event first on its day', async () => {
+    const server = icloud();
+    server.resources[WORK] = [
+      resource(vevent('UID:a', 'SUMMARY:Breakfast', 'DTSTART:20261118T060000Z', 'DTEND:20261118T070000Z')),
+      resource(vevent('UID:c', 'SUMMARY:Conference', 'DTSTART;VALUE=DATE:20261118')),
+    ];
+    server.resources[TRAINING] = [];
+    const { webos } = await connected({ server });
+
+    expect(webos.calendar.day('2026-11-17')!.comingUp).toMatchObject({ title: 'Conference', when: 'in 4 days', date: 'Wed, Nov 18' });
+  });
+
+  it('leaves out a hidden calendar’s Events', async () => {
+    const { webos } = await connected();
+    await webos.appleCalendar.setShown(WORK, false);
+
+    expect(webos.calendar.day('2026-11-14')!.comingUp).toMatchObject({ title: 'Training (moved)', calendar: 'Training', color: '#63da38' });
+  });
+
+  it('is undefined past the synced range, and without Apple Calendar', async () => {
+    expect((await connected()).webos.calendar.day('2027-05-31')!.comingUp).toBeUndefined();
+    expect((await setUp()).webos.calendar.day('2026-11-14')!.comingUp).toBeUndefined();
+  });
+});
+
 describe('the month', () => {
   it('names the shown events on each of their days', async () => {
     const { webos } = await connected();

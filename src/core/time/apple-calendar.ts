@@ -1,6 +1,6 @@
 import type ICALModule from 'ical.js';
-import { MINUTE_MS, MONTHS, formatTime, formatWhen } from '../format';
-import { isoDate, parseIsoDate } from './calendar';
+import { MINUTE_MS, MONTHS, formatShortDate, formatTime, formatWhen } from '../format';
+import { daysFrom, isoDate, parseIsoDate, relativeDayLabel } from './calendar';
 
 /**
  * Apple Calendar, webOS's first Data Source: the user's iCloud events, read
@@ -296,6 +296,45 @@ export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | und
     when: minutes <= 0 ? 'now' : minutes < 60 ? `in ${minutes} min` : `at ${formatTime(new Date(event.start))}`,
     time: timeOn(event, dayStart, dayEnd),
     ...(event.location ? { location: event.location } : {}),
+    calendar: calendar?.name ?? '',
+    color: calendar?.color ?? DEFAULT_COLOR,
+  };
+}
+
+/** Coming Up, for the Day View: the first Event on a day after the one it shows. */
+export interface ComingUp {
+  title: string;
+  /** How far the day is from today: "Tomorrow", "in 6 days", "Today" or "3 days ago". */
+  when: string;
+  /** Its day and, unless it is all day, when it starts: "Fri, Nov 20, 10:00 PM" or "Fri, Nov 27". */
+  date: string;
+  /** The calendar's name and colour. */
+  calendar: string;
+  color: string;
+}
+
+/**
+ * Coming Up after `date` (`2026-11-24`) at `now`: the shown calendars' first
+ * Event that starts on a later day, all-day ones first on their day, then by
+ * when they start, then by title. An Event that started earlier and goes on
+ * past `date` doesn't count. Only the synced range is known, so undefined when
+ * there is none in it, or for text that isn't a date.
+ */
+export function comingUp(apple: AppleCalendarState, date: string, now: Date): ComingUp | undefined {
+  const day = parseIsoDate(date);
+  if (!day) return undefined;
+  const after = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
+  const startOf = (event: CalendarEvent) => (event.allDay ? midnight(event.startDate) : event.start);
+  const event = shownEvents(apple)
+    .filter((candidate) => startOf(candidate) >= after)
+    .sort((a, b) => startOf(a) - startOf(b) || Number(b.allDay) - Number(a.allDay) || a.title.localeCompare(b.title))[0];
+  if (!event) return undefined;
+  const start = event.allDay ? parseIsoDate(event.startDate)! : new Date(event.start);
+  const calendar = apple.calendars.find((choice) => choice.url === event.calendar);
+  return {
+    title: event.title,
+    when: relativeDayLabel(daysFrom(now, start)),
+    date: event.allDay ? formatShortDate(start) : `${formatShortDate(start)}, ${formatTime(start)}`,
     calendar: calendar?.name ?? '',
     color: calendar?.color ?? DEFAULT_COLOR,
   };

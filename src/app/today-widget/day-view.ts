@@ -4,11 +4,11 @@ import type { CalendarDayView } from '../../core';
 /**
  * The Day View, the body of the Today Widget: one day in full. Its holiday or
  * bridge day, its Countdowns, the shown Apple Calendar events (all-day first, then by time),
+ * Coming Up (the first Event on a later day, and how far it is from today),
  * and sunrise and sunset in the Weather city.
  *
  * ‹ and › (or ← and →) step through days; on another day, ‹ Today (or Esc)
- * goes back to today. Copy copies the date as `2026-11-24`. The list scrolls
- * when the day is full.
+ * goes back to today. The list scrolls when the day is full.
  */
 @Component({
   selector: 'webos-day-view',
@@ -90,18 +90,25 @@ import type { CalendarDayView } from '../../core';
     @if (today.notice) {
       <p class="notice">{{ today.notice }}</p>
     }
-    <div class="bottom">
-      @if (today.sun; as sun) {
-        <p class="sun">
-          @if (sun.kind === 'day') {
-            <span aria-hidden="true">☀</span> {{ sun.sunrise }} – {{ sun.sunset }}
-          } @else {
-            {{ sun.kind === 'polar-day' ? 'The sun doesn’t set' : 'The sun doesn’t rise' }}
-          }
-        </p>
-      }
-      <button type="button" class="copy" (click)="copy.emit()">Copy date</button>
-    </div>
+    @if (today.comingUp; as next) {
+      <div class="coming-up item" role="group" aria-label="Coming up">
+        <span class="bar" aria-hidden="true" [style.background]="next.color"></span>
+        <span class="what">
+          <span class="time">Coming up · {{ next.when }}</span>
+          <span class="title" [title]="next.calendar">{{ next.title }}</span>
+          <span class="location">{{ next.date }}</span>
+        </span>
+      </div>
+    }
+    @if (today.sun; as sun) {
+      <p class="sun">
+        @if (sun.kind === 'day') {
+          <span aria-hidden="true">☀</span> {{ sun.sunrise }} – {{ sun.sunset }}
+        } @else {
+          {{ sun.kind === 'polar-day' ? 'The sun doesn’t set' : 'The sun doesn’t rise' }}
+        }
+      </p>
+    }
   `,
   styleUrl: './day-view.css',
 })
@@ -111,7 +118,6 @@ export class DayView {
   readonly isToday = input(true);
   readonly back = output<void>();
   readonly step = output<number>();
-  readonly copy = output<void>();
 
   protected onKey(event: KeyboardEvent): void {
     if (event.target instanceof HTMLInputElement) return;

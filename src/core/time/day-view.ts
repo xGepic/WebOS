@@ -1,15 +1,15 @@
 import { formatShortDate } from '../format';
 import { sunOnDay, type SunOnDay } from '../sky/sun';
 import type { WeatherCity } from '../sky/weather';
-import type { DayEvent } from './apple-calendar';
+import type { ComingUp, DayEvent } from './apple-calendar';
 import { daysFrom, parseIsoDate, relativeDayLabel } from './calendar';
 import type { BridgeDay } from './holidays';
 
 /**
  * The Day View: one day in full, shown by the Today Widget. It brings
  * together what the other parts of the time area know about the day: its
- * holiday or bridge day, its Countdowns, its Apple Calendar events, and
- * sunrise and sunset in the Weather city.
+ * holiday or bridge day, its Countdowns, its Apple Calendar events, sunrise
+ * and sunset in the Weather city, and Coming Up, the first Event after it.
  */
 
 /** A day in full, for the Today Widget's Day View. */
@@ -36,6 +36,8 @@ export interface CalendarDayView {
   notice?: string;
   /** Sunrise and sunset in the Weather city, if one is chosen. */
   sun?: SunOnDay;
+  /** Coming Up: the first Event on a later day, if one is in the synced range. */
+  comingUp?: ComingUp;
 }
 
 /** What is known about a day, for its Day View. */
@@ -46,6 +48,7 @@ export interface DayContents {
   countdowns: readonly string[];
   events: readonly DayEvent[];
   notice?: string;
+  comingUp?: ComingUp;
   city: WeatherCity | null;
 }
 
@@ -59,7 +62,7 @@ const shortDay = (date: string) => {
 export function dayView(
   date: string,
   now: Date,
-  { week, holiday, bridge, countdowns, events, notice, city }: DayContents,
+  { week, holiday, bridge, countdowns, events, notice, comingUp, city }: DayContents,
 ): CalendarDayView | undefined {
   const day = parseIsoDate(date);
   if (!day) return undefined;
@@ -77,5 +80,6 @@ export function dayView(
     events,
     ...(notice ? { notice } : {}),
     ...(city ? { sun: sunOnDay(city, day.getFullYear(), day.getMonth(), day.getDate()) } : {}),
+    ...(comingUp ? { comingUp } : {}),
   };
 }

@@ -44,7 +44,7 @@ export type { NewTabDay, NewTabsView } from './activity/new-tabs';
 export type { SystemPart, SystemPartChoice, SystemView, UsageView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
-export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, DayEvent, NextEvent } from './time/apple-calendar';
+export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, ComingUp, DayEvent, NextEvent } from './time/apple-calendar';
 export type { CalendarDayView } from './time/day-view';
 export type { ForecastDayView, WallpaperWeather, WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
 export { describeCity } from './sky/weather';
