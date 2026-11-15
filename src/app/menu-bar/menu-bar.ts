@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import type { NextEvent } from '../../core';
 import { DesktopEditor } from '../desktop/desktop-editor';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 
 /**
  * The Menu Bar across the top: the webOS mark and the open App's name on the
- * left, the 12-hour time on the right. In Edit Mode it offers the hidden
- * Widgets; "Done" is in the Dock. Searching is the Search Widget's job.
+ * left, the Next Event and the 12-hour time on the right. In Edit Mode it
+ * offers the hidden Widgets; "Done" is in the Dock. Searching is the Search
+ * Widget's job.
  */
 @Component({
   selector: 'webos-menu-bar',
@@ -43,6 +45,13 @@ import { WindowState } from '../window/window-state';
       <span class="app-name">{{ webos.appName(app) }}</span>
     }
     <span class="spacer"></span>
+    @if (webos.nextEvent(); as event) {
+      <span class="next-event" [title]="eventDetails(event)">
+        <span class="event-color" [style.background]="event.color" aria-hidden="true"></span>
+        <span class="event-title">{{ event.title }}</span>
+        <span class="event-when">{{ event.when }}</span>
+      </span>
+    }
     <time class="time">{{ webos.time() }}</time>
   `,
   styles: `
@@ -99,6 +108,31 @@ import { WindowState } from '../window/window-state';
     .spacer {
       flex: 1;
     }
+    /* The Next Event gives way first when the Menu Bar is crowded: its title shortens, its time never does. */
+    .next-event {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-width: 0;
+      max-width: 22rem;
+      margin-right: 0.5rem;
+    }
+    .event-color {
+      flex: none;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .event-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .event-when {
+      flex: none;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
     .time {
       font-variant-numeric: tabular-nums;
     }
@@ -109,4 +143,9 @@ export class MenuBar {
   protected readonly window = inject(WindowState);
   protected readonly editor = inject(DesktopEditor);
   protected readonly hidden = computed(() => this.webos.hiddenWidgets() ?? []);
+
+  /** The Next Event in full, for its tooltip: "Standup · 9:30 AM – 9:45 AM · Zoom · Work". */
+  protected eventDetails(event: NextEvent): string {
+    return [event.title, event.time, event.location, event.calendar].filter(Boolean).join(' · ');
+  }
 }

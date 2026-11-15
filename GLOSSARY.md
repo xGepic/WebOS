@@ -21,7 +21,7 @@ The single focused frame an App opens in. Only one Window exists at a time.
 _Avoid_: Modal, dialog, panel
 
 **Menu Bar**:
-The thin bar across the top of the Desktop showing the open App's name, Data Source status and the time.
+The thin bar across the top of the Desktop showing the open App's name, Data Source status, the Next Event and the time.
 _Avoid_: Top bar, header, status bar
 
 **Edit Mode**:
@@ -99,3 +99,7 @@ _Avoid_: iCloud sync, calendar integration
 **Event**:
 One occurrence of something in Apple Calendar, such as a meeting or a training. A recurring one is an Event per occurrence. Not a Countdown, which the user makes in webOS.
 _Avoid_: Appointment, meeting, entry
+
+**Next Event**:
+The Event that starts next today, shown in the Menu Bar with when it starts: "in 12 min", "at 2:30 PM", or "now" for its first five minutes. All-day Events don't count.
+_Avoid_: Upcoming event, next meeting, agenda

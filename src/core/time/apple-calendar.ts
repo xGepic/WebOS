@@ -93,6 +93,12 @@ export interface DayEvent {
   color: string;
 }
 
+/** The Next Event, for the Menu Bar. */
+export interface NextEvent extends DayEvent {
+  /** "in 12 min" within the hour, "at 2:30 PM" further ahead, or "now" for its first five minutes. */
+  when: string;
+}
+
 /** A day in full, for the Calendar Widget's Day View. */
 export interface CalendarDayView {
   date: string;
@@ -291,6 +297,34 @@ function timeOn(event: CalendarEvent, dayStart: number, dayEnd: number): string 
   if (startsToday) return `From ${at(event.start)}`;
   if (endsToday) return `Until ${at(event.end)}`;
   return 'All day';
+}
+
+/** How long after it starts an Event is still the Next Event, as "now". */
+const NOW_FOR_MS = 5 * MINUTE;
+
+/**
+ * The Next Event at `now`: the shown calendars' next timed Event that starts
+ * later today, or one that started in the last five minutes. All-day Events
+ * and those on later days don't count. Undefined if there is none.
+ */
+export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | undefined {
+  const from = now.getTime() - NOW_FOR_MS;
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+  const event = sortEvents(shownEvents(apple)).find(
+    (candidate): candidate is CalendarEvent & { allDay: false } => !candidate.allDay && candidate.start >= from && candidate.start < dayEnd,
+  );
+  if (!event) return undefined;
+  const calendar = apple.calendars.find((choice) => choice.url === event.calendar);
+  const minutes = Math.ceil((event.start - now.getTime()) / MINUTE);
+  return {
+    title: event.title,
+    when: minutes <= 0 ? 'now' : minutes < 60 ? `in ${minutes} min` : `at ${formatTime(new Date(event.start))}`,
+    time: timeOn(event, dayStart, dayEnd),
+    ...(event.location ? { location: event.location } : {}),
+    calendar: calendar?.name ?? '',
+    color: calendar?.color ?? DEFAULT_COLOR,
+  };
 }
 
 /** A synced range's last day as a notice names it: "May 31, 2027". */

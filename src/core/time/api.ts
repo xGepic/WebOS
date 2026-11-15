@@ -31,6 +31,12 @@ export interface TimeApi {
      * Undefined for text that isn't a date.
      */
     day(date: string): apple.CalendarDayView | undefined;
+    /**
+     * The Next Event, for the Menu Bar: the shown Apple Calendar Event that
+     * starts next today, or one that started in the last five minutes ("now").
+     * All-day Events and Events on later days don't count. Undefined if there is none.
+     */
+    nextEvent(): apple.NextEvent | undefined;
     /** The date `days` days after `date`, for moving through the grid with the keyboard. */
     addDays(date: string, days: number): string;
     /** The same day `months` months after `date`, or the last day of a shorter month. */
@@ -195,6 +201,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       month: (offset = 0) => calendar.monthView(clock.now(), offset, marksFor(offset)),
       describe: (date) => calendar.describeDay(date, clock.now()),
       day,
+      nextEvent: () => apple.nextEvent(state().appleCalendar, clock.now()),
       addDays: calendar.addDays,
       addMonths: calendar.addMonths,
       offsetOf: (date) => calendar.monthOffset(date, clock.now()),

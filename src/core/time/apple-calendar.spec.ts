@@ -319,6 +319,75 @@ describe('the month', () => {
   });
 });
 
+describe('the Next Event', () => {
+  /** Connected, with the clock at `time`. */
+  const at = (time: Date) => connected({ clock: createTestClock(time) });
+
+  it('names the next Event later today, with the minutes to go within the hour', async () => {
+    const { webos } = await at(new Date(2026, 10, 16, 9, 0));
+
+    expect(webos.calendar.nextEvent()).toEqual({
+      title: 'Standup',
+      when: 'in 30 min',
+      time: '9:30 AM – 9:45 AM',
+      location: 'Zoom',
+      calendar: 'Work',
+      color: '#1badf8',
+    });
+  });
+
+  it('counts the minutes as time passes, rounding up', async () => {
+    const { webos, clock } = await at(new Date(2026, 10, 16, 9, 0));
+
+    clock.advance(28 * MINUTE + 30_000);
+    expect(webos.calendar.nextEvent()?.when).toBe('in 2 min');
+    clock.advance(MINUTE);
+    expect(webos.calendar.nextEvent()?.when).toBe('in 1 min');
+  });
+
+  it('gives the time of one an hour or more away', async () => {
+    const { webos } = await at(new Date(2026, 10, 16, 8, 30));
+
+    expect(webos.calendar.nextEvent()?.when).toBe('at 9:30 AM');
+  });
+
+  it('says "now" for the first five minutes of an Event, then moves on', async () => {
+    const { webos, clock } = await at(new Date(2026, 10, 16, 9, 30));
+
+    expect(webos.calendar.nextEvent()?.when).toBe('now');
+    clock.advance(5 * MINUTE);
+    expect(webos.calendar.nextEvent()?.when).toBe('now');
+    clock.advance(MINUTE);
+    expect(webos.calendar.nextEvent()).toBeUndefined();
+  });
+
+  it('counts one that starts tonight and runs past midnight', async () => {
+    const { webos } = await at(new Date(2026, 10, 20, 21, 0));
+
+    expect(webos.calendar.nextEvent()).toMatchObject({ title: 'Night train', when: 'at 10:00 PM', time: 'From 10:00 PM' });
+  });
+
+  it('leaves out all-day Events, Events on later days, and cancelled ones', async () => {
+    expect((await at(new Date(2026, 10, 28, 9, 0))).webos.calendar.nextEvent()).toBeUndefined();
+    expect((await at(new Date(2026, 10, 15, 20, 0))).webos.calendar.nextEvent()).toBeUndefined();
+    expect((await at(new Date(2026, 10, 16, 11, 0))).webos.calendar.nextEvent()).toBeUndefined();
+  });
+
+  it('leaves out a hidden calendar’s Events', async () => {
+    const { webos } = await at(new Date(2026, 10, 10, 17, 30));
+    expect(webos.calendar.nextEvent()).toMatchObject({ title: 'Training', when: 'in 30 min', calendar: 'Training' });
+
+    await webos.appleCalendar.setShown(TRAINING, false);
+    expect(webos.calendar.nextEvent()).toBeUndefined();
+  });
+
+  it('is undefined without Apple Calendar', async () => {
+    const { webos } = await setUp({ clock: createTestClock(new Date(2026, 10, 16, 9, 0)) });
+
+    expect(webos.calendar.nextEvent()).toBeUndefined();
+  });
+});
+
 describe('syncing', () => {
   it('shows the last sync at once in a new tab, and syncs again once it is 15 minutes old', async () => {
     const { storage, clock, server } = await connected();

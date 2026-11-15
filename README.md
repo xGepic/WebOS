@@ -20,6 +20,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0014](docs/specs/0014-new-tabs.md) | The New Tabs Widget: how many new tabs were opened today and on each of the six days before |
 | [0015](docs/specs/0015-wallpaper-weather.md) | Wallpaper Weather: faint rain, snow or fog on the Wallpaper while the Weather city has it |
 | [0016](docs/specs/0016-done-in-the-dock.md) | A large Done in the Dock in Edit Mode, in place of the Menu Bar's |
+| [0017](docs/specs/0017-next-event.md) | The Next Event in the Menu Bar: the next Apple Calendar Event today, and when it starts |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 

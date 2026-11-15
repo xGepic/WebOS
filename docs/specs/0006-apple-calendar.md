@@ -2,6 +2,7 @@
 
 Status: built (2026-11-14); the CalDAV edge awaits a check against iCloud
 Related: [Spec 0005: Calendar Marks](0005-calendar-marks.md), [Spec 0002: More Widgets](0002-more-widgets.md), [GLOSSARY](../../GLOSSARY.md)
+Extended by: [Spec 0017: The Next Event in the Menu Bar](0017-next-event.md)
 
 ## Problem Statement
 
