@@ -11,9 +11,9 @@ export interface DesktopApi {
     readonly grid: typeof desktop.grid;
     /** The Widget catalog: every Widget and the cells each size spans. */
     readonly widgets: typeof desktop.widgets;
-    /** The visible Widgets and where they sit, in reading order. */
+    /** The visible Widgets and stacks and where they sit, in reading order. */
     layout(): readonly desktop.PlacedWidget[];
-    /** The hidden Widgets, in catalog order; Edit Mode offers to show them. */
+    /** The hidden Widgets, in catalog order; Edit Mode offers to show them. Stacked Widgets aren't hidden. */
     hidden(): readonly desktop.WidgetId[];
     /**
      * Moves a Widget so its top-left cell is `column`, `row`, kept on the grid.
@@ -35,6 +35,22 @@ export interface DesktopApi {
      * Resolves to whether it is shown: with no room for it, it stays hidden.
      */
     show(widget: desktop.WidgetId): Promise<boolean>;
+    /**
+     * Stacks a Widget, with any stacked with it, onto another's place, showing
+     * it there; the place it left is free. Only Widgets that cover the same
+     * cells at the stack's size can share it. Resolves to whether it was stacked.
+     */
+    stack(widget: desktop.WidgetId, onto: desktop.WidgetId): Promise<boolean>;
+    /** Whether `stack(widget, onto)` would be accepted, for Edit Mode to offer only places that take it. */
+    canStack(widget: desktop.WidgetId, onto: desktop.WidgetId): boolean;
+    /**
+     * Takes a Widget out of its stack, to the next free position from the
+     * stack, at the stack's size. Resolves to whether it was taken out: not
+     * if it isn't in a stack, or there is no room for it.
+     */
+    unstack(widget: desktop.WidgetId): Promise<boolean>;
+    /** Shows a Widget in its stack. A new tab opens the stack on it. */
+    showInStack(widget: desktop.WidgetId): Promise<void>;
   };
   readonly wallpaper: {
     /** Every Wallpaper, in the order Settings offers them. */
@@ -72,6 +88,14 @@ export function createDesktop(store: Store): DesktopApi {
         await commitLayout((entries) => desktop.hideWidget(entries, widget));
       },
       show: (widget) => commitLayout((entries) => desktop.showWidget(entries, widget)),
+      stack: (widget, onto) => commitLayout((entries) => desktop.stackWidget(entries, widget, onto)),
+      canStack: (widget, onto) => desktop.stackWidget(store.state().layout, widget, onto) !== undefined,
+      unstack: (widget) => commitLayout((entries) => desktop.unstackWidget(entries, widget)),
+      showInStack: async (widget) => {
+        const head = store.state().layout.find((entry) => entry.stacked?.includes(widget) || entry.widget === widget);
+        if ((head?.shown ?? head?.widget) === widget) return;
+        await commitLayout((entries) => desktop.showInStack(entries, widget));
+      },
     },
     wallpaper: {
       choices: wallpapers,

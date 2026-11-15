@@ -13,11 +13,14 @@ export class DesktopEditor {
   private readonly webos = inject(WebOSCore);
   private readonly active = signal(false);
   private readonly message = signal<string | undefined>(undefined);
+  private readonly stackingWidget = signal<WidgetId | undefined>(undefined);
 
   /** Whether the Desktop is in Edit Mode. */
   readonly editing = this.active.asReadonly();
-  /** Why the last change couldn't be made, for the Menu Bar to say. */
+  /** Why the last change couldn't be made, or what to do next, for the Menu Bar to say. */
   readonly notice = this.message.asReadonly();
+  /** The Widget (or stack) being stacked while the user chooses where to, if any. */
+  readonly stacking = this.stackingWidget.asReadonly();
 
   constructor() {
     // Opening an App leaves Edit Mode: the Window covers the Desktop being edited.
@@ -29,12 +32,25 @@ export class DesktopEditor {
 
   enter(): void {
     this.message.set(undefined);
+    this.stackingWidget.set(undefined);
     this.active.set(true);
   }
 
   exit(): void {
     this.message.set(undefined);
+    this.stackingWidget.set(undefined);
     this.active.set(false);
+  }
+
+  /** Starts choosing where to stack `widget`, and says how. */
+  startStacking(widget: WidgetId): void {
+    this.stackingWidget.set(widget);
+    this.message.set(`Choose a Widget to stack ${this.webos.widgetName(widget)} on. Esc cancels.`);
+  }
+
+  stopStacking(): void {
+    this.stackingWidget.set(undefined);
+    this.message.set(undefined);
   }
 
   /** Says why a change couldn't be made, or clears the last notice. */

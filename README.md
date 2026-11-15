@@ -24,6 +24,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0018](docs/specs/0018-bridge-days.md) | Bridge days marked in the Calendar, with the days off each makes |
 | [0019](docs/specs/0019-about-webos.md) | About webOS, from the webOS mark: the version, the data and its storage, and the last backup |
 | [0020](docs/specs/0020-accent-follows-wallpaper.md) | The accent colour follows the Wallpaper |
+| [0021](docs/specs/0021-widget-stacks.md) | Widget stacks: Widgets of the same size sharing one place, one shown at a time |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -46,7 +47,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
 
 - `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history and the Top Sites, `Fetch` for the weather, `SystemMonitor` for the processor and memory, `NetworkMonitor` for the network, and `CalendarServer` for Apple Calendar), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
   - `state/`: the versioned state document, its migrations, backups, and what About webOS shows of it
-  - `desktop/`: the snap grid, the Widget catalog and Edit Mode's moves, the Apps, and the Wallpapers
+  - `desktop/`: the snap grid, the Widget catalog, Edit Mode's moves and Widget stacks, the Apps, and the Wallpapers
   - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Todos, Notes and the greeting

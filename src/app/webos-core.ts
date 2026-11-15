@@ -36,6 +36,7 @@ export class WebOSCore {
 
   readonly apps = this.read((core) => core.apps);
   readonly grid = this.read((core) => core.desktop.grid);
+  readonly widgets = this.read((core) => core.desktop.widgets);
   readonly layout = this.read((core) => core.desktop.layout());
   readonly hiddenWidgets = this.read((core) => core.desktop.hidden());
   readonly name = this.read((core) => core.profile.name());
@@ -162,6 +163,11 @@ export class WebOSCore {
     const core = this.core();
     if (!core) throw new Error('webOS has not started.');
     await core.backup.import(text);
+  }
+
+  /** Whether `widget` can be stacked onto `onto`. Called inside a computed or template, it follows the layout. */
+  canStack(widget: WidgetId, onto: WidgetId): boolean {
+    return this.withCore((core) => core.desktop.canStack(widget, onto)) ?? false;
   }
 
   /** Where a Widget of `size` with its top-left at `cell` would sit on the grid, as a move would place it. */

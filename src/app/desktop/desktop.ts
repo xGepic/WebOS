@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -30,6 +31,7 @@ import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 import { DesktopEditor } from './desktop-editor';
 import { GridDrag, type GridDrop } from './grid-drag';
+import { WidgetStack } from './widget-stack';
 
 const SIZE_OPTIONS: readonly { size: WidgetSize; name: string }[] = [
   { size: 'S', name: 'Small' },
@@ -49,11 +51,17 @@ const MENU_MARGIN = 8;
  * paused, and they can be dragged (or moved with the arrow keys) around the
  * grid, resized and hidden. A dropped Widget settles onto the grid on a
  * spring, and Widgets pushed aside slide to their new places.
+ *
+ * Widgets that cover the same cells can share a place as a stack: Stack…
+ * then a Widget to stack onto. A stack shows one Widget at a time; Unstack
+ * takes the one shown out, and Hide hides only it.
  */
 @Component({
   selector: 'webos-desktop',
   imports: [
+    NgTemplateOutlet,
     GridDrag,
+    WidgetStack,
     ClockWidget,
     SearchWidget,
     TodosWidget,
@@ -89,7 +97,7 @@ const MENU_MARGIN = 8;
         [style.grid-row]="placed.row + 1 + ' / span ' + placed.rows"
         webosGridDrag
         gridDragBoundary="webos-desktop"
-        [gridDragDisabled]="!editor.editing()"
+        [gridDragDisabled]="!editor.editing() || !!editor.stacking()"
         (gridDragMoved)="showDropTarget(placed, $event)"
         (gridDropped)="drop(placed, $event)"
       >
@@ -97,77 +105,83 @@ const MENU_MARGIN = 8;
         <div #slider class="slide">
           <div #lift class="lift">
             <div class="widget" [attr.inert]="editor.editing() ? '' : null">
-              @switch (placed.widget) {
-                @case ('clock') {
-                  <webos-clock-widget [size]="placed.size" />
-                }
-                @case ('search') {
-                  <webos-search-widget />
-                }
-                @case ('todos') {
-                  <webos-todos-widget />
-                }
-                @case ('weather') {
-                  <webos-weather-widget />
-                }
-                @case ('calendar') {
-                  <webos-calendar-widget />
-                }
-                @case ('world-clock') {
-                  <webos-world-clock-widget />
-                }
-                @case ('countdown') {
-                  <webos-countdown-widget />
-                }
-                @case ('moon') {
-                  <webos-moon-widget [size]="placed.size" />
-                }
-                @case ('sun') {
-                  <webos-sun-widget />
-                }
-                @case ('recent') {
-                  <webos-recent-widget />
-                }
-                @case ('system') {
-                  <webos-system-widget />
-                }
-                @case ('today') {
-                  <webos-today-widget />
-                }
-                @case ('top-sites') {
-                  <webos-top-sites-widget [size]="placed.size" />
-                }
-                @case ('new-tabs') {
-                  <webos-new-tabs-widget />
-                }
+              @if (placed.stack; as stack) {
+                <webos-widget-stack
+                  [members]="stack"
+                  [shown]="placed.shown ?? placed.widget"
+                  [size]="placed.size"
+                  [view]="widgetView"
+                  (shownChange)="showInStack($event)"
+                />
+              } @else {
+                <ng-container *ngTemplateOutlet="widgetView; context: { $implicit: placed.widget, size: placed.size }" />
               }
             </div>
             @if (editor.editing()) {
+              @let shown = placed.shown ?? placed.widget;
+              @let source = editor.stacking();
               <div
                 #editLayer
                 class="edit-layer"
+                [class.stack-target]="source && source !== placed.widget && canStack(source, placed.widget)"
+                [class.unavailable]="source && source !== placed.widget && !canStack(source, placed.widget)"
                 tabindex="0"
                 role="group"
                 [attr.data-widget]="placed.widget"
-                [attr.aria-label]="webos.widgetName(placed.widget) + ' Widget. Drag it, or use the arrow keys, to move it.'"
+                [attr.aria-label]="describe(placed) + ' Drag it, or use the arrow keys, to move it.'"
                 (keydown)="moveWithKeys(placed, $event)"
               >
-                <span class="name">{{ webos.widgetName(placed.widget) }}</span>
-                <div class="edit-controls">
-                  <div class="segmented material" role="group" aria-label="Size">
-                    @for (option of sizeOptions; track option.size) {
+                <span class="name">
+                  {{ webos.widgetName(shown) }}
+                  @if (placed.stack; as stack) {
+                    · {{ stack.indexOf(shown) + 1 }} of {{ stack.length }}
+                  }
+                </span>
+                @if (placed.stack; as stack) {
+                  <div class="edit-dots" role="group" aria-label="Widgets in this stack">
+                    @for (member of stack; track member) {
                       <button
                         type="button"
-                        class="button"
-                        [attr.aria-pressed]="placed.size === option.size"
-                        [attr.aria-label]="option.name"
-                        (click)="resize(placed, option)"
-                      >
-                        {{ option.size }}
-                      </button>
+                        class="widget-stack-dot"
+                        [attr.aria-label]="'Show ' + webos.widgetName(member)"
+                        [attr.aria-current]="member === shown ? 'true' : null"
+                        [title]="webos.widgetName(member)"
+                        (click)="showInStack(member)"
+                      ></button>
                     }
                   </div>
-                  <button type="button" class="button material hide" (click)="hide(placed)">Hide</button>
+                }
+                <div class="edit-controls">
+                  @if (source) {
+                    @if (source === placed.widget) {
+                      <button type="button" class="button material" (click)="stopStacking()">Cancel</button>
+                    } @else if (canStack(source, placed.widget)) {
+                      <button type="button" class="button stack-here" (click)="stackOnto(source, placed)">Stack here</button>
+                    }
+                  } @else {
+                    <div class="segmented material" role="group" aria-label="Size">
+                      @for (option of sizeOptions; track option.size) {
+                        <button
+                          type="button"
+                          class="button"
+                          [attr.aria-pressed]="placed.size === option.size"
+                          [attr.aria-label]="option.name"
+                          [disabled]="!fitsSize(placed, option.size)"
+                          [title]="fitsSize(placed, option.size) ? '' : 'Not every Widget in this stack has this size'"
+                          (click)="resize(placed, option)"
+                        >
+                          {{ option.size }}
+                        </button>
+                      }
+                    </div>
+                    @if (hasStackTargets(placed)) {
+                      <button type="button" class="button material" (click)="startStacking(placed)">Stack…</button>
+                    }
+                    @if (placed.stack) {
+                      <button type="button" class="button material" (click)="unstack(placed)">Unstack</button>
+                    }
+                    <button type="button" class="button material" (click)="hide(placed)">Hide</button>
+                  }
                 </div>
               </div>
             }
@@ -198,6 +212,54 @@ const MENU_MARGIN = 8;
         <button type="button" role="menuitem" class="menu-item" (click)="editDesktop()">Edit Desktop</button>
       </div>
     }
+
+    <!-- Every Widget, by id at a size: for a Widget on its own and for each Widget in a stack. -->
+    <ng-template #widgetView let-widget let-size="size">
+      @switch (widget) {
+        @case ('clock') {
+          <webos-clock-widget [size]="size" />
+        }
+        @case ('search') {
+          <webos-search-widget />
+        }
+        @case ('todos') {
+          <webos-todos-widget />
+        }
+        @case ('weather') {
+          <webos-weather-widget />
+        }
+        @case ('calendar') {
+          <webos-calendar-widget />
+        }
+        @case ('world-clock') {
+          <webos-world-clock-widget />
+        }
+        @case ('countdown') {
+          <webos-countdown-widget />
+        }
+        @case ('moon') {
+          <webos-moon-widget [size]="size" />
+        }
+        @case ('sun') {
+          <webos-sun-widget />
+        }
+        @case ('recent') {
+          <webos-recent-widget />
+        }
+        @case ('system') {
+          <webos-system-widget />
+        }
+        @case ('today') {
+          <webos-today-widget />
+        }
+        @case ('top-sites') {
+          <webos-top-sites-widget [size]="size" />
+        }
+        @case ('new-tabs') {
+          <webos-new-tabs-widget />
+        }
+      }
+    </ng-template>
   `,
   styles: `
     :host {
@@ -260,14 +322,38 @@ const MENU_MARGIN = 8;
     }
     .edit-controls {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: flex-end;
       gap: 0.375rem;
       margin-top: auto;
     }
-    .hide {
+    .edit-controls > .button {
       padding: 0.3rem 0.7rem;
       font-size: 0.75rem;
+    }
+    .edit-controls > .stack-here {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+    /* A stack's dots, on the edit outline's right edge: in Edit Mode they switch what it shows. */
+    .edit-dots {
+      position: absolute;
+      top: 50%;
+      right: 0.2rem;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(-50%);
+    }
+    /* Choosing where to stack: the Widgets that take it light up, the rest step back. */
+    .edit-layer.stack-target {
+      box-shadow:
+        0 0 0 2px var(--accent),
+        var(--lift-shadow);
+    }
+    .edit-layer.unavailable {
+      background: color-mix(in srgb, var(--wallpaper-base) 55%, transparent);
+      cursor: default;
     }
     .drop-target {
       z-index: 0;
@@ -382,9 +468,10 @@ export class Desktop {
     if (!(event.currentTarget as Element).contains(event.relatedTarget as Node | null)) this.closeMenu();
   }
 
-  /** Esc closes the menu, or leaves Edit Mode. */
+  /** Esc closes the menu, stops choosing where to stack, or leaves Edit Mode. */
   protected onEscape(): void {
     if (this.menu()) this.closeMenu({ restoreFocus: true });
+    else if (this.editor.stacking()) this.stopStacking();
     else if (this.editor.editing()) this.editor.exit();
   }
 
@@ -430,8 +517,74 @@ export class Desktop {
     });
   }
 
+  /** Hides the Widget, or the one a stack shows. */
   protected hide(placed: PlacedWidget): void {
-    this.changeLayout((core) => core.desktop.hide(placed.widget), { refocusFirst: true });
+    const widget = placed.shown ?? placed.widget;
+    this.changeLayout((core) => core.desktop.hide(widget), { refocusFirst: true });
+  }
+
+  /** The edit outline's name for a Widget or a stack, for screen readers. */
+  protected describe(placed: PlacedWidget): string {
+    const name = this.webos.widgetName(placed.shown ?? placed.widget);
+    return placed.stack ? `Stack of ${placed.stack.length} Widgets, showing ${name}.` : `${name} Widget.`;
+  }
+
+  /** Whether stacking `widget` onto `onto` would be accepted. */
+  protected canStack(widget: WidgetId, onto: WidgetId): boolean {
+    return this.webos.canStack(widget, onto);
+  }
+
+  /** Whether there is a Widget on the Desktop this one could be stacked onto. */
+  protected hasStackTargets(placed: PlacedWidget): boolean {
+    return (this.webos.layout() ?? []).some((other) => other.widget !== placed.widget && this.canStack(placed.widget, other.widget));
+  }
+
+  /** Whether every Widget in a stack covers the same cells at `size`; always for a Widget on its own. */
+  protected fitsSize(placed: PlacedWidget, size: WidgetSize): boolean {
+    const widgets = this.webos.widgets();
+    if (!placed.stack || !widgets) return true;
+    const [first, ...rest] = placed.stack.map((widget) => widgets[widget].sizes[size]);
+    return rest.every((span) => span.columns === first.columns && span.rows === first.rows);
+  }
+
+  /** Starts choosing where to stack a Widget: the Widgets that take it offer "Stack here". */
+  protected startStacking(placed: PlacedWidget): void {
+    this.editor.startStacking(placed.widget);
+    this.focusEditLayer(placed.widget);
+  }
+
+  protected stopStacking(): void {
+    const source = this.editor.stacking();
+    this.editor.stopStacking();
+    if (source) this.focusEditLayer(source);
+  }
+
+  protected stackOnto(source: WidgetId, onto: PlacedWidget): void {
+    this.editor.stopStacking();
+    this.changeLayout((core) => core.desktop.stack(source, onto.widget), {
+      refocus: onto.widget,
+      refused: `${this.webos.widgetName(source)} can't be stacked on ${this.webos.widgetName(onto.widget)}.`,
+    });
+  }
+
+  /** Takes the Widget a stack shows out of it, to the next free place. */
+  protected unstack(placed: PlacedWidget): void {
+    const widget = placed.shown ?? placed.widget;
+    this.changeLayout((core) => core.desktop.unstack(widget), {
+      refocus: widget,
+      refused: `No room to take ${this.webos.widgetName(widget)} out of the stack. Make some space first.`,
+    });
+  }
+
+  protected showInStack(widget: WidgetId): void {
+    this.webos.send((core) => core.desktop.showInStack(widget));
+  }
+
+  private focusEditLayer(widget: WidgetId): void {
+    afterNextRender(
+      () => this.editLayers().find(({ nativeElement }) => nativeElement.dataset['widget'] === widget)?.nativeElement.focus({ preventScroll: true }),
+      { injector: this.injector },
+    );
   }
 
   private restoreFocus(): void {

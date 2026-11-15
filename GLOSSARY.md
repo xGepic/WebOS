@@ -25,7 +25,7 @@ The thin bar across the top of the Desktop showing the webOS mark, which opens A
 _Avoid_: Top bar, header, status bar
 
 **Edit Mode**:
-The Desktop state in which Widgets can be moved, resized and added or removed on the snap grid. A Widget added starts at size S.
+The Desktop state in which Widgets can be moved, resized, stacked and added or removed on the snap grid. A Widget added starts at size S.
 _Avoid_: Jiggle mode, customize mode, layout mode
 
 ## Building blocks
@@ -33,6 +33,10 @@ _Avoid_: Jiggle mode, customize mode, layout mode
 **Widget**:
 A glanceable tile that lives on the Desktop and shows information without being opened.
 _Avoid_: Card, panel, tile
+
+**Stack**:
+Widgets that cover the same cells sharing one place on the Desktop, one shown at a time. Scrolling over it, or its dots, moves to another, and a new tab opens it on the one shown last. Made in Edit Mode with Stack….
+_Avoid_: Smart stack, group, folder, carousel
 
 **Title Bar**:
 The thin strip across the top of a Widget that shows the Widget's name.

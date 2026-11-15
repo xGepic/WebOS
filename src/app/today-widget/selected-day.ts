@@ -16,12 +16,16 @@ export class SelectedDay {
   readonly date = computed(() => this.picked() ?? this.webos.calendar.today());
   /** The picked day, if one is picked: what the Calendar rings. */
   readonly pickedDate = this.picked.asReadonly();
-  /** Whether the Today Widget is on the Desktop, so the Calendar has somewhere to show a day. */
-  readonly shown = computed(() => this.webos.layout()?.some((placed) => placed.widget === 'today') ?? false);
+  /** Whether the Today Widget is on the Desktop, on its own or in a stack, so the Calendar has somewhere to show a day. */
+  readonly shown = computed(
+    () => this.webos.layout()?.some((placed) => placed.widget === 'today' || placed.stack?.includes('today')) ?? false,
+  );
 
-  /** Shows `date`; picking today, or the day already picked, goes back to today. */
+  /** Shows `date`; picking today, or the day already picked, goes back to today. A stack holding Today turns to it. */
   pick(date: string): void {
     this.picked.set(date === this.webos.calendar.today() || date === this.picked() ? undefined : date);
+    const stack = this.webos.layout()?.find((placed) => placed.stack?.includes('today'));
+    if (stack && stack.shown !== 'today') this.webos.send((core) => core.desktop.showInStack('today'));
   }
 
   /** Moves the day shown by `days`. */
