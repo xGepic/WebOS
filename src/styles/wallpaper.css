@@ -34,10 +34,10 @@
   --wallpaper-light: rgba(150, 90, 240, 0.17);
   --accent: #9a7ee8;
 }
-[data-wallpaper='graphite'] {
-  --wallpaper-base: #0a0b0d;
-  --wallpaper-light: rgba(220, 225, 235, 0.07);
-  --accent: #b4bac6;
+[data-wallpaper='rose'] {
+  --wallpaper-base: #0a0307;
+  --wallpaper-light: rgba(235, 90, 160, 0.15);
+  --accent: #e88ab8;
 }
 
 body {

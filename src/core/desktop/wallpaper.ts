@@ -10,7 +10,7 @@ export const wallpapers = [
   { id: 'aurora', name: 'Aurora' },
   { id: 'ember', name: 'Ember' },
   { id: 'violet', name: 'Violet' },
-  { id: 'graphite', name: 'Graphite' },
+  { id: 'rose', name: 'Rose' },
 ] as const;
 
 export type Wallpaper = (typeof wallpapers)[number]['id'];

@@ -2,6 +2,7 @@
 
 Status: built (2026-11-15)
 Related: [Spec 0011: Wallpapers](0011-wallpapers.md), [GLOSSARY](../../GLOSSARY.md)
+Changed by: [Spec 0024](0024-rose-wallpaper.md), which adds Rose and removes Graphite.
 
 ## Problem Statement
 

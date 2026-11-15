@@ -11,7 +11,7 @@ describe('the Wallpaper', () => {
     const { webos } = await setUp();
 
     expect(webos.wallpaper.current()).toBe('midnight');
-    expect(webos.wallpaper.choices.map((wallpaper) => wallpaper.name)).toEqual(['Midnight', 'Aurora', 'Ember', 'Violet', 'Graphite']);
+    expect(webos.wallpaper.choices.map((wallpaper) => wallpaper.name)).toEqual(['Midnight', 'Aurora', 'Ember', 'Violet', 'Rose']);
   });
 
   it('keeps the one chosen, for every new tab', async () => {
@@ -42,6 +42,15 @@ describe('the Wallpaper', () => {
 
     expect(newer.webos.wallpaper.current()).toBe('midnight');
     expect(webos.wallpaper.current()).toBe('midnight');
+  });
+
+  it('shows Midnight for Graphite, which webOS no longer has', async () => {
+    const { storage } = await setUp();
+    const document = (await storage.read()) as Record<string, unknown>;
+
+    const before = await setUp(createMemoryStorage({ ...document, wallpaper: 'graphite' }));
+
+    expect(before.webos.wallpaper.current()).toBe('midnight');
   });
 
   it('gives a Desktop from before Wallpapers the one it had: Midnight', async () => {

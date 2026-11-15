@@ -2,7 +2,7 @@
 
 Status: built (2026-11-14)
 Related: [GLOSSARY](../../GLOSSARY.md)
-Changed by: [Spec 0020: The accent follows the Wallpaper](0020-accent-follows-wallpaper.md), which gives each Wallpaper its own accent.
+Changed by: [Spec 0020: The accent follows the Wallpaper](0020-accent-follows-wallpaper.md), which gives each Wallpaper its own accent, and [Spec 0024](0024-rose-wallpaper.md), which adds Rose and removes Graphite.
 
 ## Problem Statement
 

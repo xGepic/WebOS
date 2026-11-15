@@ -9,7 +9,7 @@ The full-screen surface shown on every new tab: a Wallpaper with Widgets arrange
 _Avoid_: Home, dashboard, board
 
 **Wallpaper**:
-The dark background behind the Desktop, with a coloured light falling from the top: Midnight, Aurora, Ember, Violet or Graphite, chosen in Settings. The accent colour follows it.
+The dark background behind the Desktop, with a coloured light falling from the top: Midnight, Aurora, Ember, Violet or Rose, chosen in Settings. The accent colour follows it.
 _Avoid_: Theme, background colour, skin
 
 **Dock**:
