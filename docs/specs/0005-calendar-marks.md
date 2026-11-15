@@ -2,6 +2,7 @@
 
 Status: built (2026-11-13)
 Related: [Spec 0001: webOS v1](0001-webos-v1.md), [Spec 0002: More Widgets](0002-more-widgets.md), [GLOSSARY](../../GLOSSARY.md)
+Extended by: [Spec 0018: Bridge Days](0018-bridge-days.md)
 
 ## Problem Statement
 

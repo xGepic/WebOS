@@ -226,3 +226,59 @@ describe('Austrian public holidays on the Calendar', () => {
     expect(dayOf(webos.calendar.month(), '2026-11-12')?.holiday).toBeUndefined();
   });
 });
+
+describe('bridge days on the Calendar', () => {
+  /** Every day of the month that is a bridge day, as "2026-05-15 4". */
+  const bridgesIn = (month: CalendarMonth) =>
+    month.weeks.flatMap((w) => w.days).flatMap((day) => (day.inMonth && day.bridge ? [`${day.date} ${day.bridge}`] : []));
+
+  it('marks each working day between two days off, with the days off it makes', async () => {
+    const { webos } = await webosOn(new Date(2026, 0, 1, 9, 0));
+
+    expect(Array.from({ length: 12 }, (_, i) => bridgesIn(webos.calendar.month(i))).flat()).toEqual([
+      '2026-01-02 4',
+      '2026-01-05 4',
+      '2026-05-15 4',
+      '2026-06-05 4',
+      '2026-12-07 4',
+    ]);
+  });
+
+  it('leaves weekends, holidays and other working days unmarked', async () => {
+    const { webos } = await webosOn(new Date(2026, 4, 1, 9, 0));
+    const may = webos.calendar.month();
+
+    expect(dayOf(may, '2026-05-14')?.bridge).toBeUndefined();
+    expect(dayOf(may, '2026-05-16')?.bridge).toBeUndefined();
+    expect(dayOf(may, '2026-05-13')?.bridge).toBeUndefined();
+  });
+
+  it('says in the Day View how many days off it makes, and which', async () => {
+    const { webos } = await webosOn(new Date(2026, 4, 1, 9, 0));
+
+    expect(webos.calendar.day('2026-05-15')?.bridge).toEqual({ days: 4, span: 'Thu, May 14 – Sun, May 17' });
+    expect(webos.calendar.day('2026-05-14')?.bridge).toBeUndefined();
+    expect(webos.calendar.day('2026-05-13')?.bridge).toBeUndefined();
+  });
+
+  it('finds one at the turn of the year, before next year’s New Year’s Day', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+
+    // 31 December 2029 is a Monday, after a weekend and before New Year's Day on a Tuesday.
+    expect(webos.calendar.day('2029-12-31')?.bridge).toEqual({ days: 4, span: 'Sat, Dec 29 – Tue, Jan 1' });
+  });
+
+  it('counts every day off in a row, more than one either side', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+
+    // Christmas 2029: Monday 24 December lies between a weekend and Christmas Day and St. Stephen's Day.
+    expect(webos.calendar.day('2029-12-24')?.bridge).toEqual({ days: 5, span: 'Sat, Dec 22 – Wed, Dec 26' });
+  });
+
+  it('starts the break on New Year’s Day, not before it', async () => {
+    const { webos } = await webosOn(new Date(2026, 10, 12, 9, 0));
+
+    // In 2032 New Year's Day is a Thursday, and 31 December 2031 a working Wednesday.
+    expect(webos.calendar.day('2032-01-02')?.bridge).toEqual({ days: 4, span: 'Thu, Jan 1 – Sun, Jan 4' });
+  });
+});

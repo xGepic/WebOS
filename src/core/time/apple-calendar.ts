@@ -3,6 +3,7 @@ import { formatTime, formatWhen, MONTHS } from '../format';
 import { sunOnDay, type SunOnDay } from '../sky/sun';
 import type { WeatherCity } from '../sky/weather';
 import { daysFrom, isoDate, parseIsoDate, relativeDayLabel } from './calendar';
+import type { BridgeDay } from './holidays';
 
 /**
  * Apple Calendar, webOS's first Data Source: the user's iCloud events, read
@@ -114,6 +115,8 @@ export interface CalendarDayView {
   relative: string;
   week: number;
   holiday?: string;
+  /** On a bridge day, the days off in a row if it is taken off, and which: "Thu, May 14 – Sun, May 17". */
+  bridge?: { days: number; span: string };
   countdowns: readonly string[];
   /** All-day events first, then the rest by when they start. */
   events: readonly DayEvent[];
@@ -327,6 +330,9 @@ export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | und
   };
 }
 
+/** A day as a bridge day's span names it: "Thu, May 14". */
+const shortDay = (date: string) => parseIsoDate(date)?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) ?? date;
+
 /** A synced range's last day as a notice names it: "May 31, 2027". */
 const longDate = (date: string) => {
   const day = parseIsoDate(date);
@@ -344,6 +350,7 @@ export function dayView(
   {
     week,
     holiday,
+    bridge,
     countdowns,
     apple,
     problem,
@@ -351,6 +358,7 @@ export function dayView(
   }: {
     week: number;
     holiday?: string;
+    bridge?: BridgeDay;
     countdowns: readonly string[];
     apple: AppleCalendarState;
     problem?: AppleCalendarProblem;
@@ -393,6 +401,7 @@ export function dayView(
     relative: relativeDayLabel(daysFrom(now, day)),
     week,
     ...(holiday ? { holiday } : {}),
+    ...(bridge ? { bridge: { days: bridge.days, span: `${shortDay(bridge.from)} – ${shortDay(bridge.to)}` } } : {}),
     countdowns,
     events,
     ...(notice ? { notice } : {}),

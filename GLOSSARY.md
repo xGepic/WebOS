@@ -70,6 +70,10 @@ _Avoid_: Tab count, tabs opened, page views, visits
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed. One added with a day that has already passed counts up instead, with the days since.
 _Avoid_: Event, deadline, timer
 
+**Bridge day**:
+A working day with a day off on each side, a weekend day or an Austrian public holiday, so taking it off makes one longer break. The Calendar marks it with a hollow dot, and its Day View says how many days off in a row it makes.
+_Avoid_: Fenstertag, bridge holiday, long weekend
+
 **Day View**:
 One day in full: its holiday, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover

@@ -26,7 +26,7 @@ export interface TimeApi {
     /** A day (`2026-11-30`) for the line under the grid: "Mon, Nov 30", "in 18 days", week 49. Undefined for text that isn't a date. */
     describe(date: string): calendar.CalendarDayDetails | undefined;
     /**
-     * A day (`2026-11-30`) in full, for the Day View: its holiday, Countdowns,
+     * A day (`2026-11-30`) in full, for the Day View: its holiday or bridge day, Countdowns,
      * shown Apple Calendar events, and sunrise and sunset in the Weather city.
      * Undefined for text that isn't a date.
      */
@@ -163,14 +163,16 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
   /** The holidays and Countdowns on the days of the month `offset` months from now. */
   const marksFor = (offset: number): calendar.DayMarks => {
     const holidayDays = new Map<string, string>();
+    const bridgeDays = new Map<string, number>();
     for (const year of calendar.yearsShown(clock.now(), offset)) {
       for (const holiday of holidays.holidays(year)) holidayDays.set(holiday.date, holiday.name);
+      for (const bridge of holidays.bridgeDays(year)) bridgeDays.set(bridge.date, bridge.days);
     }
     const countdownDays = new Map<string, string[]>();
     for (const { date, title } of [...state().countdowns].sort((a, b) => a.title.localeCompare(b.title))) {
       countdownDays.set(date, [...(countdownDays.get(date) ?? []), title]);
     }
-    return { holidays: holidayDays, countdowns: countdownDays, events: eventsByDate() };
+    return { holidays: holidayDays, bridges: bridgeDays, countdowns: countdownDays, events: eventsByDate() };
   };
 
   /** The Day View of `date`, with its holiday and Countdowns. */
@@ -178,6 +180,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
     const details = calendar.describeDay(date, clock.now());
     if (!details) return undefined;
     const holiday = holidays.holidays(Number(date.slice(0, 4))).find((candidate) => candidate.date === date)?.name;
+    const bridge = holidays.bridgeDays(Number(date.slice(0, 4))).find((candidate) => candidate.date === date);
     const countdowns = state()
       .countdowns.filter((candidate) => candidate.date === date)
       .map((candidate) => candidate.title)
@@ -185,6 +188,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
     return apple.dayView(date, clock.now(), {
       week: details.week,
       holiday,
+      bridge,
       countdowns,
       apple: state().appleCalendar,
       problem: sync.problem(),

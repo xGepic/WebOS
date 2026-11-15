@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import type { CalendarDayView } from '../../core';
 
 /**
- * The Day View, the body of the Today Widget: one day in full. Its holiday and
- * Countdowns, the shown Apple Calendar events (all-day first, then by time),
+ * The Day View, the body of the Today Widget: one day in full. Its holiday or
+ * bridge day, its Countdowns, the shown Apple Calendar events (all-day first, then by time),
  * and sunrise and sunset in the Weather city.
  *
  * ‹ and › (or ← and →) step through days; on another day, ‹ Today (or Esc)
@@ -51,6 +51,16 @@ import type { CalendarDayView } from '../../core';
           </span>
         </li>
       }
+      @if (today.bridge; as bridge) {
+        <li class="item">
+          <span class="bar bridge" aria-hidden="true"></span>
+          <span class="what">
+            <span class="time">Bridge day</span>
+            <span class="title">{{ bridge.days }} days off if you take it</span>
+            <span class="location">{{ bridge.span }}</span>
+          </span>
+        </li>
+      }
       @for (countdown of today.countdowns; track countdown) {
         <li class="item">
           <span class="bar countdown" aria-hidden="true"></span>
@@ -72,7 +82,7 @@ import type { CalendarDayView } from '../../core';
           </span>
         </li>
       }
-      @if (!today.holiday && !today.countdowns.length && !today.events.length) {
+      @if (!today.holiday && !today.bridge && !today.countdowns.length && !today.events.length) {
         <li class="empty">Nothing on this day.</li>
       }
     </ul>

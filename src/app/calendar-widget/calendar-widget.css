@@ -127,6 +127,10 @@ td {
 .holiday-mark {
   background: var(--text-secondary);
 }
+/* A bridge day is a working day that could be one off: the holiday's dot, hollow. */
+.bridge-mark {
+  box-shadow: inset 0 0 0 0.05em var(--text-secondary);
+}
 .countdown-mark {
   background: var(--accent);
 }
@@ -146,6 +150,10 @@ td {
 }
 .today .mark {
   background: var(--on-accent);
+}
+.today .bridge-mark {
+  background: none;
+  box-shadow: inset 0 0 0 0.05em var(--on-accent);
 }
 /* The reset above clears the shared .button fill, so it is set again here. */
 .today-button {

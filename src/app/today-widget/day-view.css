@@ -107,6 +107,10 @@ ul {
 .bar.holiday {
   background: var(--text-secondary);
 }
+/* A bridge day: the holiday's bar, hollow, as its dot is in the Calendar. */
+.bar.bridge {
+  box-shadow: inset 0 0 0 1.5px var(--text-secondary);
+}
 .bar.countdown {
   background: var(--accent);
 }

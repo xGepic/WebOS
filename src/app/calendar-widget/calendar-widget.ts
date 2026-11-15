@@ -12,7 +12,7 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
  * The Calendar Widget: a month in weeks starting on Monday, with ISO week
  * numbers and today marked. Weekends and public holidays are quieter; a
  * holiday, a Countdown and an Apple Calendar event each put a dot under their
- * day, named on hover. Like the Clock it has no surface.
+ * day, and a bridge day a hollow one, named on hover. Like the Clock it has no surface.
  *
  * ‹ and › browse months, and Today, shown under the grid while another
  * month or a picked day is, goes back to the current month and shows today
@@ -75,10 +75,13 @@ const MONTH_STEPS: Record<string, number> = { PageUp: -1, PageDown: 1 };
                       (click)="choose(day.date)"
                     >
                       {{ day.day }}
-                      @if (day.holiday || day.countdowns.length || day.events.length) {
+                      @if (day.holiday || day.bridge || day.countdowns.length || day.events.length) {
                         <span class="marks" aria-hidden="true">
                           @if (day.holiday) {
                             <span class="mark holiday-mark"></span>
+                          }
+                          @if (day.bridge) {
+                            <span class="mark bridge-mark"></span>
                           }
                           @if (day.countdowns.length) {
                             <span class="mark countdown-mark"></span>
@@ -143,9 +146,10 @@ export class CalendarWidget {
     return `${details.label}, ${details.relative}.${names ? ` ${names}.` : ''} ${action}`;
   }
 
-  /** The day's holiday, Countdowns and events, for its tooltip: "Christmas Day · Release · Standup". Empty for a plain day. */
+  /** The day's holiday or bridge day, Countdowns and events, for its tooltip: "Christmas Day · Release · Standup". Empty for a plain day. */
   protected namesOf(day: CalendarDay): string {
-    return [...(day.holiday ? [day.holiday] : []), ...day.countdowns, ...day.events].join(' · ');
+    const bridge = day.bridge ? [`Bridge day: ${day.bridge} days off`] : [];
+    return [...(day.holiday ? [day.holiday] : []), ...bridge, ...day.countdowns, ...day.events].join(' · ');
   }
 
   /** Shows the day in the Today Widget, or copies it while the Today Widget is hidden. */

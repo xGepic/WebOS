@@ -1,4 +1,4 @@
-import { isoDate } from './calendar';
+import { daysFrom, isoDate } from './calendar';
 
 /** A public holiday in Austria: its day as `2026-12-25`, and its name. */
 export interface Holiday {
@@ -46,4 +46,42 @@ export function holidays(year: number): Holiday[] {
     [fixed(12, 26), 'St. Stephen’s Day'],
   ];
   return days.map(([date, name]) => ({ date: isoDate(date), name })).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * A bridge day: a working day with a day off (a weekend day or a public
+ * holiday) on each side, so taking it off joins them into one longer break.
+ */
+export interface BridgeDay {
+  date: string;
+  /** The days off in a row if it is taken off, itself included. */
+  days: number;
+  /** The first and last of those days. */
+  from: string;
+  to: string;
+}
+
+const bridgeDaysByYear = new Map<number, BridgeDay[]>();
+
+/** The bridge days in `year`, in date order. A day off in the year before or after counts too. */
+export function bridgeDays(year: number): BridgeDay[] {
+  const cached = bridgeDaysByYear.get(year);
+  if (cached) return cached;
+  const holidayDates = new Set([year - 1, year, year + 1].flatMap((y) => holidays(y).map((holiday) => holiday.date)));
+  const dayOff = (date: Date) => date.getDay() === 0 || date.getDay() === 6 || holidayDates.has(isoDate(date));
+  /** The day `days` days after `date`, built from its parts so daylight saving can't shift it. */
+  const shift = (date: Date, days: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+
+  const found: BridgeDay[] = [];
+  for (let date = new Date(year, 0, 1); date.getFullYear() === year; date = shift(date, 1)) {
+    if (dayOff(date) || !dayOff(shift(date, -1)) || !dayOff(shift(date, 1))) continue;
+    let first = shift(date, -1);
+    while (dayOff(shift(first, -1))) first = shift(first, -1);
+    let last = shift(date, 1);
+    while (dayOff(shift(last, 1))) last = shift(last, 1);
+    const days = daysFrom(first, last) + 1;
+    found.push({ date: isoDate(date), days, from: isoDate(first), to: isoDate(last) });
+  }
+  bridgeDaysByYear.set(year, found);
+  return found;
 }

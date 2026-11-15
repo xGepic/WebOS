@@ -11,6 +11,8 @@ export interface CalendarDay {
   weekend: boolean;
   /** The Austrian public holiday on this day, if any. */
   holiday?: string;
+  /** On a bridge day, the days off in a row if it is taken off, itself included. */
+  bridge?: number;
   /** The titles of the Countdowns on this day, if any. */
   countdowns: readonly string[];
   /** The titles of the shown Apple Calendar events on this day, all-day ones first, then by time. */
@@ -20,11 +22,13 @@ export interface CalendarDay {
 /** What the Calendar marks on its days, by date (`2026-12-25`). */
 export interface DayMarks {
   holidays: ReadonlyMap<string, string>;
+  /** The bridge days, with the days off each makes. */
+  bridges: ReadonlyMap<string, number>;
   countdowns: ReadonlyMap<string, readonly string[]>;
   events: ReadonlyMap<string, readonly string[]>;
 }
 
-const NO_MARKS: DayMarks = { holidays: new Map(), countdowns: new Map(), events: new Map() };
+const NO_MARKS: DayMarks = { holidays: new Map(), bridges: new Map(), countdowns: new Map(), events: new Map() };
 
 /** A row of the grid: Monday to Sunday, with its ISO week number. */
 export interface CalendarWeek {
@@ -107,6 +111,7 @@ export function monthView(now: Date, offset = 0, marks: DayMarks = NO_MARKS): Ca
       const date = new Date(year, month, 1 - leading + week * 7 + weekday);
       const iso = isoDate(date);
       const holiday = marks.holidays.get(iso);
+      const bridge = marks.bridges.get(iso);
       days.push({
         date: iso,
         day: date.getDate(),
@@ -114,6 +119,7 @@ export function monthView(now: Date, offset = 0, marks: DayMarks = NO_MARKS): Ca
         today: iso === today,
         weekend: weekday >= 5,
         ...(holiday ? { holiday } : {}),
+        ...(bridge ? { bridge } : {}),
         countdowns: marks.countdowns.get(iso) ?? [],
         events: marks.events.get(iso) ?? [],
       });
