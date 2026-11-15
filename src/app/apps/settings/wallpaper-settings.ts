@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import type { Wallpaper } from '../../../core';
 import { WebOSCore } from '../../webos-core';
 
-/** Settings › Wallpaper: a preview of each Wallpaper to choose from. Applied as it is chosen. */
+/** Settings › Wallpaper: a preview of each Wallpaper to choose from, and whether it shows the weather. Applied as they are chosen. */
 @Component({
   selector: 'webos-wallpaper-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +28,14 @@ import { WebOSCore } from '../../webos-core';
           }
         </div>
       </fieldset>
+      <label class="weather">
+        <input type="checkbox" class="checkbox" [checked]="webos.showsWallpaperWeather()" (change)="setShowsWeather($event)" />
+        Show the weather
+      </label>
+      <p class="hint">
+        Faint rain, snow or fog on the Wallpaper while your Weather city has it. Rain and snow stay off while
+        reduced motion is on.
+      </p>
     </section>
   `,
   styles: `
@@ -83,6 +91,17 @@ import { WebOSCore } from '../../webos-core';
       outline: 2px solid var(--focus-ring);
       outline-offset: 3px;
     }
+    .weather {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .hint {
+      margin-top: 0.375rem;
+    }
   `,
 })
 export class WallpaperSettings {
@@ -90,5 +109,10 @@ export class WallpaperSettings {
 
   protected choose(wallpaper: Wallpaper): void {
     this.webos.send((core) => core.wallpaper.choose(wallpaper));
+  }
+
+  protected setShowsWeather(event: Event): void {
+    const shown = (event.target as HTMLInputElement).checked;
+    this.webos.send((core) => core.wallpaper.setShowsWeather(shown));
   }
 }

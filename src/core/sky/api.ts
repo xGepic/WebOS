@@ -16,6 +16,12 @@ export interface SkyApi {
     city(): weather.WeatherCity | null;
     /** What the Weather Widget shows. */
     view(): weather.WeatherView;
+    /**
+     * The Wallpaper Weather: what the Wallpaper shows of the weather in the city
+     * now, or null for nothing. Null without a city, when the last report is 2
+     * hours old, and when Settings has turned it off.
+     */
+    onWallpaper(): weather.WallpaperWeather | null;
     /** Up to five cities matching `query`, best first. Rejects if the search can't be made. */
     searchCities(query: string): Promise<weather.WeatherCity[]>;
     /** Chooses the city (or none, with null), drops the old city's weather, and fetches the new city's. */
@@ -60,6 +66,8 @@ export function createSky(store: Store, fetch: Fetch | undefined): SkyApi {
           failed: forecast.problem() !== undefined,
           now: clock.now(),
         }),
+      onWallpaper: () =>
+        state().wallpaperWeather && state().weather.city ? weather.wallpaperWeather(state().weather.report, clock.now().getTime()) : null,
       async searchCities(query) {
         if (!query.trim() || !fetch) return [];
         return weather.parseCities(await fetch.json(weather.citySearchUrl(query)));

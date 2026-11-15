@@ -254,6 +254,30 @@ export function describeCity(city: WeatherCity): string {
 export const sameCity = (a: WeatherCity | null, b: WeatherCity | null) =>
   a === b || (!!a && !!b && a.latitude === b.latitude && a.longitude === b.longitude && a.name === b.name);
 
+/**
+ * What the Wallpaper shows of the weather now: rain as drizzle, rain or a
+ * storm's heavier rain (without lightning), snow, or fog.
+ */
+export type WallpaperWeather = 'drizzle' | 'rain' | 'storm' | 'snow' | 'fog';
+
+/** A report this old is no longer the weather now, so the Wallpaper shows none. */
+const ON_WALLPAPER_FOR_MS = 120 * MINUTE;
+
+const onWallpaperFor: Partial<Record<WeatherCondition, WallpaperWeather>> = {
+  drizzle: 'drizzle',
+  rain: 'rain',
+  showers: 'rain',
+  thunderstorm: 'storm',
+  snow: 'snow',
+  fog: 'fog',
+};
+
+/** The Wallpaper Weather for the last report: none for a clear or cloudy sky, without a report, or from one 2 hours old. */
+export function wallpaperWeather(report: WeatherReport | null, now: number): WallpaperWeather | null {
+  if (!report || now - report.fetchedAt >= ON_WALLPAPER_FOR_MS) return null;
+  return onWallpaperFor[report.condition] ?? null;
+}
+
 /** Whether a new tab should fetch the weather again: it is 30 minutes old, or from a build before the Forecast. */
 export const isDue = (report: WeatherReport | null, now: number) => !report || !report.days || now - report.fetchedAt >= REFRESH_AFTER_MS;
 

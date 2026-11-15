@@ -42,6 +42,9 @@ export interface DesktopApi {
     /** The chosen Wallpaper; Midnight until one is chosen, or for one this build doesn't know. */
     current(): Wallpaper;
     choose(wallpaper: Wallpaper): Promise<void>;
+    /** Whether the Wallpaper shows the weather (see `weather.onWallpaper`). On until turned off. */
+    showsWeather(): boolean;
+    setShowsWeather(shown: boolean): Promise<void>;
   };
 }
 
@@ -76,6 +79,11 @@ export function createDesktop(store: Store): DesktopApi {
       async choose(wallpaper) {
         if (wallpaperOf(store.state().wallpaper) === wallpaper) return;
         await store.commit({ ...store.state(), wallpaper });
+      },
+      showsWeather: () => store.state().wallpaperWeather,
+      async setShowsWeather(shown) {
+        if (store.state().wallpaperWeather === shown) return;
+        await store.commit({ ...store.state(), wallpaperWeather: shown });
       },
     },
   };

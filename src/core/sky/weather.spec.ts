@@ -390,3 +390,79 @@ describe('weather in a backup', () => {
     await expect(webos.backup.import(JSON.stringify(file))).rejects.toThrow(/damaged/);
   });
 });
+
+describe('Wallpaper Weather', () => {
+  /** A webOS with Vienna's weather fetched, its code `code`. */
+  async function withWeather(code: number, more: Parameters<typeof setUp>[0] = {}) {
+    const set = await setUp({ fetch: openMeteo(() => forecast({ code })), ...more });
+    await set.webos.weather.setCity(vienna);
+    await set.webos.weather.refresh();
+    return set;
+  }
+
+  it.each([
+    [0, null],
+    [2, null],
+    [3, null],
+    [45, 'fog'],
+    [53, 'drizzle'],
+    [63, 'rain'],
+    [81, 'rain'],
+    [95, 'storm'],
+    [73, 'snow'],
+    [86, 'snow'],
+  ])('shows weather code %i as %s', async (code, shown) => {
+    const { webos } = await withWeather(code);
+
+    expect(webos.weather.onWallpaper()).toBe(shown);
+  });
+
+  it('shows nothing without a city, or before the first report', async () => {
+    const gate = new Promise<never>(() => {});
+    const { webos } = await setUp({ fetch: openMeteo(() => gate) });
+    expect(webos.weather.onWallpaper()).toBeNull();
+
+    await webos.weather.setCity(vienna);
+    expect(webos.weather.onWallpaper()).toBeNull();
+  });
+
+  it('clears once the report is 2 hours old, without a new tab, and comes back with a fresh one', async () => {
+    const { webos, clock } = await withWeather(63);
+
+    clock.advance(119 * MINUTE);
+    expect(webos.weather.onWallpaper()).toBe('rain');
+    clock.advance(1 * MINUTE);
+    expect(webos.weather.onWallpaper()).toBeNull();
+
+    await webos.weather.refresh();
+    expect(webos.weather.onWallpaper()).toBe('rain');
+  });
+
+  it('shows nothing when turned off in Settings, and shows it again when turned back on, in every tab', async () => {
+    const storage = createMemoryStorage();
+    const { webos } = await withWeather(73, { storage });
+    const otherTab = await setUp({ storage: storage.openTab() });
+    expect(webos.wallpaper.showsWeather()).toBe(true);
+
+    await otherTab.webos.wallpaper.setShowsWeather(false);
+    expect(webos.wallpaper.showsWeather()).toBe(false);
+    expect(webos.weather.onWallpaper()).toBeNull();
+
+    await webos.wallpaper.setShowsWeather(true);
+    expect(webos.weather.onWallpaper()).toBe('snow');
+    expect(otherTab.webos.wallpaper.showsWeather()).toBe(true);
+  });
+
+  it('is shown on a Desktop from before it, and the choice goes into a backup', async () => {
+    const { webos, storage } = await setUp();
+    const { wallpaperWeather: _, ...v24 } = (await storage.read()) as Record<string, unknown>;
+    const migrated = await setUp({ storage: createMemoryStorage({ ...v24, schemaVersion: 24 }) });
+    expect(migrated.webos.wallpaper.showsWeather()).toBe(true);
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 25, wallpaperWeather: true });
+
+    await webos.wallpaper.setShowsWeather(false);
+    const restored = await setUp();
+    await restored.webos.backup.import(webos.backup.export().text);
+    expect(restored.webos.wallpaper.showsWeather()).toBe(false);
+  });
+});

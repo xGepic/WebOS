@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/cor
 import { Desktop } from './desktop/desktop';
 import { Dock } from './dock/dock';
 import { Toast } from './toast/toast';
+import { WallpaperWeather } from './wallpaper-weather/wallpaper-weather';
 import { MenuBar } from './menu-bar/menu-bar';
 import { AppWindow } from './window/window';
 import { WebOSCore } from './webos-core';
 
 @Component({
   selector: 'webos-root',
-  imports: [MenuBar, Desktop, AppWindow, Dock, Toast],
+  imports: [WallpaperWeather, MenuBar, Desktop, AppWindow, Dock, Toast],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (webos.startupError(); as error) {
@@ -18,6 +19,7 @@ import { WebOSCore } from './webos-core';
         <p>Your data has been left untouched.</p>
       </div>
     } @else {
+      <webos-wallpaper-weather />
       <webos-menu-bar />
       <webos-desktop />
       <webos-window />

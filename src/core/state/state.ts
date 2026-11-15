@@ -49,11 +49,13 @@ export interface StateDocument {
   };
   /** The Wallpaper chosen in Settings. One this build doesn't know shows as the default. */
   wallpaper: string;
+  /** Whether the Wallpaper shows the weather, as chosen in Settings. */
+  wallpaperWeather: boolean;
   /** The New Tabs opened on each of the last seven days. Checked when read, since a backup may hold anything. */
   newTabs: NewTabCounts;
 }
 
-const SCHEMA_VERSION = 24;
+const SCHEMA_VERSION = 25;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -236,6 +238,8 @@ const migrations: Record<number, Migration> = {
   22: (document) => ({ ...document, schemaVersion: 23, wallpaper: 'midnight' }),
   // New Tabs: none counted yet.
   23: (document) => ({ ...document, schemaVersion: 24, newTabs: {} }),
+  // Weather on the Wallpaper: shown.
+  24: (document) => ({ ...document, schemaVersion: 25, wallpaperWeather: true }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -278,6 +282,7 @@ function freshDocument(): StateDocument {
     appleCalendar: NO_APPLE_CALENDAR,
     systemWidget: { hidden: [] },
     wallpaper: DEFAULT_WALLPAPER,
+    wallpaperWeather: true,
     newTabs: {},
   };
 }
@@ -333,6 +338,7 @@ function assertCurrentShape(
     !isRecord(systemWidget) ||
     !Array.isArray(systemWidget['hidden']) ||
     typeof document['wallpaper'] !== 'string' ||
+    typeof document['wallpaperWeather'] !== 'boolean' ||
     !isRecord(document['newTabs'])
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);

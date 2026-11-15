@@ -150,9 +150,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 25 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 26 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 25, this build knows 24).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 26, this build knows 25).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });

@@ -65,6 +65,8 @@ export class WebOSCore {
   readonly systemParts = this.read((core) => core.system.parts());
   readonly wallpaper = this.read((core) => core.wallpaper.current());
   readonly wallpapers = this.read((core) => core.wallpaper.choices);
+  readonly showsWallpaperWeather = this.read((core) => core.wallpaper.showsWeather());
+  readonly wallpaperWeather = this.read((core) => core.weather.onWallpaper());
 
   /** Creates the core. Called once by the app initializer before the first render. */
   async start(): Promise<void> {

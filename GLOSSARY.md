@@ -74,6 +74,10 @@ _Avoid_: Event, deadline, timer
 One day in full: its holiday, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
 
+**Wallpaper Weather**:
+Rain, snow or fog drawn faintly on the Wallpaper while the Weather city has it now. Drizzle falls as light rain and a thunderstorm as heavier rain, never with lightning. It can be turned off in Settings, and rain and snow stay off under reduced motion.
+_Avoid_: Weather effects, animated wallpaper, particles
+
 **Forecast**:
 The weather for today and the six days after it in the Weather city, each with its condition, any chance of rain or snow, and its low and high. The Weather Widget shows it in place of the current weather when clicked.
 _Avoid_: Outlook, week view, prediction
