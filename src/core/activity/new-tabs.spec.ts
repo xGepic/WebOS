@@ -106,7 +106,7 @@ describe('the New Tabs Widget', () => {
     const migrated = await setUp(createMemoryStorage({ ...v23, schemaVersion: 23 }));
 
     expect(migrated.webos.newTabs.view().today).toBe(0);
-    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 26, newTabs: {} });
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 27, newTabs: {} });
   });
 
   it('goes into a backup, and comes back with it', async () => {

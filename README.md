@@ -26,6 +26,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0020](docs/specs/0020-accent-follows-wallpaper.md) | The accent colour follows the Wallpaper |
 | [0021](docs/specs/0021-widget-stacks.md) | Widget stacks: Widgets of the same size sharing one place, one shown at a time |
 | [0022](docs/specs/0022-coming-up.md) | Coming Up in the Today Widget: the next Event after the day and how many days away it is, in place of Copy date |
+| [0023](docs/specs/0023-ambient-mode.md) | Ambient mode: a Desktop left alone fades to a large clock over the Wallpaper |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -48,7 +49,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
 
 - `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history and the Top Sites, `Fetch` for the weather, `SystemMonitor` for the processor and memory, `NetworkMonitor` for the network, and `CalendarServer` for Apple Calendar), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
   - `state/`: the versioned state document, its migrations, backups, and what About webOS shows of it
-  - `desktop/`: the snap grid, the Widget catalog, Edit Mode's moves and Widget stacks, the Apps, and the Wallpapers
+  - `desktop/`: the snap grid, the Widget catalog, Edit Mode's moves and Widget stacks, the Apps, the Wallpapers, and Ambient mode's setting
   - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Todos, Notes and the greeting
@@ -60,4 +61,4 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
 - `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history and Top Sites lookup, the network (`network.ts`, for the weather), the processor and memory (`system-monitor.ts`), the network status (`network-status.ts`) and iCloud's CalDAV server (`icloud-calendar.ts`) are injected into the core; the favicon lookup, opening URLs in this tab or a background tab (`tabs.ts`) and the extension's version (`extension-info.ts`) are used by views directly.
 - `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the Wallpapers (`wallpaper.css`), each with its own accent, chosen as `data-wallpaper` on `<html>`. `public/wallpaper.js` sets it before Angular starts, from a copy the App keeps in `localStorage`, so a new tab never flashes the default. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, segmented controls, checkboxes, section headings, hints and screen-reader-only text used inside Apps and Widgets, and `.widget-open`, the control with which a Widget opens its App.
 - `src/motion/`: spring presets on Motion's `animate()`, with a short opacity fade under reduced motion, plus the framework-agnostic helpers built on them: the FLIP Window transition (`flip.ts`) and the grid helpers Edit Mode settles Widgets with (`grid.ts`). Everything that moves uses them; the exceptions are Angular CDK drag-sorting (Todos), whose row shifts use a short CSS transition that is off under reduced motion, and Wallpaper Weather (`app/wallpaper-weather/`), whose endless linear loops are CSS animations of `transform` that the compositor runs, with rain and snow off and the mist still under reduced motion.
-- `src/app/`: the Angular layer. `WebOSCore` exposes the core's state as signals, and components are thin views over it. Each App lives in `src/app/apps/`. Note previews are rendered with `marked` and sanitised with DOMPurify (`apps/notes/markdown.ts`); that is the only HTML webOS injects.
+- `src/app/`: the Angular layer. Ambient mode, which watches for the user and shows the Ambient screen, is in `app/ambient/`. `WebOSCore` exposes the core's state as signals, and components are thin views over it. Each App lives in `src/app/apps/`. Note previews are rendered with `marked` and sanitised with DOMPurify (`apps/notes/markdown.ts`); that is the only HTML webOS injects.

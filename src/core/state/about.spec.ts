@@ -19,7 +19,7 @@ describe('About webOS', () => {
   it('names the schema version, and says there has been no backup yet', async () => {
     const { webos } = await setUp();
 
-    expect(webos.about.view()).toMatchObject({ schemaVersion: 26, lastBackup: 'Never', backupDue: true });
+    expect(webos.about.view()).toMatchObject({ schemaVersion: 27, lastBackup: 'Never', backupDue: true });
   });
 
   it('counts an export as the last backup, and the days since it', async () => {
@@ -81,6 +81,6 @@ describe('About webOS', () => {
     const { webos } = await setUp(storage);
 
     expect(webos.about.view().lastBackup).toBe('Never');
-    expect(await storage.read()).toMatchObject({ schemaVersion: 26, lastBackupAt: null });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 27, lastBackupAt: null });
   });
 });

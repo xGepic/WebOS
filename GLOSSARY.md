@@ -28,6 +28,10 @@ _Avoid_: Top bar, header, status bar
 The Desktop state in which Widgets can be moved, resized, stacked and added or removed on the snap grid. A Widget added starts at size S.
 _Avoid_: Jiggle mode, customize mode, layout mode
 
+**Ambient mode**:
+The Desktop after it has been left alone for the minutes chosen in Settings (1, 5 or 15, or off): everything but the Wallpaper fades, and a large clock shows with the date, the weather and the Next Event. Any key, click, scroll or move of the pointer ends it, and does nothing else.
+_Avoid_: Screensaver, idle mode, standby, sleep
+
 ## Building blocks
 
 **Widget**:

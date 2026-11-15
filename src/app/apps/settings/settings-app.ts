@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AmbientSettings } from './ambient-settings';
 import { AppleCalendarSettings } from './apple-calendar-settings';
 import { BackupSettings } from './backup-settings';
 import { ProfileSettings } from './profile-settings';
@@ -12,6 +13,7 @@ import { WeatherSettings } from './weather-settings';
   imports: [
     ProfileSettings,
     WallpaperSettings,
+    AmbientSettings,
     WeatherSettings,
     AppleCalendarSettings,
     SystemSettings,
@@ -21,6 +23,7 @@ import { WeatherSettings } from './weather-settings';
   template: `
     <webos-profile-settings />
     <webos-wallpaper-settings />
+    <webos-ambient-settings />
     <webos-weather-settings />
     <webos-apple-calendar-settings />
     <webos-system-settings />

@@ -1,4 +1,5 @@
 import type { Store } from '../store';
+import { ambientAfterOf, ambientChoices, type AmbientAfter } from './ambient';
 import { apps } from './apps';
 import * as desktop from './desktop';
 import { wallpaperOf, wallpapers, type Wallpaper } from './wallpaper';
@@ -62,9 +63,17 @@ export interface DesktopApi {
     showsWeather(): boolean;
     setShowsWeather(shown: boolean): Promise<void>;
   };
+  /** Ambient mode: a large clock over the Wallpaper once the Desktop has been left alone. */
+  readonly ambient: {
+    /** The minutes Settings offers. */
+    readonly choices: typeof ambientChoices;
+    /** After how many minutes alone it starts, or null for never. Five until changed. */
+    after(): AmbientAfter | null;
+    setAfter(minutes: AmbientAfter | null): Promise<void>;
+  };
 }
 
-/** The Apps, and the Desktop's Widget layout that Edit Mode changes. */
+/** The Apps, the Desktop's Widget layout that Edit Mode changes, the Wallpaper and Ambient mode. */
 export function createDesktop(store: Store): DesktopApi {
   /** Applies a change to the layout, unless it was refused (undefined). Resolves to whether it was applied. */
   const commitLayout = async (change: (entries: readonly desktop.LayoutEntry[]) => desktop.LayoutEntry[] | undefined) => {
@@ -108,6 +117,14 @@ export function createDesktop(store: Store): DesktopApi {
       async setShowsWeather(shown) {
         if (store.state().wallpaperWeather === shown) return;
         await store.commit({ ...store.state(), wallpaperWeather: shown });
+      },
+    },
+    ambient: {
+      choices: ambientChoices,
+      after: () => ambientAfterOf(store.state().ambientAfter),
+      async setAfter(minutes) {
+        if (ambientAfterOf(store.state().ambientAfter) === minutes) return;
+        await store.commit({ ...store.state(), ambientAfter: minutes });
       },
     },
   };
