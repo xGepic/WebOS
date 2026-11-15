@@ -1,5 +1,6 @@
 import type { BrowserLookup, NetworkMonitor, SystemMonitor, TopSitePage, VisitedPage } from '../edges';
 import type { Store } from '../store';
+import * as newTabs from './new-tabs';
 import * as recent from './recent';
 import * as system from './system';
 import * as top from './top-sites';
@@ -19,6 +20,12 @@ export interface ActivityApi {
     /** Asks the browser for its most visited sites. Resolves when they are in; a failure keeps the ones there were. */
     refresh(): Promise<void>;
   };
+  /** The New Tabs Widget: the new tabs opened today and on each of the six days before. Saved. */
+  readonly newTabs: {
+    view(): newTabs.NewTabsView;
+    /** Counts a new tab today. webOS calls it once as a new tab opens, and not on a reload. */
+    count(): Promise<void>;
+  };
   /**
    * The System Widget: processor and memory use, the processor's name and the
    * network. The readings are kept per tab and never saved; which parts are
@@ -34,7 +41,7 @@ export interface ActivityApi {
   };
 }
 
-/** The Recent, Top Sites and System Widgets. The System Widget follows the network as it changes. */
+/** The Recent, Top Sites, New Tabs and System Widgets. The System Widget follows the network as it changes. */
 export function createActivity(
   store: Store,
   edges: { browser?: BrowserLookup; system?: SystemMonitor; network?: NetworkMonitor },
@@ -65,6 +72,10 @@ export function createActivity(
           // Keeps the pages there were.
         }
       },
+    },
+    newTabs: {
+      view: () => newTabs.newTabsView(state().newTabs, clock.now()),
+      count: () => store.commit({ ...state(), newTabs: newTabs.withNewTab(state().newTabs, clock.now()) }),
     },
     topSites: {
       sites: () => top.topSites(mostVisited),

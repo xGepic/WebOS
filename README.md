@@ -17,6 +17,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0011](docs/specs/0011-wallpapers.md) | Five Wallpapers to choose from |
 | [0012](docs/specs/0012-top-sites.md) | The Top Sites Widget |
 | [0013](docs/specs/0013-countdowns-count-up.md) | Countdowns added with a past day count up |
+| [0014](docs/specs/0014-new-tabs.md) | The New Tabs Widget: how many new tabs were opened today and on each of the six days before |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -46,7 +47,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
   - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
   - `time/`: Calendar, Countdowns, the World Clock, and Apple Calendar with the Day View
   - `sky/`: Weather with its Forecast, Sun and Moon
-  - `activity/`: Recent pages, Top Sites, and the System Widget's readings and network
+  - `activity/`: Recent pages, Top Sites, New Tabs, and the System Widget's readings and network
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.
 - `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history and Top Sites lookup, the network (`network.ts`, for the weather), the processor and memory (`system-monitor.ts`), the network status (`network-status.ts`) and iCloud's CalDAV server (`icloud-calendar.ts`) are injected into the core; the favicon lookup and opening URLs in this tab or a background tab (`tabs.ts`) are used by views directly.
 - `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the Wallpapers (`wallpaper.css`), chosen as `data-wallpaper` on `<html>`. `public/wallpaper.js` sets it before Angular starts, from a copy the App keeps in `localStorage`, so a new tab never flashes the default. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, segmented controls, checkboxes, section headings, hints and screen-reader-only text used inside Apps and Widgets, and `.widget-open`, the control with which a Widget opens its App.

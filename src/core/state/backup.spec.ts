@@ -150,9 +150,9 @@ describe('Backup', () => {
     const before = everything(webos);
     const stored = await storage.read();
 
-    const result = webos.backup.import(backupWith({ schemaVersion: 24 }));
+    const result = webos.backup.import(backupWith({ schemaVersion: 25 }));
 
-    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 24, this build knows 23).');
+    await expect(result).rejects.toThrow('This file comes from a newer webOS (schema version 25, this build knows 24).');
     expect(everything(webos)).toEqual(before);
     expect(await storage.read()).toEqual(stored);
   });
@@ -190,7 +190,7 @@ describe('Backup', () => {
     expect(webos.profile.name()).toBe('Stefan');
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Old Todo']);
     expect(webos.notes.list().map((note) => note.title)).toEqual(['Old Note']);
-    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites', 'new-tabs']);
     expect(webos.desktop.layout()).toHaveLength(11);
   });
 });

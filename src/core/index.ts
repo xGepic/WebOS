@@ -40,6 +40,7 @@ export type { MoonEvent, MoonPhase, MoonView } from './sky/moon';
 export type { SunView } from './sky/sun';
 export type { RecentPage } from './activity/recent';
 export type { TopSite } from './activity/top-sites';
+export type { NewTabDay, NewTabsView } from './activity/new-tabs';
 export type { SystemPart, SystemPartChoice, SystemView, UsageView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';

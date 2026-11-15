@@ -47,7 +47,7 @@ describe('default Desktop layout geometry', () => {
     expect(new Set(cells).size).toBe(cells.length);
   });
 
-  it('is the Stage layout: a top band of five Widgets with the Clock, Search and Top Sites in the middle, and Today, Todos, a Countdown, System, Moon and Recent beneath', async () => {
+  it('is the Stage layout: a top band of five Widgets with the Clock, Search and Top Sites in the middle, and Today, Todos, a Countdown, System, Moon, New Tabs and Recent beneath', async () => {
     const { desktop } = await freshWebOS();
 
     expect(desktop.layout().map((p) => `${p.widget} ${p.size} ${p.columns}×${p.rows}@${p.column},${p.row}`)).toEqual([
@@ -60,6 +60,7 @@ describe('default Desktop layout geometry', () => {
       'today M 4×4@0,3',
       'todos M 3×5@4,3',
       'top-sites M 7×2@7,3',
+      'new-tabs S 3×2@15,3',
       'recent M 3×5@18,3',
       'countdown S 3×2@9,6',
       'system S 3×2@12,6',
@@ -72,7 +73,7 @@ describe('default Desktop layout geometry', () => {
     const middle = desktop.layout().filter((p) => ['clock', 'search', 'top-sites'].includes(p.widget));
 
     for (const placed of middle) expect(placed.column).toBe(desktop.grid.columns - (placed.column + placed.columns));
-    // The two one-column gaps beside the Clock, the 4 × 1 under Today, the 2 × 5 space beside Todos and the 9 × 3 above the bottom row, less Top Sites' 7 × 2.
-    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - (2 * 3 + 4 * 1 + 2 * 5 + 9 * 3 - 7 * 2));
+    // The two one-column gaps beside the Clock, the 4 × 1 under Today, the 2 × 5 space beside Todos and the 9 × 3 above the bottom row, less Top Sites' 7 × 2 and New Tabs' 3 × 2.
+    expect(desktop.layout().flatMap(cellsOf)).toHaveLength(desktop.grid.columns * desktop.grid.rows - (2 * 3 + 4 * 1 + 2 * 5 + 9 * 3 - 7 * 2 - 3 * 2));
   });
 });

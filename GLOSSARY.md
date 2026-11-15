@@ -62,6 +62,10 @@ _Avoid_: Agenda, day widget, schedule
 The sites the user visits most, as the browser's own new tab page lists them, each shown with its icon and name on the Top Sites Widget, at most 10. The browser keeps the list; webOS only shows it.
 _Avoid_: Shortcuts, bookmarks, favourites, speed dial
 
+**New Tabs**:
+The new tabs the user opened on a day, each counted as its Desktop opens; a reload isn't one. The New Tabs Widget shows today's large, over a bar for each of the last seven days. webOS keeps only those seven.
+_Avoid_: Tab count, tabs opened, page views, visits
+
 **Countdown**:
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed. One added with a day that has already passed counts up instead, with the days since.
 _Avoid_: Event, deadline, timer

@@ -16,6 +16,7 @@ import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { CountdownWidget } from '../countdown-widget/countdown-widget';
 import { MoonWidget } from '../moon-widget/moon-widget';
+import { NewTabsWidget } from '../new-tabs-widget/new-tabs-widget';
 import { RecentWidget } from '../recent-widget/recent-widget';
 import { SearchWidget } from '../search-widget/search-widget';
 import { SunWidget } from '../sun-widget/sun-widget';
@@ -66,6 +67,7 @@ const MENU_MARGIN = 8;
     SystemWidget,
     TodayWidget,
     TopSitesWidget,
+    NewTabsWidget,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -134,6 +136,9 @@ const MENU_MARGIN = 8;
                 }
                 @case ('top-sites') {
                   <webos-top-sites-widget />
+                }
+                @case ('new-tabs') {
+                  <webos-new-tabs-widget />
                 }
               }
             </div>

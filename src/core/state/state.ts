@@ -1,5 +1,6 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
 import { DEFAULT_WALLPAPER } from '../desktop/wallpaper';
+import type { NewTabCounts } from '../activity/new-tabs';
 import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
 import { isFiniteNumber, isRecord, isText } from '../guards';
@@ -48,9 +49,11 @@ export interface StateDocument {
   };
   /** The Wallpaper chosen in Settings. One this build doesn't know shows as the default. */
   wallpaper: string;
+  /** The New Tabs opened on each of the last seven days. Checked when read, since a backup may hold anything. */
+  newTabs: NewTabCounts;
 }
 
-const SCHEMA_VERSION = 23;
+const SCHEMA_VERSION = 24;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -231,6 +234,8 @@ const migrations: Record<number, Migration> = {
   21: ({ pinnedNoteId: _, ...document }) => ({ ...document, schemaVersion: 22 }),
   // Wallpapers: the one webOS had until now.
   22: (document) => ({ ...document, schemaVersion: 23, wallpaper: 'midnight' }),
+  // New Tabs: none counted yet.
+  23: (document) => ({ ...document, schemaVersion: 24, newTabs: {} }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -273,6 +278,7 @@ function freshDocument(): StateDocument {
     appleCalendar: NO_APPLE_CALENDAR,
     systemWidget: { hidden: [] },
     wallpaper: DEFAULT_WALLPAPER,
+    newTabs: {},
   };
 }
 
@@ -326,7 +332,8 @@ function assertCurrentShape(
     !(apple['sync'] === null || isRecord(apple['sync'])) ||
     !isRecord(systemWidget) ||
     !Array.isArray(systemWidget['hidden']) ||
-    typeof document['wallpaper'] !== 'string'
+    typeof document['wallpaper'] !== 'string' ||
+    !isRecord(document['newTabs'])
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

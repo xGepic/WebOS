@@ -8,7 +8,7 @@ async function webosWith(storage = roomyStorage()) {
 }
 
 /** The Widgets this layout doesn't mention, which it therefore hides, in catalog order. */
-const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'top-sites', 'search'];
+const UNMENTIONED = ['world-clock', 'countdown', 'moon', 'sun', 'system', 'top-sites', 'new-tabs', 'search'];
 
 /**
  * The default (Stage) layout leaves no room for a Widget to move into, so most tests
@@ -118,6 +118,7 @@ describe('moving a Widget', () => {
       today: 'M@3,3',
       todos: 'M@0,3',
       'top-sites': 'M@7,3',
+      'new-tabs': 'S@15,3',
       recent: 'M@18,3',
       countdown: 'S@9,6',
       system: 'S@12,6',
@@ -182,7 +183,7 @@ describe('hiding and showing Widgets', () => {
 
     await webos.desktop.hide('today');
     expect(Object.keys(where(webos))).not.toContain('today');
-    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'search']);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'new-tabs', 'search']);
 
     expect(await webos.desktop.show('today')).toBe(true);
     expect(where(webos).today).toBe('S@18,5');
@@ -287,7 +288,7 @@ describe('the saved layout', () => {
     await otherTab.desktop.hide('today');
 
     expect(where(webos)).toEqual({ clock: 'S@0,2', recent: 'M@3,2', todos: 'M@9,0' });
-    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'search']);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'new-tabs', 'search']);
   });
 
   it('makes a layout from another tab safe before using it', async () => {
@@ -309,7 +310,7 @@ describe('the saved layout', () => {
 
     expectValidLayout(webos);
     // Weather, Calendar and the others aren't in that layout, so they are hidden, in catalog order.
-    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'search']);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'new-tabs', 'search']);
   });
 
   it('is the same in the next tab', async () => {
@@ -322,6 +323,6 @@ describe('the saved layout', () => {
     const nextTab = await webosWith(storage);
 
     expect(where(nextTab)).toEqual(where(webos));
-    expect(nextTab.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'search']);
+    expect(nextTab.desktop.hidden()).toEqual(['weather', 'calendar', 'world-clock', 'countdown', 'moon', 'sun', 'system', 'today', 'top-sites', 'new-tabs', 'search']);
   });
 });

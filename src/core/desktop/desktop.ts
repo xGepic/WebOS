@@ -123,6 +123,15 @@ export const widgets = {
       L: { columns: 12, rows: 2 },
     },
   },
+  // The new tabs opened today, over a bar for each of the last seven days. The Countdown's sizes.
+  'new-tabs': {
+    name: 'New Tabs',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 3 },
+    },
+  },
   // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
   search: {
     name: 'Search',
@@ -162,9 +171,9 @@ export interface LayoutEntry extends Placement {
  * Calendar and Sun, with the Clock and Search in the exact middle and a
  * one-column gap on either side of them; Top Sites under the Search Widget;
  * beneath it Today and Todos, then a Countdown, System and Moon side by side
- * along the bottom, and Recent. Every Widget is visible. The space beside
- * Todos (where the Notes Widget was) and either side of Top Sites is free, so
- * Edit Mode has room to move things.
+ * along the bottom, and Recent with New Tabs beside it. Every Widget is
+ * visible. The space beside Todos (where the Notes Widget was) and either side
+ * of Top Sites is free, so Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
@@ -177,6 +186,7 @@ export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'today', size: 'M', column: 0, row: 3, visible: true },
   { widget: 'todos', size: 'M', column: 4, row: 3, visible: true },
   { widget: 'recent', size: 'M', column: 18, row: 3, visible: true },
+  { widget: 'new-tabs', size: 'S', column: 15, row: 3, visible: true },
   { widget: 'countdown', size: 'S', column: 9, row: 6, visible: true },
   { widget: 'system', size: 'S', column: 12, row: 6, visible: true },
   { widget: 'moon', size: 'S', column: 15, row: 6, visible: true },

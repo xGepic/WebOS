@@ -60,6 +60,7 @@ export class WebOSCore {
   readonly sun = this.read((core) => core.sun.view());
   readonly recentPages = this.read((core) => core.recent.pages());
   readonly topSites = this.read((core) => core.topSites.sites());
+  readonly newTabs = this.read((core) => core.newTabs.view());
   readonly system = this.read((core) => core.system.view());
   readonly systemParts = this.read((core) => core.system.parts());
   readonly wallpaper = this.read((core) => core.wallpaper.current());
@@ -83,6 +84,7 @@ export class WebOSCore {
         core.dispose();
       });
       this.core.set(core);
+      if (openedAsNewTab()) this.send((core) => core.newTabs.count());
     } catch (error) {
       console.error(error);
       this.startupError.set(error instanceof Error ? error.message : String(error));
@@ -182,4 +184,13 @@ export class WebOSCore {
       return core ? selector(core) : undefined;
     });
   }
+}
+
+/**
+ * Whether this page was opened as a new tab, so the New Tabs Widget counts it:
+ * not when it was reloaded, or came back through the browser's history.
+ */
+function openedAsNewTab(): boolean {
+  const [navigation] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+  return navigation?.type !== 'reload' && navigation?.type !== 'back_forward';
 }
