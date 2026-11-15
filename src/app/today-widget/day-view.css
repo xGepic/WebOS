@@ -156,14 +156,7 @@ ul {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.sun {
-  flex: none;
-  margin-top: 0.6em;
-  color: var(--text-secondary);
-  font-size: 0.8125em;
-  font-variant-numeric: tabular-nums;
-}
-/* A small Widget: the date on one line, Coming Up without its date, and no sunrise, so the list keeps its room. */
+/* A small Widget: the date on one line, and Coming Up without its date, so the list keeps its room. */
 @container (max-height: 260px) {
   .top {
     margin-bottom: 0.15em;
@@ -174,8 +167,7 @@ ul {
   .weekday .long,
   .date,
   .meta,
-  .coming-up .location,
-  .sun {
+  .coming-up .location {
     display: none;
   }
   .weekday .short {

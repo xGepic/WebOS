@@ -2,6 +2,7 @@
 
 Status: built (2026-11-14). Later the same day Today took the Calendar's sizes (S 3 × 3, M 4 × 4, L 4 × 5): as wide as the Calendar, and shorter than before. Todos sits one column further right on a fresh Desktop; a Desktop saved before keeps Today in place and moves Todos on.
 Related: [Spec 0006: Apple Calendar and the Day View](0006-apple-calendar.md), [GLOSSARY](../../GLOSSARY.md)
+Changed by: [Spec 0022: Coming Up](0022-coming-up.md), which adds Coming Up and removes Copy date and sunrise and sunset.
 
 ## Problem Statement
 

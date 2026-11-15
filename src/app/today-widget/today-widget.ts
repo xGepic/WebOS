@@ -5,8 +5,8 @@ import { SelectedDay } from './selected-day';
 
 /**
  * The Today Widget: one day in full, today unless a day was picked in the
- * Calendar. Its holiday and Countdowns, the shown Apple Calendar events,
- * Coming Up, and sunrise and sunset in the Weather city; see the Day View.
+ * Calendar. Its holiday and Countdowns and the shown Apple Calendar events,
+ * and Coming Up, the first Event after today; see the Day View.
  */
 @Component({
   selector: 'webos-today-widget',
@@ -19,6 +19,7 @@ import { SelectedDay } from './selected-day';
       <webos-day-view
         [day]="day"
         [isToday]="!selected.pickedDate()"
+        [comingUp]="webos.comingUp()"
         (back)="selected.reset()"
         (step)="selected.step($event)"
       />

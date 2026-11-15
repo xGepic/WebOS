@@ -27,12 +27,16 @@ export interface TimeApi {
     /** A day (`2026-11-30`) for the line under the grid: "Mon, Nov 30", "in 18 days", week 49. Undefined for text that isn't a date. */
     describe(date: string): calendar.CalendarDayDetails | undefined;
     /**
-     * A day (`2026-11-30`) in full, for the Day View: its holiday or bridge day, Countdowns,
-     * shown Apple Calendar events, sunrise and sunset in the Weather city, and
-     * Coming Up, the first shown Event on a later day.
-     * Undefined for text that isn't a date.
+     * A day (`2026-11-30`) in full, for the Day View: its holiday or bridge day, Countdowns
+     * and shown Apple Calendar events. Undefined for text that isn't a date.
      */
     day(date: string): dayView.CalendarDayView | undefined;
+    /**
+     * Coming Up, for the Today Widget: the first shown Apple Calendar Event on
+     * a day after today, and how many days away it is. The same whichever day
+     * the Today Widget shows. Undefined if there is none in the synced range.
+     */
+    comingUp(): apple.ComingUp | undefined;
     /**
      * The Next Event, for the Menu Bar: the shown Apple Calendar Event that
      * starts next today, or one that started in the last five minutes ("now").
@@ -187,7 +191,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       .countdowns.filter((candidate) => candidate.date === date)
       .map((candidate) => candidate.title)
       .sort((a, b) => a.localeCompare(b));
-    const { appleCalendar, weather } = state();
+    const { appleCalendar } = state();
     return dayView.dayView(date, clock.now(), {
       week: details.week,
       holiday,
@@ -195,8 +199,6 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       countdowns,
       events: apple.eventsOn(appleCalendar, date),
       notice: apple.eventsNotice(appleCalendar, date, { problem: sync.problem(), now: clock.now() }),
-      comingUp: apple.comingUp(appleCalendar, date, clock.now()),
-      city: weather.city,
     });
   };
 
@@ -210,6 +212,7 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       describe: (date) => calendar.describeDay(date, clock.now()),
       day,
       nextEvent: () => apple.nextEvent(state().appleCalendar, clock.now()),
+      comingUp: () => apple.comingUp(state().appleCalendar, clock.now()),
       addDays: calendar.addDays,
       addMonths: calendar.addMonths,
       offsetOf: (date) => calendar.monthOffset(date, clock.now()),

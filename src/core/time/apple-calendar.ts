@@ -301,10 +301,10 @@ export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | und
   };
 }
 
-/** Coming Up, for the Day View: the first Event on a day after the one it shows. */
+/** Coming Up, for the Today Widget: the first Event on a day after today. */
 export interface ComingUp {
   title: string;
-  /** How far the day is from today: "Tomorrow", "in 6 days", "Today" or "3 days ago". */
+  /** How far its day is from today: "Tomorrow" or "in 6 days". */
   when: string;
   /** Its day and, unless it is all day, when it starts: "Fri, Nov 20, 10:00 PM" or "Fri, Nov 27". */
   date: string;
@@ -314,16 +314,14 @@ export interface ComingUp {
 }
 
 /**
- * Coming Up after `date` (`2026-11-24`) at `now`: the shown calendars' first
- * Event that starts on a later day, all-day ones first on their day, then by
- * when they start, then by title. An Event that started earlier and goes on
- * past `date` doesn't count. Only the synced range is known, so undefined when
- * there is none in it, or for text that isn't a date.
+ * Coming Up at `now`: the shown calendars' first Event that starts on a day
+ * after today, all-day ones first on their day, then by when they start, then
+ * by title. Today's Events, and one that started today or earlier and goes on
+ * past it, don't count. Only the synced range is known, so undefined when
+ * there is none in it.
  */
-export function comingUp(apple: AppleCalendarState, date: string, now: Date): ComingUp | undefined {
-  const day = parseIsoDate(date);
-  if (!day) return undefined;
-  const after = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
+export function comingUp(apple: AppleCalendarState, now: Date): ComingUp | undefined {
+  const after = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
   const startOf = (event: CalendarEvent) => (event.allDay ? midnight(event.startDate) : event.start);
   const event = shownEvents(apple)
     .filter((candidate) => startOf(candidate) >= after)

@@ -83,11 +83,11 @@ A working day with a day off on each side, a weekend day or an Austrian public h
 _Avoid_: Fenstertag, bridge holiday, long weekend
 
 **Day View**:
-One day in full: its holiday or bridge day, Countdowns and Events, Coming Up, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
+One day in full: its holiday or bridge day, Countdowns and Events. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
 
 **Coming Up**:
-The first Event on a later day than the one the Day View shows, with how many days from today it is, e.g. "Coming up · in 6 days". Only the synced range is known.
+The first Event on a day after today, with how many days away it is, e.g. "Coming up · in 6 days", shown under the Day View in the Today Widget. It stays the same whichever day the Today Widget shows. Only the synced range is known.
 _Avoid_: Next entry, next appointment, upcoming
 
 **Wallpaper Weather**:

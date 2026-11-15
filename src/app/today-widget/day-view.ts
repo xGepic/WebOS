@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import type { CalendarDayView } from '../../core';
+import type { CalendarDayView, ComingUp } from '../../core';
 
 /**
  * The Day View, the body of the Today Widget: one day in full. Its holiday or
- * bridge day, its Countdowns, the shown Apple Calendar events (all-day first, then by time),
- * Coming Up (the first Event on a later day, and how far it is from today),
- * and sunrise and sunset in the Weather city.
+ * bridge day, its Countdowns and the shown Apple Calendar events (all-day first, then by time),
+ * and under them Coming Up: the first Event after today, and how many days away
+ * it is, the same whichever day is shown.
  *
  * ‹ and › (or ← and →) step through days; on another day, ‹ Today (or Esc)
  * goes back to today. The list scrolls when the day is full.
@@ -90,7 +90,7 @@ import type { CalendarDayView } from '../../core';
     @if (today.notice) {
       <p class="notice">{{ today.notice }}</p>
     }
-    @if (today.comingUp; as next) {
+    @if (comingUp(); as next) {
       <div class="coming-up item" role="group" aria-label="Coming up">
         <span class="bar" aria-hidden="true" [style.background]="next.color"></span>
         <span class="what">
@@ -100,15 +100,6 @@ import type { CalendarDayView } from '../../core';
         </span>
       </div>
     }
-    @if (today.sun; as sun) {
-      <p class="sun">
-        @if (sun.kind === 'day') {
-          <span aria-hidden="true">☀</span> {{ sun.sunrise }} – {{ sun.sunset }}
-        } @else {
-          {{ sun.kind === 'polar-day' ? 'The sun doesn’t set' : 'The sun doesn’t rise' }}
-        }
-      </p>
-    }
   `,
   styleUrl: './day-view.css',
 })
@@ -116,6 +107,8 @@ export class DayView {
   readonly day = input.required<CalendarDayView>();
   /** Whether the day is today, so there is no way back to show. */
   readonly isToday = input(true);
+  /** Coming Up, which doesn't change with the day shown. */
+  readonly comingUp = input<ComingUp>();
   readonly back = output<void>();
   readonly step = output<number>();
 

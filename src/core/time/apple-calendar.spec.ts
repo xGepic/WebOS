@@ -1,19 +1,10 @@
 import { FetchError } from '../edges';
-import { createWebOS, type WeatherCity } from '../index';
+import { createWebOS } from '../index';
 import { createMemoryStorage, createTestCalendarServer, createTestClock, type TestCalendarServer } from '../testing';
 
 const MINUTE = 60_000;
 const WORK = 'https://p42-caldav.icloud.com/123/calendars/work/';
 const TRAINING = 'https://p42-caldav.icloud.com/123/calendars/training/';
-const vienna: WeatherCity = {
-  name: 'Vienna',
-  region: 'Vienna',
-  country: 'Austria',
-  latitude: 48.20849,
-  longitude: 16.37208,
-  timeZone: 'Europe/Vienna',
-};
-
 const VIENNA_ZONE = `BEGIN:VTIMEZONE
 TZID:Europe/Vienna
 BEGIN:DAYLIGHT
@@ -261,10 +252,8 @@ describe('the Day View', () => {
     ]);
   });
 
-  it('names the day, how far it is, its week, holiday and Countdowns, and sunrise and sunset in the Weather city', async () => {
-    const storage = createMemoryStorage();
-    const { webos } = await setUp({ storage });
-    await webos.weather.setCity(vienna);
+  it('names the day, how far it is, its week, holiday and Countdowns', async () => {
+    const { webos } = await setUp();
     await webos.countdowns.add({ title: 'Release', date: '2026-12-08' });
 
     expect(webos.calendar.day('2026-12-08')).toEqual({
@@ -278,7 +267,6 @@ describe('the Day View', () => {
       holiday: 'Immaculate Conception',
       countdowns: ['Release'],
       events: [],
-      sun: { kind: 'day', sunrise: '7:31 AM', sunset: '4:00 PM' },
     });
   });
 
@@ -297,10 +285,12 @@ describe('the Day View', () => {
 });
 
 describe('Coming Up', () => {
-  it('is the first Event on a later day, with how far it is from today', async () => {
+  const at = (time: Date, options: Parameters<typeof connected>[0] = {}) => connected({ ...options, clock: createTestClock(time) });
+
+  it('is the first Event on a day after today, with how many days away it is', async () => {
     const { webos } = await connected();
 
-    expect(webos.calendar.day('2026-11-14')!.comingUp).toEqual({
+    expect(webos.calendar.comingUp()).toEqual({
       title: 'Standup',
       when: 'in 2 days',
       date: 'Mon, Nov 16, 9:30 AM',
@@ -310,28 +300,33 @@ describe('Coming Up', () => {
   });
 
   it('says "Tomorrow" for one tomorrow', async () => {
-    const { webos } = await connected({ clock: createTestClock(new Date(2026, 10, 15, 9, 0)) });
+    const { webos } = await at(new Date(2026, 10, 15, 9, 0));
 
-    expect(webos.calendar.day('2026-11-15')!.comingUp).toMatchObject({ title: 'Standup', when: 'Tomorrow' });
+    expect(webos.calendar.comingUp()).toMatchObject({ title: 'Standup', when: 'Tomorrow' });
   });
 
-  it('follows the day shown, still counting from today', async () => {
-    const { webos } = await connected();
+  it('leaves out today’s Events, even those still ahead, and one going on past today', async () => {
+    expect((await at(new Date(2026, 10, 16, 8, 0))).webos.calendar.comingUp()).toMatchObject({
+      title: 'Call with New York',
+      when: 'Tomorrow',
+    });
+    expect((await at(new Date(2026, 10, 20, 12, 0))).webos.calendar.comingUp()).toMatchObject({
+      title: 'Training (moved)',
+      when: 'in 5 days',
+      date: 'Wed, Nov 25, 7:00 PM',
+    });
+  });
 
-    expect(webos.calendar.day('2026-11-16')!.comingUp).toMatchObject({ title: 'Call with New York', when: 'in 3 days' });
-    expect(webos.calendar.day('2026-11-26')!.comingUp).toEqual({
+  it('gives an all-day Event its day', async () => {
+    const { webos } = await at(new Date(2026, 10, 26, 9, 0));
+
+    expect(webos.calendar.comingUp()).toEqual({
       title: 'Ski trip',
-      when: 'in 13 days',
+      when: 'Tomorrow',
       date: 'Fri, Nov 27',
       calendar: 'Work',
       color: '#1badf8',
     });
-  });
-
-  it('leaves out an Event that started on the day shown and goes on past it', async () => {
-    const { webos } = await connected();
-
-    expect(webos.calendar.day('2026-11-20')!.comingUp).toMatchObject({ title: 'Training (moved)', date: 'Wed, Nov 25, 7:00 PM' });
   });
 
   it('puts an all-day Event first on its day', async () => {
@@ -343,19 +338,30 @@ describe('Coming Up', () => {
     server.resources[TRAINING] = [];
     const { webos } = await connected({ server });
 
-    expect(webos.calendar.day('2026-11-17')!.comingUp).toMatchObject({ title: 'Conference', when: 'in 4 days', date: 'Wed, Nov 18' });
+    expect(webos.calendar.comingUp()).toMatchObject({ title: 'Conference', when: 'in 4 days', date: 'Wed, Nov 18' });
+  });
+
+  it('moves on at midnight', async () => {
+    const { webos, clock } = await at(new Date(2026, 10, 15, 23, 0));
+    expect(webos.calendar.comingUp()).toMatchObject({ title: 'Standup', when: 'Tomorrow' });
+
+    clock.advance(2 * 60 * MINUTE);
+    expect(webos.calendar.comingUp()).toMatchObject({ title: 'Call with New York', when: 'Tomorrow' });
   });
 
   it('leaves out a hidden calendar’s Events', async () => {
     const { webos } = await connected();
     await webos.appleCalendar.setShown(WORK, false);
 
-    expect(webos.calendar.day('2026-11-14')!.comingUp).toMatchObject({ title: 'Training (moved)', calendar: 'Training', color: '#63da38' });
+    expect(webos.calendar.comingUp()).toMatchObject({ title: 'Training (moved)', calendar: 'Training', color: '#63da38' });
   });
 
-  it('is undefined past the synced range, and without Apple Calendar', async () => {
-    expect((await connected()).webos.calendar.day('2027-05-31')!.comingUp).toBeUndefined();
-    expect((await setUp()).webos.calendar.day('2026-11-14')!.comingUp).toBeUndefined();
+  it('is undefined with nothing ahead in the synced range, and without Apple Calendar', async () => {
+    const server = icloud();
+    server.resources[WORK] = [standup];
+    server.resources[TRAINING] = [];
+    expect((await at(new Date(2026, 10, 16, 8, 0), { server })).webos.calendar.comingUp()).toBeUndefined();
+    expect((await setUp()).webos.calendar.comingUp()).toBeUndefined();
   });
 });
 
