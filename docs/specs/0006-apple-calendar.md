@@ -58,7 +58,7 @@ Clicking a day opens the **Day View** in the Widget: the day's holiday, Countdow
 
 ### Core
 
-- `src/core/time/apple-calendar.ts`: reading event resources into **Event** occurrences within a range, the Day View, and the day marks. The Calendar API gains `day(date)` and an `appleCalendar` part: `status()`, `connect(appleId, password)`, `setShown(calendarUrl, shown)`, `sync()`, `disconnect()`.
+- `src/core/time/apple-calendar.ts`: reading event resources into **Event** occurrences within a range, the Day View, and the day marks. The Calendar API gains `day(date)` and an `appleCalendar` part: `status()`, `connect(appleId, password)`, `setShown(calendarUrl, shown)`, `sync()`, `disconnect()`. _Since then the Day View has its own module, `src/core/time/day-view.ts`; Apple Calendar gives it a day's events and any notice about them._
 - Syncing uses the existing refresher: due after 15 minutes, one fetch at a time; a failed sync keeps the stored events. A refused password keeps the account but says so in Settings and on the Day View.
 - The synced range runs from the first day of last month to the last day of the sixth month ahead, worked out at each sync.
 - `connect` lists the calendars first: on a 401 it resolves `refused`, on any other failure `unreachable`, and stores nothing. On success it stores the account and the calendars (all shown) and syncs.

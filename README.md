@@ -44,7 +44,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
 ## Layout
 
 - `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history and the Top Sites, `Fetch` for the weather, `SystemMonitor` for the processor and memory, `NetworkMonitor` for the network, and `CalendarServer` for Apple Calendar), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
-  - `state/`: the versioned state document, its migrations, and backups
+  - `state/`: the versioned state document, its migrations, backups, and what About webOS shows of it
   - `desktop/`: the snap grid, the Widget catalog and Edit Mode's moves, the Apps, and the Wallpapers
   - `search/`: the Search Widget's web search
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools

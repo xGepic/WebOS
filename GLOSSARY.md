@@ -21,7 +21,7 @@ The single focused frame an App opens in. Only one Window exists at a time.
 _Avoid_: Modal, dialog, panel
 
 **Menu Bar**:
-The thin bar across the top of the Desktop showing the open App's name, Data Source status, the Next Event and the time.
+The thin bar across the top of the Desktop showing the webOS mark, which opens About webOS, the open App's name, the Next Event and the time.
 _Avoid_: Top bar, header, status bar
 
 **Edit Mode**:
@@ -75,7 +75,7 @@ A working day with a day off on each side, a weekend day or an Austrian public h
 _Avoid_: Fenstertag, bridge holiday, long weekend
 
 **Day View**:
-One day in full: its holiday, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
+One day in full: its holiday or bridge day, Countdowns and Events, and sunrise and sunset. The Today Widget shows it, for today or the day picked in the Calendar Widget.
 _Avoid_: Day detail, agenda, popover
 
 **Wallpaper Weather**:
