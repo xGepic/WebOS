@@ -5,9 +5,11 @@ import {
   computed,
   effect,
   inject,
+  viewChild,
   viewChildren,
 } from '@angular/core';
 import { prefersReducedMotion, springTo } from '../../motion/springs';
+import { DesktopEditor } from '../desktop/desktop-editor';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
 import { AppIcon } from './app-icon';
@@ -26,6 +28,10 @@ const MAGNIFICATION_RANGE = 150;
  * reduced motion they don't. Clicking an App icon opens the App in the
  * Window, and clicking it again closes the Window. The open App's icon has a
  * dot under it.
+ *
+ * In Edit Mode the Dock holds a large "Done" instead of its icons, where the
+ * pointer can find it fast. The icons aren't missed: opening an App leaves
+ * Edit Mode anyway.
  */
 @Component({
   selector: 'webos-dock',
@@ -39,21 +45,25 @@ const MAGNIFICATION_RANGE = 150;
     '(pointerleave)': 'restore()',
   },
   template: `
-    @for (app of dockedApps(); track app.id) {
-      <span class="slot">
-        <button
-          #appIcon
-          type="button"
-          class="icon"
-          [attr.aria-label]="app.name"
-          [attr.aria-current]="window.app() === app.id ? 'true' : null"
-          [title]="app.name"
-          (click)="window.toggle(app.id)"
-        >
-          <webos-app-icon [app]="app.id" />
-        </button>
-        <span class="open-indicator" [class.visible]="window.app() === app.id"></span>
-      </span>
+    @if (editor.editing()) {
+      <button #done type="button" class="done" (click)="editor.exit()">Done</button>
+    } @else {
+      @for (app of dockedApps(); track app.id) {
+        <span class="slot">
+          <button
+            #appIcon
+            type="button"
+            class="icon"
+            [attr.aria-label]="app.name"
+            [attr.aria-current]="window.app() === app.id ? 'true' : null"
+            [title]="app.name"
+            (click)="window.toggle(app.id)"
+          >
+            <webos-app-icon [app]="app.id" />
+          </button>
+          <span class="open-indicator" [class.visible]="window.app() === app.id"></span>
+        </span>
+      }
     }
   `,
   styles: `
@@ -106,16 +116,50 @@ const MAGNIFICATION_RANGE = 150;
       outline: 2px solid var(--text-primary);
       outline-offset: 3px;
     }
+    /* As tall as an App icon and several times as wide: an easy target. */
+    .done {
+      height: var(--dock-icon-size);
+      min-width: calc(var(--dock-icon-size) * 3.5);
+      padding: 0 2rem;
+      border: 0;
+      border-radius: calc(var(--dock-icon-size) * 0.23);
+      background: var(--accent);
+      color: var(--on-accent);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: var(--tracking-title);
+      cursor: pointer;
+    }
+    .done:hover {
+      filter: brightness(1.1);
+    }
+    .done:active {
+      filter: brightness(0.85);
+    }
+    .done:focus-visible {
+      outline: 2px solid var(--text-primary);
+      outline-offset: 3px;
+    }
   `,
 })
 export class Dock {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
+  protected readonly editor = inject(DesktopEditor);
   /** The App icons, in Dock order. */
   private readonly icons = viewChildren<ElementRef<HTMLButtonElement>>('appIcon');
-  protected readonly dockedApps = computed(() => (this.webos.apps() ?? []).filter((app) => app.docked));
+  protected readonly dockedApps = computed(() =>
+    (this.webos.apps() ?? []).filter((app) => app.docked),
+  );
+  private readonly done = viewChild<ElementRef<HTMLButtonElement>>('done');
 
   constructor() {
+    // "Done" fades and grows in as Edit Mode starts (only fades under reduced motion).
+    effect(() => {
+      const done = this.done()?.nativeElement;
+      if (done) springTo(done, { opacity: [0, 1], scale: [0.92, 1] });
+    });
     // Let the Window find each App's icon to open out of and close into.
     effect(() => {
       const apps = this.dockedApps();

@@ -6,7 +6,7 @@ import { WindowState } from '../window/window-state';
 /**
  * The Menu Bar across the top: the webOS mark and the open App's name on the
  * left, the 12-hour time on the right. In Edit Mode it offers the hidden
- * Widgets and "Done". Searching is the Search Widget's job.
+ * Widgets; "Done" is in the Dock. Searching is the Search Widget's job.
  */
 @Component({
   selector: 'webos-menu-bar',
@@ -26,7 +26,12 @@ import { WindowState } from '../window/window-state';
       @if (hidden().length) {
         <span class="hidden-label">Hidden:</span>
         @for (widget of hidden(); track widget) {
-          <button type="button" class="chip" [attr.aria-label]="'Show the ' + webos.widgetName(widget) + ' Widget'" (click)="editor.show(widget)">
+          <button
+            type="button"
+            class="chip"
+            [attr.aria-label]="'Show the ' + webos.widgetName(widget) + ' Widget'"
+            (click)="editor.show(widget)"
+          >
             + {{ webos.widgetName(widget) }}
           </button>
         }
@@ -38,9 +43,6 @@ import { WindowState } from '../window/window-state';
       <span class="app-name">{{ webos.appName(app) }}</span>
     }
     <span class="spacer"></span>
-    @if (editor.editing()) {
-      <button type="button" class="chip done" (click)="editor.exit()">Done</button>
-    }
     <time class="time">{{ webos.time() }}</time>
   `,
   styles: `
@@ -93,15 +95,6 @@ import { WindowState } from '../window/window-state';
     .chip:focus-visible {
       outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
-    }
-    .done {
-      margin-right: 0.5rem;
-      background: var(--accent);
-      color: var(--on-accent);
-    }
-    .done:hover {
-      background: var(--accent);
-      filter: brightness(1.1);
     }
     .spacer {
       flex: 1;

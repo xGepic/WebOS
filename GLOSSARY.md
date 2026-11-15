@@ -13,7 +13,7 @@ The dark background behind the Desktop, with a coloured light falling from the t
 _Avoid_: Theme, background colour, skin
 
 **Dock**:
-The bar of App icons used to open Apps.
+The bar of App icons used to open Apps. In Edit Mode it holds a large Done instead.
 _Avoid_: Taskbar, launcher bar
 
 **Window**:
