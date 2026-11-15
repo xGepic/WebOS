@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, viewChild } from '@angular/core';
 import type { NextEvent } from '../../core';
+import { AmbientMode } from '../ambient/ambient-mode';
 import { DesktopEditor } from '../desktop/desktop-editor';
 import { WebOSCore } from '../webos-core';
 import { WindowState } from '../window/window-state';
@@ -7,7 +8,7 @@ import { WindowState } from '../window/window-state';
 /**
  * The Menu Bar across the top: the webOS mark, which opens About webOS, and
  * the open App's name on the left; the Next Event and the 12-hour time on the
- * right. In Edit Mode it offers the hidden Widgets; "Done" is in the Dock.
+ * right. Clicking the time starts Ambient mode. In Edit Mode it offers the hidden Widgets; "Done" is in the Dock.
  * Searching is the Search Widget's job.
  */
 @Component({
@@ -52,7 +53,9 @@ import { WindowState } from '../window/window-state';
         <span class="event-when">{{ event.when }}</span>
       </span>
     }
-    <time class="time">{{ webos.time() }}</time>
+    <button type="button" class="time" title="Ambient mode" (click)="ambient.start()">
+      <time>{{ webos.time() }}</time>
+    </button>
   `,
   styles: `
     :host {
@@ -68,8 +71,9 @@ import { WindowState } from '../window/window-state';
       font-weight: 500;
       letter-spacing: var(--tracking-caption);
     }
-    /* The webOS mark is a quiet button: it opens About webOS. */
-    .mark {
+    /* The webOS mark and the time are quiet buttons: they open About webOS and start Ambient mode. */
+    .mark,
+    .time {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
@@ -84,13 +88,16 @@ import { WindowState } from '../window/window-state';
       letter-spacing: var(--tracking-title);
       cursor: pointer;
     }
-    .mark:hover {
+    .mark:hover,
+    .time:hover {
       background: var(--control-fill-hover);
     }
-    .mark:active {
+    .mark:active,
+    .time:active {
       background: var(--control-fill-active);
     }
-    .mark:focus-visible {
+    .mark:focus-visible,
+    .time:focus-visible {
       outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
@@ -152,7 +159,12 @@ import { WindowState } from '../window/window-state';
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
     }
+    /* The mark's look, at the weight and spacing of the rest of the Menu Bar, and as far right as the mark is left. */
     .time {
+      margin-right: -0.4rem;
+      margin-left: 0;
+      font-weight: 500;
+      letter-spacing: var(--tracking-caption);
       font-variant-numeric: tabular-nums;
     }
   `,
@@ -161,6 +173,7 @@ export class MenuBar {
   protected readonly webos = inject(WebOSCore);
   protected readonly window = inject(WindowState);
   protected readonly editor = inject(DesktopEditor);
+  protected readonly ambient = inject(AmbientMode);
   protected readonly hidden = computed(() => this.webos.hiddenWidgets() ?? []);
   private readonly mark = viewChild.required<ElementRef<HTMLButtonElement>>('mark');
 

@@ -4,10 +4,13 @@ import { WebOSCore } from '../webos-core';
 /** How often webOS checks whether the Desktop has been left alone long enough. */
 const CHECK_EVERY_MS = 5_000;
 const MINUTE_MS = 60_000;
+/** After Ambient mode is started by hand, pointer moves are ignored this long, so the hand that clicked can let go. */
+const STARTED_GRACE_MS = 2_000;
 
 /**
  * Ambient mode: whether the Desktop has been left alone for the minutes chosen
- * in Settings, so the Ambient screen shows over the Wallpaper. UI-only and per
+ * in Settings, or Ambient mode was started by clicking the time in the Menu
+ * Bar, so the Ambient screen shows over the Wallpaper. UI-only and per
  * tab. Any key, click, scroll or move of the pointer ends it; the key, click or
  * scroll that ends it does nothing else, so waking webOS never presses a button
  * or types into a field. Coming back to the tab ends it too, and a hidden tab
@@ -23,6 +26,8 @@ export class AmbientMode {
   private lastActive = Date.now();
   /** Set when a press ends Ambient mode, so its release and click are swallowed too. */
   private swallowingPress = false;
+  /** Until when pointer moves don't end Ambient mode: just after it was started by hand. */
+  private ignoreMovesUntil = 0;
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -47,9 +52,13 @@ export class AmbientMode {
       event.stopImmediatePropagation();
       if (event.type === 'click') this.swallowingPress = false;
     };
+    const moved = () => {
+      if (this.shown() && Date.now() < this.ignoreMovesUntil) return;
+      active();
+    };
     const visibility = () => active();
     const listeners: [EventTarget, string, EventListener, AddEventListenerOptions][] = [
-      [window, 'pointermove', active, { capture: true, passive: true }],
+      [window, 'pointermove', moved, { capture: true, passive: true }],
       [window, 'keydown', swallowIfOn, { capture: true }],
       [window, 'pointerdown', swallowIfOn, { capture: true }],
       [window, 'wheel', swallowIfOn, { capture: true, passive: false }],
@@ -69,5 +78,15 @@ export class AmbientMode {
       clearInterval(timer);
       for (const [target, type, listener, options] of listeners) target.removeEventListener(type, listener, options);
     });
+  }
+
+  /**
+   * Starts Ambient mode now, whatever the minutes chosen, even with it off.
+   * Pointer moves in the next two seconds don't end it; keys and clicks do.
+   */
+  start(): void {
+    if (document.hidden) return;
+    this.ignoreMovesUntil = Date.now() + STARTED_GRACE_MS;
+    this.shown.set(true);
   }
 }
