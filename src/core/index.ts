@@ -52,6 +52,7 @@ export type { DevUtilitiesTab } from './dev-utilities/dev-utilities';
 export type { DiffPart, DiffResult, DiffRow } from './dev-utilities/diff';
 export type { JsonError, JsonResult } from './dev-utilities/json';
 export { webSearchUrl } from './search/web-search';
+export type { AboutView } from './state/about';
 export type { BackupFile } from './state/backup';
 export type { ListedNote, Note } from './organizer/notes';
 export type { TimestampResult } from './dev-utilities/timestamp';

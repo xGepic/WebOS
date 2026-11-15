@@ -53,9 +53,11 @@ export interface StateDocument {
   wallpaperWeather: boolean;
   /** The New Tabs opened on each of the last seven days. Checked when read, since a backup may hold anything. */
   newTabs: NewTabCounts;
+  /** When a backup was last exported on this machine (epoch milliseconds), or null if never. Importing a backup keeps it. */
+  lastBackupAt: number | null;
 }
 
-const SCHEMA_VERSION = 25;
+const SCHEMA_VERSION = 26;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -240,6 +242,8 @@ const migrations: Record<number, Migration> = {
   23: (document) => ({ ...document, schemaVersion: 24, newTabs: {} }),
   // Weather on the Wallpaper: shown.
   24: (document) => ({ ...document, schemaVersion: 25, wallpaperWeather: true }),
+  // About webOS: no backup known yet.
+  25: (document) => ({ ...document, schemaVersion: 26, lastBackupAt: null }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -284,6 +288,7 @@ function freshDocument(): StateDocument {
     wallpaper: DEFAULT_WALLPAPER,
     wallpaperWeather: true,
     newTabs: {},
+    lastBackupAt: null,
   };
 }
 
@@ -339,7 +344,8 @@ function assertCurrentShape(
     !Array.isArray(systemWidget['hidden']) ||
     typeof document['wallpaper'] !== 'string' ||
     typeof document['wallpaperWeather'] !== 'boolean' ||
-    !isRecord(document['newTabs'])
+    !isRecord(document['newTabs']) ||
+    !(document['lastBackupAt'] === null || isFiniteNumber(document['lastBackupAt']))
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

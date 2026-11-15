@@ -39,7 +39,7 @@ The thin strip across the top of a Widget that shows the Widget's name.
 _Avoid_: Task bar, header
 
 **App**:
-A tool you open into the Window for focused work, from its Dock icon or, for Countdowns and World Clock, from its Widget.
+A tool you open into the Window for focused work, from its Dock icon or, for Countdowns and World Clock, from its Widget. About webOS opens from the webOS mark in the Menu Bar.
 _Avoid_: Program, tool, module
 
 **Note**:
@@ -91,6 +91,10 @@ A city on the World Clock Widget, kept with its time zone.
 _Avoid_: Time zone, location
 
 ## Data
+
+**Last backup**:
+When a backup was last exported on this machine, shown in About webOS. A backup is due when there has been none, or the last is 30 days old or more. Importing a backup doesn't change it.
+_Avoid_: Last sync, last save
 
 **Data Source**:
 An external API that supplies personal data to webOS, such as sleep data or a training plan. The weather is not a Data Source: it is public data, not the user's own.

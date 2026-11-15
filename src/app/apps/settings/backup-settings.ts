@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StateDocumentError, type BackupFile } from '../../../core';
 import { WebOSCore } from '../../webos-core';
+import { saveBackup } from './save-backup';
 
 /** How the last import went, for the section to say. */
 type Outcome = { kind: 'imported'; fileName: string } | { kind: 'failed'; reason: string };
@@ -100,15 +101,7 @@ export class BackupSettings {
 
   /** Downloads a backup file of all webOS data. */
   protected exportBackup(): void {
-    const backup = this.webos.exportBackup();
-    if (!backup) return;
-    const url = URL.createObjectURL(new Blob([backup.text], { type: 'application/json' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = backup.fileName;
-    link.click();
-    // The download has started from the URL; it can go once the click has been handled.
-    setTimeout(() => URL.revokeObjectURL(url));
+    saveBackup(this.webos);
   }
 
   /** Reads the chosen file and asks to confirm replacing everything with it. */
