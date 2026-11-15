@@ -27,6 +27,10 @@ ul {
   list-style: none;
   font-size: clamp(0.6875rem, min(9cqh, 4cqi), 1.125rem);
 }
+/* At M, at most 6 tiles a row: 10 sites read as 6 and 4 rather than 8 and 2. */
+:host(.size-m) ul {
+  max-width: calc(6 * 5.5em);
+}
 li {
   width: 5.5em;
   height: 5.25em;

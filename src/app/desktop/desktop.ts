@@ -135,7 +135,7 @@ const MENU_MARGIN = 8;
                   <webos-today-widget />
                 }
                 @case ('top-sites') {
-                  <webos-top-sites-widget />
+                  <webos-top-sites-widget [size]="placed.size" />
                 }
                 @case ('new-tabs') {
                   <webos-new-tabs-widget />

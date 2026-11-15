@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import type { WidgetSize } from '../../core';
 import { SiteIcon } from '../recent-widget/site-icon';
 import { WebOSCore } from '../webos-core';
 
 /**
  * The Top Sites Widget: the sites visited most, as the browser's own new tab
- * page lists them, each a tile with its icon and name. As many rows as fit
- * show; the rest are left out. Like the Clock it has no surface, so under the
+ * page lists them, each a tile with its icon and name. At M a row holds at
+ * most 6 tiles, so 10 sites show as 6 and 4; at S and L rows fill the width.
+ * As many rows as fit show; the rest are left out. Like the Clock it has no surface, so under the
  * Search Widget it reads as part of it. It asks for the sites when it appears
  * and whenever the tab is shown again. Tiles are plain anchors, so they open
  * like any browser link.
@@ -14,7 +16,7 @@ import { WebOSCore } from '../webos-core';
   selector: 'webos-top-sites-widget',
   imports: [SiteIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(document:visibilitychange)': 'refreshWhenShown()' },
+  host: { '[class.size-m]': "size() === 'M'", '(document:visibilitychange)': 'refreshWhenShown()' },
   template: `
     @if (webos.topSites(); as sites) {
       @if (sites.length) {
@@ -36,6 +38,7 @@ import { WebOSCore } from '../webos-core';
   styleUrl: './top-sites-widget.css',
 })
 export class TopSitesWidget {
+  readonly size = input.required<WidgetSize>();
   protected readonly webos = inject(WebOSCore);
 
   constructor() {
