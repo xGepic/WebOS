@@ -116,7 +116,7 @@ import { WebOSCore } from '../../webos-core';
       font-weight: 500;
     }
     .added-count {
-      color: var(--accent);
+      color: var(--diff-added);
     }
     .removed-count {
       color: var(--danger);
@@ -161,7 +161,7 @@ import { WebOSCore } from '../../webos-core';
       background: var(--diff-added-fill);
     }
     .added .sign {
-      color: var(--accent);
+      color: var(--diff-added);
     }
     mark {
       border-radius: 2px;

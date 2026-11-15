@@ -9,28 +9,35 @@
  * and by the App once it has.
  */
 /*
- * Each Wallpaper's colours. Not only on <html>: Settings previews each one in
- * an element of its own. All stay dark, so every Widget reads the same.
+ * Each Wallpaper's colours: its base, its light, and the accent that goes with
+ * it. Not only on <html>: Settings previews each one in an element of its own.
+ * All stay dark, so every Widget reads the same. Each accent is light enough
+ * for the Wallpaper's near-black base to read on it (tokens.css).
  */
 [data-wallpaper='midnight'] {
   --wallpaper-base: #010208;
   --wallpaper-light: rgba(70, 110, 230, 0.09);
+  --accent: #6f8fdc;
 }
 [data-wallpaper='aurora'] {
   --wallpaper-base: #010706;
   --wallpaper-light: rgba(30, 200, 150, 0.15);
+  --accent: #4cc4a0;
 }
 [data-wallpaper='ember'] {
   --wallpaper-base: #090403;
   --wallpaper-light: rgba(240, 110, 40, 0.15);
+  --accent: #e58a55;
 }
 [data-wallpaper='violet'] {
   --wallpaper-base: #05030e;
   --wallpaper-light: rgba(150, 90, 240, 0.17);
+  --accent: #9a7ee8;
 }
 [data-wallpaper='graphite'] {
   --wallpaper-base: #0a0b0d;
   --wallpaper-light: rgba(220, 225, 235, 0.07);
+  --accent: #b4bac6;
 }
 
 body {

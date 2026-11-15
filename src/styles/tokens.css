@@ -1,7 +1,8 @@
 /*
  * webOS design tokens. webOS is dark mode only.
  * The palette is "Midnight Deep", picked for ticket 15 (Stage): almost
- * black, with only a trace of blue in the light, the glass and the accent.
+ * black, with only a trace of blue in the light and the glass. The accent is
+ * Midnight's blue here; each Wallpaper sets its own (wallpaper.css).
  */
 :root {
   color-scheme: dark;
@@ -32,19 +33,18 @@
   --control-fill: rgba(150, 175, 250, 0.045);
   --control-fill-hover: rgba(150, 175, 250, 0.09);
   --control-fill-active: rgba(150, 175, 250, 0.14);
+  /* Follows the Wallpaper. Its tints are worked out from it below. */
   --accent: #6f8fdc;
-  --on-accent: #010208;
-  --focus-ring: rgba(111, 143, 220, 0.6);
-  /* Something chosen or switched on, e.g. the selected Note or a pressed segmented control */
-  --selected-fill: rgba(111, 143, 220, 0.1);
-  /* The outline of a Widget in Edit Mode, and of where a dragged one will land */
-  --edit-outline: rgba(111, 143, 220, 0.45);
   /* The deeper shadow of a Widget lifted in Edit Mode */
   --lift-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
   --danger: #ff8a8a;
-  /* Dev Utilities › Diff: removed lines in the danger red, added ones in the accent blue, the changed part stronger */
+  /*
+   * Dev Utilities › Diff: removed lines in the danger red, added ones in blue, the changed part
+   * stronger. The blue doesn't follow the Wallpaper, so added never looks like removed.
+   */
   --diff-removed-fill: rgba(255, 138, 138, 0.08);
   --diff-removed-mark: rgba(255, 138, 138, 0.26);
+  --diff-added: #6f8fdc;
   --diff-added-fill: rgba(111, 143, 220, 0.1);
   --diff-added-mark: rgba(111, 143, 220, 0.32);
 
@@ -81,6 +81,21 @@
   --wallpaper-base: #010208;
   --wallpaper-light: rgba(70, 110, 230, 0.09);
   --grain-opacity: 0.08;
+}
+
+/*
+ * What follows from the accent. Worked out again on any element that sets a
+ * Wallpaper (wallpaper.css), so a Settings preview gets its own Wallpaper's.
+ */
+:root,
+[data-wallpaper] {
+  /* Text and marks on the accent: the Wallpaper's own near-black. */
+  --on-accent: var(--wallpaper-base);
+  --focus-ring: color-mix(in srgb, var(--accent) 60%, transparent);
+  /* Something chosen or switched on, e.g. the selected Note or a pressed segmented control */
+  --selected-fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  /* The outline of a Widget in Edit Mode, and of where a dragged one will land */
+  --edit-outline: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 /* Reduced transparency: frosted becomes solid. */

@@ -68,8 +68,9 @@ import { WebOSCore } from '../../webos-core';
       color: var(--text-primary);
       font-weight: 600;
     }
-    /* A small Wallpaper: the same light and base, stronger so it shows at this size. */
+    /* A small Wallpaper: the same light and base, stronger so it shows at this size, and a dot of its accent. */
     .preview {
+      position: relative;
       width: 100%;
       aspect-ratio: 16 / 10;
       border-radius: var(--radius-control);
@@ -78,6 +79,16 @@ import { WebOSCore } from '../../webos-core';
         radial-gradient(90% 80% at 50% 0%, var(--wallpaper-light) 0%, transparent 100%),
         var(--wallpaper-base);
       box-shadow: inset 0 0 0 1px var(--material-border);
+    }
+    .preview::after {
+      content: '';
+      position: absolute;
+      right: 0.375rem;
+      bottom: 0.375rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
     }
     .choice:hover .preview {
       box-shadow: inset 0 0 0 1px var(--text-secondary);
