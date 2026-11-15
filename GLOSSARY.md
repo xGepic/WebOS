@@ -63,7 +63,7 @@ A text the user pasted into the Clipboard App to copy again later. It can be pin
 _Avoid_: Snippet, clipping, history entry
 
 **Today Widget**:
-The Widget that shows the Day View of today, or of the day picked in the Calendar Widget until the user goes back to today.
+The Widget that shows the Day View of today, or of the day picked in the Calendar Widget until the user goes back to today, with Coming Up under it.
 _Avoid_: Agenda, day widget, schedule
 
 **Top Sites**:
