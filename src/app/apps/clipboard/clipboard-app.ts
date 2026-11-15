@@ -4,7 +4,7 @@ import { Toasts } from '../../toast/toasts';
 import { WebOSCore } from '../../webos-core';
 import { WindowState } from '../../window/window-state';
 import { DevUtilitiesHandoff } from '../dev-utilities/dev-utilities-handoff';
-import { PinIcon } from '../notes/pin-icon';
+import { PinIcon } from './pin-icon';
 
 /** How many lines of a Clip show until it is expanded. */
 const PREVIEW_LINES = 3;

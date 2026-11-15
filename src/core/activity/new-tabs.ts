@@ -1,3 +1,4 @@
+import { formatShortDate } from '../format';
 import { isRecord } from '../guards';
 import { isoDate } from '../time/calendar';
 
@@ -66,7 +67,7 @@ export function newTabsView(counts: unknown, now: Date): NewTabsView {
     return {
       date,
       letter: LETTERS[day.getDay()],
-      label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      label: formatShortDate(day),
       count: countOn(counts, date),
       today: date === today,
     };

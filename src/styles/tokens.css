@@ -35,7 +35,7 @@
   --accent: #6f8fdc;
   --on-accent: #010208;
   --focus-ring: rgba(111, 143, 220, 0.6);
-  /* A control that is switched on, e.g. a Docked Link's Dock button */
+  /* Something chosen or switched on, e.g. the selected Note or a pressed segmented control */
   --selected-fill: rgba(111, 143, 220, 0.1);
   /* The outline of a Widget in Edit Mode, and of where a dragged one will land */
   --edit-outline: rgba(111, 143, 220, 0.45);

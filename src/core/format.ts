@@ -1,3 +1,8 @@
+/** A minute, in milliseconds. */
+export const MINUTE_MS = 60_000;
+/** A day of 24 hours, in milliseconds. A calendar day across a daylight-saving change is an hour shorter or longer. */
+export const DAY_MS = 86_400_000;
+
 /** 12-hour clock time, optionally with seconds. Built by hand so the space before AM/PM is always a plain one. */
 function clockTime(time: Date, { seconds = false } = {}): string {
   const second = seconds ? ':' + String(time.getSeconds()).padStart(2, '0') : '';
@@ -70,7 +75,7 @@ export function utcOffsetMinutes(time: Date, timeZone?: string): number {
   if (!timeZone) return -time.getTimezoneOffset();
   const wall = wallClock(time, timeZone);
   const asUtc = Date.UTC(wall.year, wall.month, wall.day, wall.hours, wall.minutes);
-  return Math.round((asUtc - Math.floor(time.getTime() / 60_000) * 60_000) / 60_000);
+  return Math.round((asUtc - Math.floor(time.getTime() / MINUTE_MS) * MINUTE_MS) / MINUTE_MS);
 }
 
 /** A length of time in whole minutes, e.g. "9 h 41 min", "5 h", "12 min". */
@@ -95,7 +100,12 @@ export function formatDate(date: Date): string {
 
 const monthDay = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 const monthDayYear = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const DAY_MS = 24 * 60 * 60 * 1000;
+const shortDate = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+/** A day as lists and headings name it, e.g. "Thu, Nov 12". */
+export function formatShortDate(date: Date): string {
+  return shortDate.format(date);
+}
 
 /** Whole calendar days from `earlier` to `later`, in local time. */
 function calendarDaysBetween(earlier: Date, later: Date): number {

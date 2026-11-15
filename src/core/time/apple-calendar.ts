@@ -1,14 +1,12 @@
 import type ICALModule from 'ical.js';
-import { formatTime, formatWhen, MONTHS } from '../format';
-import { sunOnDay, type SunOnDay } from '../sky/sun';
-import type { WeatherCity } from '../sky/weather';
-import { daysFrom, isoDate, parseIsoDate, relativeDayLabel } from './calendar';
-import type { BridgeDay } from './holidays';
+import { MINUTE_MS, MONTHS, formatTime, formatWhen } from '../format';
+import { isoDate, parseIsoDate } from './calendar';
 
 /**
  * Apple Calendar, webOS's first Data Source: the user's iCloud events, read
  * over CalDAV by the `CalendarServer` edge and kept as a cache of occurrences,
- * already expanded, for the Calendar Widget's dots and Day View.
+ * already expanded, for the Calendar Widget's dots, the Day View's events and
+ * the Next Event.
  */
 
 /** The iCloud account webOS signs in with: an Apple ID and an app-specific password. */
@@ -100,35 +98,8 @@ export interface NextEvent extends DayEvent {
   when: string;
 }
 
-/** A day in full, for the Calendar Widget's Day View. */
-export interface CalendarDayView {
-  date: string;
-  /** e.g. "Tuesday" */
-  weekday: string;
-  /** The month it is in, e.g. "November": where the Day View goes back to. */
-  month: string;
-  /** e.g. "November 24, 2026" */
-  label: string;
-  /** e.g. "Tue, Nov 24": the heading of a small Day View. */
-  shortLabel: string;
-  /** "Today", "Tomorrow", "in 3 days" */
-  relative: string;
-  week: number;
-  holiday?: string;
-  /** On a bridge day, the days off in a row if it is taken off, and which: "Thu, May 14 – Sun, May 17". */
-  bridge?: { days: number; span: string };
-  countdowns: readonly string[];
-  /** All-day events first, then the rest by when they start. */
-  events: readonly DayEvent[];
-  /** Why the events may be missing or out of date: not synced yet, outside the synced range, or a failed sync. */
-  notice?: string;
-  /** Sunrise and sunset in the Weather city, if one is chosen. */
-  sun?: SunOnDay;
-}
-
-const MINUTE = 60_000;
 /** A new tab syncs again once the last sync is this old. */
-const SYNC_AFTER_MS = 15 * MINUTE;
+const SYNC_AFTER_MS = 15 * MINUTE_MS;
 /** The most occurrences of one recurring event looked at, so a broken rule can't run forever. */
 const MAX_OCCURRENCES = 20_000;
 /** The most days one event is marked on in the month, so an event over years doesn't fill every grid. */
@@ -303,7 +274,7 @@ function timeOn(event: CalendarEvent, dayStart: number, dayEnd: number): string 
 }
 
 /** How long after it starts an Event is still the Next Event, as "now". */
-const NOW_FOR_MS = 5 * MINUTE;
+const NOW_FOR_MS = 5 * MINUTE_MS;
 
 /**
  * The Next Event at `now`: the shown calendars' next timed Event that starts
@@ -319,7 +290,7 @@ export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | und
   );
   if (!event) return undefined;
   const calendar = apple.calendars.find((choice) => choice.url === event.calendar);
-  const minutes = Math.ceil((event.start - now.getTime()) / MINUTE);
+  const minutes = Math.ceil((event.start - now.getTime()) / MINUTE_MS);
   return {
     title: event.title,
     when: minutes <= 0 ? 'now' : minutes < 60 ? `in ${minutes} min` : `at ${formatTime(new Date(event.start))}`,
@@ -330,9 +301,6 @@ export function nextEvent(apple: AppleCalendarState, now: Date): NextEvent | und
   };
 }
 
-/** A day as a bridge day's span names it: "Thu, May 14". */
-const shortDay = (date: string) => parseIsoDate(date)?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) ?? date;
-
 /** A synced range's last day as a notice names it: "May 31, 2027". */
 const longDate = (date: string) => {
   const day = parseIsoDate(date);
@@ -340,38 +308,18 @@ const longDate = (date: string) => {
 };
 
 /**
- * The Day View of `date` (`2026-11-24`) at `now`, with the holiday and
- * Countdowns `marks` give it, the shown Apple Calendar events, and sunrise and
- * sunset in the Weather `city`. Undefined for text that isn't a date.
+ * The shown events on `date` (`2026-11-24`), for the Day View: all-day ones
+ * and those covering the whole day first, then the rest by when they start.
+ * None for text that isn't a date.
  */
-export function dayView(
-  date: string,
-  now: Date,
-  {
-    week,
-    holiday,
-    bridge,
-    countdowns,
-    apple,
-    problem,
-    city,
-  }: {
-    week: number;
-    holiday?: string;
-    bridge?: BridgeDay;
-    countdowns: readonly string[];
-    apple: AppleCalendarState;
-    problem?: AppleCalendarProblem;
-    city: WeatherCity | null;
-  },
-): CalendarDayView | undefined {
+export function eventsOn(apple: AppleCalendarState, date: string): DayEvent[] {
   const day = parseIsoDate(date);
-  if (!day) return undefined;
+  if (!day) return [];
   const dayStart = day.getTime();
   const dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
   const colors = new Map(apple.calendars.map((calendar) => [calendar.url, calendar]));
 
-  const events = sortEvents(shownEvents(apple).filter((event) => overlaps(event, dayStart, dayEnd)))
+  return sortEvents(shownEvents(apple).filter((event) => overlaps(event, dayStart, dayEnd)))
     .map((event) => ({ event, time: timeOn(event, dayStart, dayEnd) }))
     // Events covering the whole day go with the all-day ones, at the top.
     .sort((a, b) => Number(b.time === 'All day') - Number(a.time === 'All day'))
@@ -382,31 +330,26 @@ export function dayView(
       calendar: colors.get(event.calendar)?.name ?? '',
       color: colors.get(event.calendar)?.color ?? DEFAULT_COLOR,
     }));
+}
 
-  let notice: string | undefined;
-  if (apple.account) {
-    if (problem === 'refused') notice = 'Apple refused the password. Sign in again in Settings.';
-    else if (!apple.sync) notice = problem === 'failed' ? 'Apple Calendar couldn’t be reached.' : 'Syncing Apple Calendar…';
-    else if (date < apple.sync.from || date > apple.sync.to) {
-      notice = `Apple Calendar is synced from ${longDate(apple.sync.from)} to ${longDate(apple.sync.to)}.`;
-    } else if (problem === 'failed') notice = `Apple Calendar couldn’t be reached. Synced ${formatWhen(new Date(apple.sync.fetchedAt), now)}.`;
+/**
+ * Why the events on `date` may be missing or out of date: not synced yet,
+ * outside the synced range, or a failed sync. Undefined when they can be
+ * trusted, or when Apple Calendar isn't connected.
+ */
+export function eventsNotice(
+  apple: AppleCalendarState,
+  date: string,
+  { problem, now }: { problem?: AppleCalendarProblem; now: Date },
+): string | undefined {
+  if (!apple.account) return undefined;
+  if (problem === 'refused') return 'Apple refused the password. Sign in again in Settings.';
+  if (!apple.sync) return problem === 'failed' ? 'Apple Calendar couldn’t be reached.' : 'Syncing Apple Calendar…';
+  if (date < apple.sync.from || date > apple.sync.to) {
+    return `Apple Calendar is synced from ${longDate(apple.sync.from)} to ${longDate(apple.sync.to)}.`;
   }
-
-  return {
-    date,
-    weekday: day.toLocaleDateString('en-US', { weekday: 'long' }),
-    month: day.toLocaleDateString('en-US', { month: 'long' }),
-    label: day.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-    shortLabel: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-    relative: relativeDayLabel(daysFrom(now, day)),
-    week,
-    ...(holiday ? { holiday } : {}),
-    ...(bridge ? { bridge: { days: bridge.days, span: `${shortDay(bridge.from)} – ${shortDay(bridge.to)}` } } : {}),
-    countdowns,
-    events,
-    ...(notice ? { notice } : {}),
-    ...(city ? { sun: sunOnDay(city, day.getFullYear(), day.getMonth(), day.getDate()) } : {}),
-  };
+  if (problem === 'failed') return `Apple Calendar couldn’t be reached. Synced ${formatWhen(new Date(apple.sync.fetchedAt), now)}.`;
+  return undefined;
 }
 
 /** What Settings shows for the stored state and this tab's sync. */

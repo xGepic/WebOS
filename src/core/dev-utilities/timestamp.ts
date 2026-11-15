@@ -1,4 +1,4 @@
-import { MONTHS, formatDateTime } from '../format';
+import { MINUTE_MS, MONTHS, formatDateTime } from '../format';
 
 /** A moment, as every form the Timestamp tab shows. */
 export type TimestampResult =
@@ -141,7 +141,7 @@ function fromDate(text: string): TimestampResult {
   const utc = Date.UTC(time.year, time.month - 1, time.day, time.hour, time.minute, time.second, time.millisecond);
   const check = new Date(utc);
   if (check.getUTCMonth() !== time.month - 1 || check.getUTCDate() !== time.day) return invalid;
-  return toResult(utc - minutesEast * 60_000);
+  return toResult(utc - minutesEast * MINUTE_MS);
 }
 
 /** Converts whichever was typed into the Timestamp tab's one field: a Unix timestamp or a date. */

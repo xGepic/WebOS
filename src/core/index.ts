@@ -7,7 +7,7 @@ import type { BrowserLookup, CalendarServer, Clock, Fetch, NetworkMonitor, Stora
 import { createOrganizer, type OrganizerApi } from './organizer/api';
 import { clearCompleted } from './organizer/todos';
 import { createSky, type SkyApi } from './sky/api';
-import { createBackup, type BackupApi } from './state/api';
+import { createState, type StateApi } from './state/api';
 import { loadState, toCurrentDocument, type StateDocument } from './state/state';
 import type { Store } from './store';
 import { createTime, type TimeApi } from './time/api';
@@ -44,7 +44,8 @@ export type { NewTabDay, NewTabsView } from './activity/new-tabs';
 export type { SystemPart, SystemPartChoice, SystemView, UsageView } from './activity/system';
 export { CPU_HISTORY } from './activity/system';
 export type { CalendarDay, CalendarDayDetails, CalendarMonth, CalendarWeek } from './time/calendar';
-export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, CalendarDayView, DayEvent, NextEvent } from './time/apple-calendar';
+export type { AppleCalendarChoice, AppleCalendarProblem, AppleCalendarStatus, DayEvent, NextEvent } from './time/apple-calendar';
+export type { CalendarDayView } from './time/day-view';
 export type { ForecastDayView, WallpaperWeather, WeatherCity, WeatherCondition, WeatherView } from './sky/weather';
 export { describeCity } from './sky/weather';
 export type { Base64Result } from './dev-utilities/base64';
@@ -76,7 +77,7 @@ export interface WebOSEdges {
 }
 
 /** The webOS core: everything the Angular layer reads and every command it sends. Each area's part is documented in its `api.ts`. */
-export interface WebOS extends DesktopApi, OrganizerApi, ClipboardApi, DevUtilitiesApi, BackupApi, TimeApi, SkyApi, ActivityApi {
+export interface WebOS extends DesktopApi, OrganizerApi, ClipboardApi, DevUtilitiesApi, StateApi, TimeApi, SkyApi, ActivityApi {
   /**
    * Calls `listener` whenever anything readable from the core may have changed,
    * including the time at the start of every minute. Returns an unsubscribe function.
@@ -149,7 +150,7 @@ export async function createWebOS({ storage, clock, browser, fetch, system, cale
     ...createOrganizer(store),
     ...createClipboard(store),
     ...createDevUtilities(store),
-    ...createBackup(store),
+    ...createState(store),
     ...createTime(store, calendars),
     ...createSky(store, fetch),
     ...createActivity(store, { browser, system, network }),

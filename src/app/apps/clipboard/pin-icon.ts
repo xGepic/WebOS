@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-/** A pushpin, marking the Pinned Note. Decorative: whatever shows it also says "Pinned" in words or a label. */
+/** A pushpin, marking a pinned Clip. Decorative: whatever shows it also says "Pinned" in words or a label. */
 @Component({
   selector: 'webos-pin-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,

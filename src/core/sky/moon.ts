@@ -1,3 +1,4 @@
+import { DAY_MS, formatShortDate } from '../format';
 import { daysFrom, relativeDayLabel } from '../time/calendar';
 
 /**
@@ -43,7 +44,6 @@ export interface MoonEvent {
 
 const SYNODIC_MONTH = 29.530588861;
 const UNIX_EPOCH_JD = 2440587.5;
-const DAY_MS = 86_400_000;
 const rad = (degrees: number) => (degrees * Math.PI) / 180;
 
 const toJulianDay = (ms: number) => ms / DAY_MS + UNIX_EPOCH_JD;
@@ -142,7 +142,7 @@ function describeEvent(time: number, now: Date): MoonEvent {
   const day = new Date(time);
   return {
     at: time,
-    label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+    label: formatShortDate(day),
     relative: relativeDayLabel(daysFrom(now, day)),
   };
 }

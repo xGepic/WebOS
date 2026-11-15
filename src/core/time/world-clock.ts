@@ -1,4 +1,4 @@
-import { formatDuration, formatTime, isTimeZone, utcOffsetMinutes, wallClock } from '../format';
+import { DAY_MS, formatDuration, formatTime, isTimeZone, utcOffsetMinutes, wallClock } from '../format';
 import { relativeDayLabel } from './calendar';
 
 /** A city on the World Clock, with the time zone its clock follows. */
@@ -57,7 +57,7 @@ export function worldClockView(list: readonly WorldClockCity[], now: Date): Worl
   return list.filter((city) => isTimeZone(city.timeZone)).map((city) => {
     const there = wallClock(now, city.timeZone);
     const daysAway = Math.round(
-      (Date.UTC(there.year, there.month, there.day) - Date.UTC(here.year, here.month, here.day)) / 86_400_000,
+      (Date.UTC(there.year, there.month, there.day) - Date.UTC(here.year, here.month, here.day)) / DAY_MS,
     );
     const offset = utcOffsetMinutes(now, city.timeZone) - hereOffset;
     return {

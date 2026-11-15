@@ -6,6 +6,7 @@ import type { Store } from '../store';
 import * as apple from './apple-calendar';
 import * as calendar from './calendar';
 import * as countdown from './countdown';
+import * as dayView from './day-view';
 import * as holidays from './holidays';
 import * as worldClock from './world-clock';
 
@@ -30,7 +31,7 @@ export interface TimeApi {
      * shown Apple Calendar events, and sunrise and sunset in the Weather city.
      * Undefined for text that isn't a date.
      */
-    day(date: string): apple.CalendarDayView | undefined;
+    day(date: string): dayView.CalendarDayView | undefined;
     /**
      * The Next Event, for the Menu Bar: the shown Apple Calendar Event that
      * starts next today, or one that started in the last five minutes ("now").
@@ -185,14 +186,15 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
       .countdowns.filter((candidate) => candidate.date === date)
       .map((candidate) => candidate.title)
       .sort((a, b) => a.localeCompare(b));
-    return apple.dayView(date, clock.now(), {
+    const { appleCalendar, weather } = state();
+    return dayView.dayView(date, clock.now(), {
       week: details.week,
       holiday,
       bridge,
       countdowns,
-      apple: state().appleCalendar,
-      problem: sync.problem(),
-      city: state().weather.city,
+      events: apple.eventsOn(appleCalendar, date),
+      notice: apple.eventsNotice(appleCalendar, date, { problem: sync.problem(), now: clock.now() }),
+      city: weather.city,
     });
   };
 

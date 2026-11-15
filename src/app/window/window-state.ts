@@ -30,7 +30,8 @@ export class WindowState {
 
   /**
    * Where the Window opens out of for an App and closes back into: its Dock
-   * icon, or for Notes the Notes Widget. Without one, the Window just fades.
+   * icon, the Widget that opens it, or for About webOS the webOS mark. Without
+   * one, the Window just fades.
    */
   registerOrigin(app: AppId, element: HTMLElement): void {
     this.origins.set(app, element);

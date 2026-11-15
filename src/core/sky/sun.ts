@@ -1,4 +1,4 @@
-import { formatDuration, formatTime, wallClock } from '../format';
+import { DAY_MS, MINUTE_MS, formatDuration, formatTime, wallClock } from '../format';
 import type { WeatherCity } from './weather';
 
 /**
@@ -35,8 +35,6 @@ export type SunView =
       kind: 'polar-day' | 'polar-night';
     };
 
-const DAY_MS = 86_400_000;
-const MINUTE = 60_000;
 const J2000 = 2451545;
 const UNIX_EPOCH_JD = 2440587.5;
 const rad = (degrees: number) => (degrees * Math.PI) / 180;
@@ -61,7 +59,7 @@ function sunTimes(year: number, month: number, day: number, latitude: number, lo
   if (cosHourAngle > 1) return { kind: 'polar-night' };
   const halfDay = deg(Math.acos(cosHourAngle)) / 360;
   // To the minute, as they are shown, so the times shown and the time to them agree.
-  const toMs = (jd: number) => Math.floor(((jd - UNIX_EPOCH_JD) * DAY_MS) / MINUTE) * MINUTE;
+  const toMs = (jd: number) => Math.floor(((jd - UNIX_EPOCH_JD) * DAY_MS) / MINUTE_MS) * MINUTE_MS;
   return { kind: 'day', sunrise: toMs(transit - halfDay), sunset: toMs(transit + halfDay) };
 }
 
@@ -102,15 +100,15 @@ export function sunView(city: WeatherCity | null, now: Date): SunView {
   if (today.kind !== 'day') return { status: 'ready', city: city.name, kind: today.kind };
 
   const at = now.getTime();
-  const length = (today.sunset - today.sunrise) / MINUTE;
+  const length = (today.sunset - today.sunrise) / MINUTE_MS;
   const yesterday = on(-1);
-  const difference = yesterday.kind === 'day' ? Math.round(length - (yesterday.sunset - yesterday.sunrise) / MINUTE) : 0;
+  const difference = yesterday.kind === 'day' ? Math.round(length - (yesterday.sunset - yesterday.sunrise) / MINUTE_MS) : 0;
   const change =
     difference === 0 ? 'Same as yesterday' : `${formatDuration(difference)} ${difference > 0 ? 'longer' : 'shorter'} than yesterday`;
 
   let next: string;
-  if (at < today.sunrise) next = `Sunrise in ${formatDuration((today.sunrise - at) / MINUTE)}`;
-  else if (at < today.sunset) next = `Sunset in ${formatDuration((today.sunset - at) / MINUTE)}`;
+  if (at < today.sunrise) next = `Sunrise in ${formatDuration((today.sunrise - at) / MINUTE_MS)}`;
+  else if (at < today.sunset) next = `Sunset in ${formatDuration((today.sunset - at) / MINUTE_MS)}`;
   else {
     const tomorrow = on(1);
     next = tomorrow.kind === 'day' ? `Sunrise tomorrow at ${formatTime(new Date(tomorrow.sunrise), timeZone)}` : '';

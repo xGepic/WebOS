@@ -1,5 +1,5 @@
 import type { VisitedPage } from '../edges';
-import { formatWhen } from '../format';
+import { MINUTE_MS, formatWhen } from '../format';
 
 /** A page from the browser's history, as the Recent Widget lists it. */
 export interface RecentPage {
@@ -13,7 +13,6 @@ export interface RecentPage {
 
 /** The most pages the Recent Widget lists, and so the most it asks the browser for (with some to spare for repeats). */
 export const RECENT_PAGES = 10;
-const MINUTE = 60_000;
 
 /** Pages on the web: the new tab itself, settings and extension pages aren't worth going back to. */
 const onTheWeb = (page: VisitedPage) => /^https?:\/\//i.test(page.url);
@@ -27,7 +26,7 @@ function siteOf(url: string): string {
 }
 
 function when(visitedAt: number, now: Date): string {
-  const minutes = Math.floor((now.getTime() - visitedAt) / MINUTE);
+  const minutes = Math.floor((now.getTime() - visitedAt) / MINUTE_MS);
   if (minutes < 1) return 'Just now';
   if (minutes < 60) return `${minutes} min ago`;
   const visited = new Date(visitedAt);

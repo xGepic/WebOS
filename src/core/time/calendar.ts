@@ -1,3 +1,5 @@
+import { DAY_MS, formatShortDate } from '../format';
+
 /** One day in the Calendar Widget's grid. */
 export interface CalendarDay {
   /** The date as `2026-11-30`: how the Widget names, copies and describes a day. */
@@ -66,14 +68,13 @@ export interface CalendarDayDetails {
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 /** Enough for any month: one that starts on a Sunday and has 31 days spans six weeks. */
 const WEEKS_SHOWN = 6;
-const DAY = 86_400_000;
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 /** A local date as `2026-11-30`. */
 export const isoDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 /** Whole days from the epoch for a local calendar date, unaffected by daylight-saving changes. */
-const dayNumber = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY;
+const dayNumber = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY_MS;
 
 /** The ISO 8601 week number: weeks start on Monday, and week 1 is the one with the year's first Thursday. */
 function isoWeek(date: Date): number {
@@ -166,7 +167,7 @@ export function describeDay(date: string, now: Date): CalendarDayDetails | undef
   if (!day) return undefined;
   return {
     date,
-    label: day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+    label: formatShortDate(day),
     relative: relativeDay(daysFrom(now, day)),
     week: isoWeek(day),
   };

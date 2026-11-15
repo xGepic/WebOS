@@ -1,3 +1,5 @@
+import { DAY_MS } from '../format';
+
 /** A single item on the one flat to-do list. Times are epoch milliseconds. */
 export interface Todo {
   id: string;
@@ -55,7 +57,7 @@ export function moveTodo(todos: readonly Todo[], id: string, toIndex: number): T
 }
 
 /** How long a completed Todo stays before it is cleared. */
-const CLEAR_COMPLETED_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+const CLEAR_COMPLETED_AFTER_MS = 3 * DAY_MS;
 
 /** Removes completed Todos once 3 days have passed since their completion. Open Todos always stay. */
 export function clearCompleted(todos: readonly Todo[], now: number): Todo[] {

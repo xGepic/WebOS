@@ -12,8 +12,8 @@ import type { WeatherCity, WeatherReport } from '../sky/weather';
 import type { WorldClockCity } from '../time/world-clock';
 
 /**
- * The single persisted state document. Later tickets add Notes and the
- * Desktop layout here, each with a migration.
+ * The single persisted state document: all of webOS's data. Every change to
+ * its shape raises `SCHEMA_VERSION` and adds a migration below.
  */
 export interface StateDocument {
   schemaVersion: typeof SCHEMA_VERSION;

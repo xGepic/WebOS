@@ -2,7 +2,8 @@ import type { Store } from '../store';
 import * as about from './about';
 import * as backup from './backup';
 
-export interface BackupApi {
+/** What can be done with the stored state as a whole: backing it up, and seeing what it holds in About webOS. */
+export interface StateApi {
   /** Export to, and import from, a backup file holding all webOS data. */
   readonly backup: {
     /** A backup file of all webOS data: its suggested file name and its JSON text. Counts as the last backup, for About webOS. */
@@ -23,7 +24,7 @@ export interface BackupApi {
   };
 }
 
-export function createBackup(store: Store): BackupApi {
+export function createState(store: Store): StateApi {
   return {
     backup: {
       export() {

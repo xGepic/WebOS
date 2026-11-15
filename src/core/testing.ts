@@ -14,8 +14,7 @@ import type {
   TopSitePage,
   VisitedPage,
 } from './edges';
-
-const MINUTE = 60_000;
+import { MINUTE_MS } from './format';
 
 /** A Clock whose time only moves when the test says so. */
 export interface TestClock extends Clock {
@@ -35,11 +34,11 @@ export function createTestClock(start: Date): TestClock {
     },
     advance(ms) {
       const target = current + ms;
-      let nextMinute = Math.floor(current / MINUTE) * MINUTE + MINUTE;
+      let nextMinute = Math.floor(current / MINUTE_MS) * MINUTE_MS + MINUTE_MS;
       while (nextMinute <= target) {
         current = nextMinute;
         listeners.forEach((listener) => listener());
-        nextMinute += MINUTE;
+        nextMinute += MINUTE_MS;
       }
       current = target;
     },

@@ -50,7 +50,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Todos, Notes and the greeting
   - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
-  - `time/`: Calendar, Countdowns, the World Clock, and Apple Calendar with the Day View
+  - `time/`: Calendar with holidays and bridge days, Countdowns, the World Clock, Apple Calendar with the Next Event, and the Day View that brings a day's parts together
   - `sky/`: Weather with its Forecast and Wallpaper Weather, Sun and Moon
   - `activity/`: Recent pages, Top Sites, New Tabs, and the System Widget's readings and network
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.

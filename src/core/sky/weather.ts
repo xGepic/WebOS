@@ -1,4 +1,4 @@
-import { formatTime, isTimeZone, wallClock } from '../format';
+import { MINUTE_MS, formatTime, isTimeZone, wallClock } from '../format';
 import { isFiniteNumber, isRecord } from '../guards';
 
 /**
@@ -102,11 +102,10 @@ export type WeatherView =
       days: ForecastDayView[];
     };
 
-const MINUTE = 60_000;
 /** A new tab fetches the weather again once the last report is this old. */
-const REFRESH_AFTER_MS = 30 * MINUTE;
+const REFRESH_AFTER_MS = 30 * MINUTE_MS;
 /** Older than this, the Widget says when the weather it shows is from. */
-const SAY_WHEN_AFTER_MS = 60 * MINUTE;
+const SAY_WHEN_AFTER_MS = 60 * MINUTE_MS;
 /** The most matches a city search offers. */
 const MAX_CITIES = 5;
 /** Days in the Forecast, today included. */
@@ -261,7 +260,7 @@ export const sameCity = (a: WeatherCity | null, b: WeatherCity | null) =>
 export type WallpaperWeather = 'drizzle' | 'rain' | 'storm' | 'snow' | 'fog';
 
 /** A report this old is no longer the weather now, so the Wallpaper shows none. */
-const ON_WALLPAPER_FOR_MS = 120 * MINUTE;
+const ON_WALLPAPER_FOR_MS = 120 * MINUTE_MS;
 
 const onWallpaperFor: Partial<Record<WeatherCondition, WallpaperWeather>> = {
   drizzle: 'drizzle',

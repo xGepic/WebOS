@@ -172,8 +172,8 @@ export interface LayoutEntry extends Placement {
  * one-column gap on either side of them; Top Sites under the Search Widget;
  * beneath it Today and Todos, then a Countdown, System and Moon side by side
  * along the bottom, and Recent with New Tabs beside it. Every Widget is
- * visible. The space beside Todos (where the Notes Widget was) and either side
- * of Top Sites is free, so Edit Mode has room to move things.
+ * visible. The space beside Todos and either side of Top Sites is free, so
+ * Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },
