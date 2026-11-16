@@ -30,8 +30,11 @@
   letter-spacing: var(--tracking-display);
 }
 .unit {
+  overflow: hidden;
   color: var(--text-secondary);
   font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* Seven columns, each a bar over its weekday's letter. */
 .week {
@@ -70,13 +73,21 @@ li.today .bar {
   background: var(--accent);
   opacity: 1;
 }
+/* The bar the pointer is on, whose day the count shows. */
+li.pointed .bar {
+  opacity: 0.85;
+}
+li.today.pointed .bar {
+  opacity: 1;
+}
 .letter {
   color: var(--text-secondary);
   font-size: 0.625rem;
   font-weight: 500;
   line-height: 1;
 }
-li.today .letter {
+li.today .letter,
+li.pointed .letter {
   color: var(--text-primary);
 }
 /* Too short for the letters under the bars. */
