@@ -16,6 +16,7 @@ import { clearPassed } from './time/countdown';
 export type { AppId } from './desktop/apps';
 export type { Cell, LayoutEntry, PlacedWidget, Placement, Span, WidgetDefinition, WidgetId, WidgetSize } from './desktop/desktop';
 export type { AmbientAfter } from './desktop/ambient';
+export type { ClockFace, ClockHands } from './time/clock-face';
 export type { Wallpaper } from './desktop/wallpaper';
 export type {
   BrowserLookup,

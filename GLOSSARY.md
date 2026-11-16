@@ -62,6 +62,10 @@ _Avoid_: Task, item, ticket
 A text the user pasted into the Clipboard App to copy again later. It can be pinned, so it is never dropped.
 _Avoid_: Snippet, clipping, history entry
 
+**Clock Widget**:
+The Widget that shows the time large, with the date and a greeting, straight on the Wallpaper. Clicking the time turns it into the analog Clock, a dial with a sweeping second hand, and clicking the dial turns it back; the choice is kept for every new tab.
+_Avoid_: Watch, watch face, time widget
+
 **Today Widget**:
 The Widget that shows the Day View of today, or of the day picked in the Calendar Widget until the user goes back to today, with Coming Up under it.
 _Avoid_: Agenda, day widget, schedule

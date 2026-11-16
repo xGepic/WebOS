@@ -1,6 +1,7 @@
 import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
 import { DEFAULT_AMBIENT_AFTER } from '../desktop/ambient';
 import { DEFAULT_WALLPAPER } from '../desktop/wallpaper';
+import { DEFAULT_CLOCK_FACE } from '../time/clock-face';
 import type { NewTabCounts } from '../activity/new-tabs';
 import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
@@ -58,9 +59,11 @@ export interface StateDocument {
   lastBackupAt: number | null;
   /** After how many minutes alone the Desktop goes to Ambient mode, or null for never. Minutes this build doesn't offer show as the default. */
   ambientAfter: number | null;
+  /** The Clock Widget's face, "digital" or "analog". One this build doesn't know shows as digital. */
+  clockFace: string;
 }
 
-const SCHEMA_VERSION = 27;
+const SCHEMA_VERSION = 28;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -249,6 +252,8 @@ const migrations: Record<number, Migration> = {
   25: (document) => ({ ...document, schemaVersion: 27, lastBackupAt: null }),
   // Ambient mode: on after five minutes, as on a fresh Desktop.
   26: (document) => ({ ...document, schemaVersion: 27, ambientAfter: DEFAULT_AMBIENT_AFTER }),
+  // The analog Clock: the Clock Widget keeps its digits until the time is clicked.
+  27: (document) => ({ ...document, schemaVersion: 28, clockFace: DEFAULT_CLOCK_FACE }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -295,6 +300,7 @@ function freshDocument(): StateDocument {
     newTabs: {},
     lastBackupAt: null,
     ambientAfter: DEFAULT_AMBIENT_AFTER,
+    clockFace: DEFAULT_CLOCK_FACE,
   };
 }
 
@@ -352,7 +358,8 @@ function assertCurrentShape(
     typeof document['wallpaperWeather'] !== 'boolean' ||
     !isRecord(document['newTabs']) ||
     !(document['lastBackupAt'] === null || isFiniteNumber(document['lastBackupAt'])) ||
-    !(document['ambientAfter'] === null || isFiniteNumber(document['ambientAfter']))
+    !(document['ambientAfter'] === null || isFiniteNumber(document['ambientAfter'])) ||
+    typeof document['clockFace'] !== 'string'
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

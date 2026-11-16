@@ -29,6 +29,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0023](docs/specs/0023-ambient-mode.md) | Ambient mode: a Desktop left alone fades to a large clock over the Wallpaper |
 | [0024](docs/specs/0024-rose-wallpaper.md) | The Rose Wallpaper in place of Graphite |
 | [0025](docs/specs/0025-rain-ahead.md) | Rain Ahead on the Weather Widget: when rain or snow starts or stops in the next 12 hours |
+| [0026](docs/specs/0026-analog-clock.md) | The analog Clock: clicking the Clock Widget's time turns it into a dial, and back |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -56,7 +57,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
   - `dev-utilities/`: JSON, Base64, text diff, UUID and timestamp tools
   - `organizer/`: Todos, Notes and the greeting
   - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
-  - `time/`: Calendar with holidays and bridge days, Countdowns, the World Clock, Apple Calendar with the Next Event and Coming Up, and the Day View that brings a day's parts together
+  - `time/`: the Clock's time, date and face, Calendar with holidays and bridge days, Countdowns, the World Clock, Apple Calendar with the Next Event and Coming Up, and the Day View that brings a day's parts together
   - `sky/`: Weather with its Forecast, Rain Ahead and Wallpaper Weather, Sun and Moon
   - `activity/`: Recent pages, Top Sites, New Tabs, and the System Widget's readings and network
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.

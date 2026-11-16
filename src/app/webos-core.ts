@@ -7,6 +7,7 @@ import {
   type CalendarDayView,
   type CalendarMonth,
   type Cell,
+  type ClockHands,
   type WeatherCity,
   type WebOS,
   type WidgetId,
@@ -51,6 +52,8 @@ export class WebOSCore {
   readonly devUtilities = this.read((core) => core.devUtilities);
   readonly time = this.read((core) => core.clock.time());
   readonly date = this.read((core) => core.clock.date());
+  readonly clockHands = this.read((core) => core.clock.hands());
+  readonly clockFace = this.read((core) => core.clock.face());
   readonly weather = this.read((core) => core.weather.view());
   readonly weatherCity = this.read((core) => core.weather.city());
   readonly appleCalendar = this.read((core) => core.appleCalendar.status());
@@ -176,6 +179,11 @@ export class WebOSCore {
   /** Where a Widget of `size` with its top-left at `cell` would sit on the grid, as a move would place it. */
   fitOnGrid(widget: WidgetId, size: WidgetSize, cell: Cell): Cell | undefined {
     return this.core()?.desktop.fitOnGrid(widget, size, cell);
+  }
+
+  /** Where an analog clock's hands point at this moment, unlike `clockHands`, which moves on with the minute tick. */
+  clockHandsNow(): ClockHands | undefined {
+    return this.core()?.clock.hands();
   }
 
   /** The display name of a Widget, e.g. "Todos". */

@@ -5,6 +5,7 @@ import type { WeatherCity } from '../sky/weather';
 import type { Store } from '../store';
 import * as apple from './apple-calendar';
 import * as calendar from './calendar';
+import { clockFaceOf, clockHands, type ClockFace, type ClockHands } from './clock-face';
 import * as countdown from './countdown';
 import * as dayView from './day-view';
 import * as holidays from './holidays';
@@ -16,6 +17,11 @@ export interface TimeApi {
     time(): string;
     /** Today's date, e.g. "Thursday, November 12". */
     date(): string;
+    /** Where an analog clock's hands point now. */
+    hands(): ClockHands;
+    /** The Clock Widget's face: digits or an analog clock. Digits until changed. */
+    face(): ClockFace;
+    setFace(face: ClockFace): Promise<void>;
   };
   readonly calendar: {
     /**
@@ -206,6 +212,12 @@ export function createTime(store: Store, server?: CalendarServer): TimeApi {
     clock: {
       time: () => formatTime(clock.now()),
       date: () => formatDate(clock.now()),
+      hands: () => clockHands(clock.now()),
+      face: () => clockFaceOf(state().clockFace),
+      async setFace(face) {
+        if (clockFaceOf(state().clockFace) === face) return;
+        await store.commit({ ...state(), clockFace: face });
+      },
     },
     calendar: {
       month: (offset = 0) => calendar.monthView(clock.now(), offset, marksFor(offset)),

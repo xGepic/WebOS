@@ -50,7 +50,7 @@ describe('Ambient mode', () => {
     const migrated = await setUp(createMemoryStorage({ ...v26, schemaVersion: 26 }));
 
     expect(migrated.webos.ambient.after()).toBe(5);
-    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 27, ambientAfter: 5 });
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 28, ambientAfter: 5 });
   });
 
   it('goes into a backup, and comes back with it', async () => {

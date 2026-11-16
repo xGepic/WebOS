@@ -6,6 +6,7 @@ Extended by: [Spec 0002: More Widgets](0002-more-widgets.md), which adds seven W
 Changed by: [Spec 0003: A Leaner Desktop](0003-leaner-desktop.md), which removes the Launcher, Links, Docked Links and the Links Widget, replaces the JWT tab with a Diff tab and Brave Search with DuckDuckGo, and takes Notes out of the Dock.
 Extended by: [Spec 0019: About webOS](0019-about-webos.md), which records the last backup and shows it with the version and storage used.
 Changed by: [Spec 0016: Done in the Dock](0016-done-in-the-dock.md), which moves Edit Mode's "Done" from the Menu Bar into the Dock.
+Extended by: [Spec 0026: The Analog Clock](0026-analog-clock.md), which lets the Clock Widget's time turn into an analog clock.
 
 ## Problem Statement
 

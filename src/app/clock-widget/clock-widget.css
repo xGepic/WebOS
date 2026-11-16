@@ -45,3 +45,92 @@ p {
   font-size: 0.9375rem;
   letter-spacing: var(--tracking-caption);
 }
+
+/* The time, or the dial, is a button that switches between them. It looks like neither. */
+.face {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-inset);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.face:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * The analog Clock: the dial takes the height the greeting and date leave, as
+ * every size is wider than it is tall. Marks and hands in the type's colours,
+ * the second hand in the accent, still no surface.
+ */
+.dial-face {
+  display: flex;
+  flex: 1;
+  justify-content: flex-start;
+  min-height: 0;
+  margin: 0.375rem 0 0;
+}
+:host(.centred) .dial-face {
+  align-self: stretch;
+  justify-content: center;
+}
+.dial {
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+.mark {
+  stroke: var(--text-secondary);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+.hour-mark {
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+  opacity: 0.9;
+}
+.hand {
+  stroke: var(--text-primary);
+  stroke-linecap: round;
+}
+.hour {
+  stroke-width: 3.4;
+}
+.minute {
+  stroke-width: 2.2;
+}
+.second {
+  stroke: var(--accent);
+  stroke-width: 0.8;
+}
+.pin {
+  fill: var(--accent);
+}
+/* A minute's steady sweep, which the compositor runs; it starts where the second hand is. */
+.second-sweep {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: sweep 60s linear infinite;
+}
+@keyframes sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Under reduced motion there is no second hand: the minute hand's step is the only movement. */
+@media (prefers-reduced-motion: reduce) {
+  .second-sweep {
+    display: none;
+  }
+}

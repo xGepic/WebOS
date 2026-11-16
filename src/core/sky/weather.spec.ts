@@ -574,7 +574,7 @@ describe('Wallpaper Weather', () => {
     const { wallpaperWeather: _, ...v24 } = (await storage.read()) as Record<string, unknown>;
     const migrated = await setUp({ storage: createMemoryStorage({ ...v24, schemaVersion: 24 }) });
     expect(migrated.webos.wallpaper.showsWeather()).toBe(true);
-    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 27, wallpaperWeather: true });
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 28, wallpaperWeather: true });
 
     await webos.wallpaper.setShowsWeather(false);
     const restored = await setUp();
