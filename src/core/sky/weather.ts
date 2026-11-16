@@ -50,6 +50,18 @@ export interface WeatherReport {
    * Reports stored by builds before the Forecast have none, and are fetched again.
    */
   days?: ForecastDay[];
+  /**
+   * The next 24 hours from the hour it was fetched in, for Rain Ahead. Reports
+   * stored by builds before Rain Ahead have none, and are fetched again.
+   */
+  hours?: ForecastHour[];
+}
+
+/** One hour of the forecast, as stored. */
+export interface ForecastHour {
+  /** When the hour starts (epoch milliseconds). */
+  time: number;
+  condition: WeatherCondition;
 }
 
 /** One day of the Forecast, as stored. */
@@ -100,6 +112,12 @@ export type WeatherView =
       updatedAt?: string;
       /** The Forecast from today on, at most seven days. Empty until a report with one is fetched. */
       days: ForecastDayView[];
+      /**
+       * Rain Ahead: when rain or snow starts or stops in the next 12 hours, e.g.
+       * "Rain from 3 PM", "Snow until 9 PM" or "Dry for the next 12 hours".
+       * Undefined when the stored hours don't reach far enough to say.
+       */
+      ahead?: string;
     };
 
 /** A new tab fetches the weather again once the last report is this old. */
@@ -112,6 +130,11 @@ const MAX_CITIES = 5;
 const FORECAST_DAYS = 7;
 /** A smaller chance of rain or snow isn't worth showing. */
 const SHOW_RAIN_FROM = 20;
+const HOUR_MS = 60 * MINUTE_MS;
+/** Hours of the forecast stored, from the hour it is fetched in. */
+const FORECAST_HOURS = 24;
+/** How far ahead Rain Ahead looks. */
+const AHEAD_HOURS = 12;
 
 const conditionLabels: Record<WeatherCondition, string> = {
   clear: 'Clear',
@@ -139,15 +162,17 @@ function conditionFor(code: number): WeatherCondition {
   return 'cloudy';
 }
 
-/** The forecast request for a city: current conditions, and the next seven days from today, in the city's time zone. */
+/** The forecast request for a city: current conditions, the next 24 hours, and the next seven days from today, in the city's time zone. */
 export function forecastUrl(city: WeatherCity): string {
   const params = new URLSearchParams({
     latitude: city.latitude.toFixed(4),
     longitude: city.longitude.toFixed(4),
     current: 'temperature_2m,weather_code,is_day',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+    hourly: 'weather_code',
     timezone: 'auto',
     forecast_days: String(FORECAST_DAYS),
+    forecast_hours: String(FORECAST_HOURS),
   });
   return `https://api.open-meteo.com/v1/forecast?${params}`;
 }
@@ -172,7 +197,30 @@ export function parseForecast(response: unknown, fetchedAt: number): WeatherRepo
     throw new Error('The weather response has an unexpected shape.');
   }
   const [{ high, low }] = days;
-  return { fetchedAt, temperature, high, low, condition: conditionFor(code), isDay: current['is_day'] !== 0, days };
+  const hours = parseHours(response as Record<string, unknown>);
+  return { fetchedAt, temperature, high, low, condition: conditionFor(code), isDay: current['is_day'] !== 0, days, hours };
+}
+
+/**
+ * The hours in a forecast response's `hourly` part, up to the first one it
+ * gives without a time or code. Its times are the city's wall clock, so they
+ * are placed with the response's UTC offset; there are none without one.
+ */
+function parseHours(response: Record<string, unknown>): ForecastHour[] {
+  const hourly = response['hourly'];
+  const offset = response['utc_offset_seconds'];
+  if (!isRecord(hourly) || !isFiniteNumber(offset)) return [];
+  const times = Array.isArray(hourly['time']) ? (hourly['time'] as unknown[]) : [];
+  const codes = Array.isArray(hourly['weather_code']) ? (hourly['weather_code'] as unknown[]) : [];
+  const hours: ForecastHour[] = [];
+  for (const [i, time] of times.entries()) {
+    const parts = typeof time === 'string' ? /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(time) : null;
+    const code = codes[i];
+    if (!parts || !isFiniteNumber(code)) break;
+    const [year, month, day, hour, minute] = parts.slice(1).map(Number);
+    hours.push({ time: Date.UTC(year, month - 1, day, hour, minute) - offset * 1000, condition: conditionFor(code) });
+  }
+  return hours;
 }
 
 /** The days in a forecast response's `daily` part, up to the first one it gives without a date, code, high or low. */
@@ -194,21 +242,53 @@ function parseDays(daily: Record<string, unknown>): ForecastDay[] {
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-/** Today's date in the city, as `2026-11-14`: in its own time zone if it has one the browser knows, else locally. */
-function todayIn(city: WeatherCity, now: Date): string {
-  let clock;
-  try {
-    clock = wallClock(now, city.timeZone);
-  } catch {
-    clock = wallClock(now);
-  }
+/** The city's time zone if the browser knows it; otherwise undefined, for local time. */
+function zoneOf(city: WeatherCity): string | undefined {
+  return isTimeZone(city.timeZone) ? city.timeZone : undefined;
+}
+
+/** The date in the city at `time`, as `2026-11-14`: in its own time zone if it has one the browser knows, else locally. */
+function dateIn(city: WeatherCity, time: Date): string {
+  const clock = wallClock(time, zoneOf(city));
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${clock.year}-${pad(clock.month + 1)}-${pad(clock.day)}`;
 }
 
+/** What falls in an hour of the condition, if anything: snow, or rain for drizzle, showers and storms too. */
+function fallOf(condition: WeatherCondition): 'Rain' | 'Snow' | undefined {
+  if (condition === 'snow') return 'Snow';
+  return condition === 'drizzle' || condition === 'rain' || condition === 'showers' || condition === 'thunderstorm' ? 'Rain' : undefined;
+}
+
+/**
+ * Rain Ahead from the stored hours. Raining or snowing in the hour now: when it
+ * stops. Otherwise: when it starts. Neither in the next 12 hours: dry, but only
+ * when the hours reach that far. A time on a later day in the city says so.
+ */
+function rainAhead(city: WeatherCity, hours: readonly ForecastHour[], now: Date): string | undefined {
+  const end = now.getTime() + AHEAD_HOURS * HOUR_MS;
+  const ahead = hours.filter((hour) => hour.time + HOUR_MS > now.getTime() && hour.time < end);
+  const reachesEnd = ahead.length > 0 && ahead[ahead.length - 1].time + HOUR_MS >= end;
+  const today = dateIn(city, now);
+  const at = (time: number) => {
+    // "9 PM": an hour on the hour needs no minutes. A city half an hour off keeps them, "9:30 PM".
+    const shown = formatTime(new Date(time), zoneOf(city)).replace(':00 ', ' ');
+    return dateIn(city, new Date(time)) === today ? shown : `${shown} tomorrow`;
+  };
+  const falling = ahead[0] && ahead[0].time <= now.getTime() ? fallOf(ahead[0].condition) : undefined;
+  if (falling) {
+    const stops = ahead.find((hour) => !fallOf(hour.condition));
+    if (stops) return `${falling} until ${at(stops.time)}`;
+    return reachesEnd ? `${falling} for the next ${AHEAD_HOURS} hours` : undefined;
+  }
+  const starts = ahead.find((hour) => fallOf(hour.condition));
+  if (starts) return `${fallOf(starts.condition)} from ${at(starts.time)}`;
+  return reachesEnd ? `Dry for the next ${AHEAD_HOURS} hours` : undefined;
+}
+
 /** The stored Forecast from the city's today on, as the Widget shows it. Days already past, in an old report, are left out. */
 function forecastView(city: WeatherCity, days: readonly ForecastDay[], now: Date): ForecastDayView[] {
-  const today = todayIn(city, now);
+  const today = dateIn(city, now);
   return days
     .filter((day) => day.date >= today)
     .map((day) => {
@@ -277,8 +357,9 @@ export function wallpaperWeather(report: WeatherReport | null, now: number): Wal
   return onWallpaperFor[report.condition] ?? null;
 }
 
-/** Whether a new tab should fetch the weather again: it is 30 minutes old, or from a build before the Forecast. */
-export const isDue = (report: WeatherReport | null, now: number) => !report || !report.days || now - report.fetchedAt >= REFRESH_AFTER_MS;
+/** Whether a new tab should fetch the weather again: it is 30 minutes old, or from a build before the Forecast or Rain Ahead. */
+export const isDue = (report: WeatherReport | null, now: number) =>
+  !report || !report.days || !report.hours || now - report.fetchedAt >= REFRESH_AFTER_MS;
 
 /** What the Widget shows for the stored city and report, and how this tab's last fetch went. */
 export function weatherView(
@@ -299,5 +380,6 @@ export function weatherView(
     isDay: report.isDay,
     updatedAt: now.getTime() - report.fetchedAt > SAY_WHEN_AFTER_MS ? formatTime(new Date(report.fetchedAt)) : undefined,
     days: forecastView(city, report.days ?? [], now),
+    ahead: rainAhead(city, report.hours ?? [], now),
   };
 }

@@ -367,6 +367,122 @@ describe('keeping the weather fresh', () => {
   });
 });
 
+describe('Rain Ahead', () => {
+  const HOUR = 60 * MINUTE;
+  const [DRY, FOG, DRIZZLE, RAIN, SNOW, SHOWERS, STORM] = [3, 45, 53, 63, 73, 81, 95];
+
+  /**
+   * A forecast response with an hour for each code, the first starting at
+   * `from` on the city's wall clock, `offset` seconds ahead of UTC: by default
+   * 6 PM on Thursday 12 November in Vienna, when the tests' clock starts.
+   */
+  const hourly = (codes: number[], { from = '2026-11-12T18:00', offset = 3600 } = {}) => {
+    const first = Date.parse(`${from}:00Z`);
+    return {
+      ...forecast(),
+      utc_offset_seconds: offset,
+      hourly: { time: codes.map((_, i) => new Date(first + i * HOUR).toISOString().slice(0, 16)), weather_code: codes },
+    };
+  };
+  const dryFor = (hours: number) => Array<number>(hours).fill(DRY);
+
+  async function aheadFor(response: unknown, city = vienna) {
+    const { webos, fetch, clock } = await setUp({ fetch: openMeteo(() => response) });
+    await webos.weather.setCity(city);
+    await webos.weather.refresh();
+    const ahead = () => {
+      const view = webos.weather.view();
+      return view.status === 'ready' ? view.ahead : 'not ready';
+    };
+    return { ahead, fetch, clock };
+  }
+
+  it('fetches the next 24 hours, and says when it stays dry for the next 12', async () => {
+    const { ahead, fetch } = await aheadFor(hourly(dryFor(24)));
+
+    expect(ahead()).toBe('Dry for the next 12 hours');
+    const [request] = forecasts(fetch);
+    expect(request.searchParams.get('hourly')).toBe('weather_code');
+    expect(request.searchParams.get('forecast_hours')).toBe('24');
+  });
+
+  it('says when rain starts', async () => {
+    const { ahead } = await aheadFor(hourly([...dryFor(3), RAIN, ...dryFor(20)]));
+
+    expect(ahead()).toBe('Rain from 9 PM');
+  });
+
+  it('says when rain stops, while it is raining', async () => {
+    const { ahead } = await aheadFor(hourly([RAIN, RAIN, ...dryFor(4), RAIN, ...dryFor(17)]));
+
+    expect(ahead()).toBe('Rain until 8 PM');
+  });
+
+  it('says when snow starts, and that it is tomorrow when it is', async () => {
+    const { ahead } = await aheadFor(hourly([...dryFor(11), SNOW, ...dryFor(12)]));
+
+    expect(ahead()).toBe('Snow from 5 AM tomorrow');
+  });
+
+  it('counts drizzle, showers and storms as rain, and fog as dry', async () => {
+    expect((await aheadFor(hourly([FOG, DRIZZLE, ...dryFor(22)]))).ahead()).toBe('Rain from 7 PM');
+    expect((await aheadFor(hourly([FOG, FOG, SHOWERS, ...dryFor(21)]))).ahead()).toBe('Rain from 8 PM');
+    expect((await aheadFor(hourly([STORM, ...dryFor(23)]))).ahead()).toBe('Rain until 7 PM');
+  });
+
+  it('looks 12 hours ahead and no further', async () => {
+    expect((await aheadFor(hourly([...dryFor(12), RAIN, ...dryFor(11)]))).ahead()).toBe('Dry for the next 12 hours');
+    expect((await aheadFor(hourly([...Array<number>(13).fill(RAIN), ...dryFor(11)]))).ahead()).toBe('Rain for the next 12 hours');
+  });
+
+  it('moves on with the clock, without fetching again', async () => {
+    const { ahead, fetch, clock } = await aheadFor(hourly([...dryFor(3), RAIN, RAIN, ...dryFor(19)]));
+    expect(ahead()).toBe('Rain from 9 PM');
+
+    clock.advance(3 * HOUR + 10 * MINUTE);
+
+    expect(ahead()).toBe('Rain until 11 PM');
+    expect(forecasts(fetch)).toHaveLength(1);
+  });
+
+  it("says nothing when the hours it has don't reach 12 hours ahead", async () => {
+    const { ahead } = await aheadFor(hourly(dryFor(6)));
+
+    expect(ahead()).toBeUndefined();
+  });
+
+  it("gives times on the city's own clock", async () => {
+    const tokyo: WeatherCity = { name: 'Tokyo', region: 'Tokyo', country: 'Japan', latitude: 35.6895, longitude: 139.69171, timeZone: 'Asia/Tokyo' };
+
+    // 6 PM in Vienna is 2 AM on Friday in Tokyo.
+    const { ahead } = await aheadFor(hourly([...dryFor(3), RAIN, ...dryFor(20)], { from: '2026-11-13T02:00', offset: 32400 }), tokyo);
+
+    expect(ahead()).toBe('Rain from 5 AM');
+  });
+
+  it('says nothing for a response without its hours or their UTC offset', async () => {
+    const { utc_offset_seconds: _, ...withoutOffset } = hourly(dryFor(24));
+
+    expect((await aheadFor(forecast())).ahead()).toBeUndefined();
+    expect((await aheadFor(withoutOffset)).ahead()).toBeUndefined();
+  });
+
+  it('fetches again, however fresh, weather stored before webOS had Rain Ahead', async () => {
+    const clock = createTestClock(new Date(2026, 10, 12, 18, 0));
+    const first = await setUp({ clock });
+    await first.webos.weather.setCity(vienna);
+    await first.webos.weather.refresh();
+    const document = JSON.parse(first.webos.backup.export().text);
+    document.weather.report = { fetchedAt: clock.now().getTime(), temperature: 11.6, high: 14.8, low: 7.2, condition: 'cloudy', isDay: true, days: [] };
+
+    const older = await setUp({ clock, storage: createMemoryStorage(document), fetch: openMeteo(() => hourly(dryFor(24))) });
+    await older.webos.weather.refresh();
+
+    expect(forecasts(older.fetch)).toHaveLength(1);
+    expect(older.webos.weather.view()).toMatchObject({ status: 'ready', ahead: 'Dry for the next 12 hours' });
+  });
+});
+
 describe('weather in a backup', () => {
   it('keeps the city but leaves out the cached weather, which an import drops too', async () => {
     const { webos } = await setUp();

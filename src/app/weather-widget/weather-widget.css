@@ -103,9 +103,25 @@ p {
 .button {
   margin-top: 0.5rem;
 }
-/* Short: the time of the last update is the first to go. */
+/* Rain Ahead: one line under the high and low, a little brighter, as it is news. */
+.ahead {
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 0.15em;
+  color: var(--text-primary);
+  font-size: clamp(0.6875rem, min(4.4cqh, 4.8cqi), 1.25rem);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Short: the time of the last update is the first to go, then Rain Ahead. */
 @container (max-height: 150px) {
   .updated {
+    display: none;
+  }
+}
+@container (max-height: 120px) {
+  .ahead {
     display: none;
   }
 }

@@ -28,6 +28,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0022](docs/specs/0022-coming-up.md) | Coming Up in the Today Widget: the next Event after today and how many days away it is, in place of Copy date and sunrise and sunset |
 | [0023](docs/specs/0023-ambient-mode.md) | Ambient mode: a Desktop left alone fades to a large clock over the Wallpaper |
 | [0024](docs/specs/0024-rose-wallpaper.md) | The Rose Wallpaper in place of Graphite |
+| [0025](docs/specs/0025-rain-ahead.md) | Rain Ahead on the Weather Widget: when rain or snow starts or stops in the next 12 hours |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -56,7 +57,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
   - `organizer/`: Todos, Notes and the greeting
   - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
   - `time/`: Calendar with holidays and bridge days, Countdowns, the World Clock, Apple Calendar with the Next Event and Coming Up, and the Day View that brings a day's parts together
-  - `sky/`: Weather with its Forecast and Wallpaper Weather, Sun and Moon
+  - `sky/`: Weather with its Forecast, Rain Ahead and Wallpaper Weather, Sun and Moon
   - `activity/`: Recent pages, Top Sites, New Tabs, and the System Widget's readings and network
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.
 - `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history and Top Sites lookup, the network (`network.ts`, for the weather), the processor and memory (`system-monitor.ts`), the network status (`network-status.ts`) and iCloud's CalDAV server (`icloud-calendar.ts`) are injected into the core; the favicon lookup, opening URLs in this tab or a background tab (`tabs.ts`) and the extension's version (`extension-info.ts`) are used by views directly.

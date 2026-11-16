@@ -98,6 +98,10 @@ _Avoid_: Weather effects, animated wallpaper, particles
 The weather for today and the six days after it in the Weather city, each with its condition, any chance of rain or snow, and its low and high. The Weather Widget shows it in place of the current weather when clicked.
 _Avoid_: Outlook, week view, prediction
 
+**Rain Ahead**:
+The line on the Weather Widget that says when rain or snow starts or stops in the Weather city in the next 12 hours, e.g. "Rain from 3 PM", or that it stays dry. Drizzle, showers and storms count as rain; fog doesn't.
+_Avoid_: Nowcast, precipitation alert, rain warning
+
 **World Clock city**:
 A city on the World Clock Widget, kept with its time zone.
 _Avoid_: Time zone, location

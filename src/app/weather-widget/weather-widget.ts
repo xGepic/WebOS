@@ -6,8 +6,9 @@ import { WeatherIcon } from './weather-icon';
 
 /**
  * The Weather Widget: the current temperature in the city chosen in Settings,
- * the condition in words with an icon, and today's high and low, in °C. Like
- * the Clock it has no surface: its type sits straight on the wallpaper.
+ * the condition in words with an icon, today's high and low, in °C, and Rain
+ * Ahead: when rain or snow starts or stops in the next 12 hours. Like the Clock
+ * it has no surface: its type sits straight on the wallpaper.
  *
  * Clicking it turns it to the Forecast: today and the six days after, each
  * with its condition, any chance of rain or snow, and its low and high on a
@@ -34,6 +35,9 @@ import { WeatherIcon } from './weather-icon';
                 {{ weather.label }}
                 <span class="range">H {{ weather.high }}° · L {{ weather.low }}°</span>
               </span>
+              @if (weather.ahead) {
+                <span class="ahead">{{ weather.ahead }}</span>
+              }
               @if (weather.updatedAt) {
                 <span class="updated">Updated {{ weather.updatedAt }}</span>
               }
@@ -94,8 +98,9 @@ export class WeatherWidget {
     const weather = this.webos.weather();
     if (weather?.status !== 'ready') return null;
     if (!this.showForecast()) {
+      const ahead = weather.ahead ? ` ${weather.ahead}.` : '';
       const updated = weather.updatedAt ? ` Updated ${weather.updatedAt}.` : '';
-      return `${weather.city}, ${weather.temperature}°, ${weather.label}. High ${weather.high}°, low ${weather.low}°.${updated} Show the forecast`;
+      return `${weather.city}, ${weather.temperature}°, ${weather.label}. High ${weather.high}°, low ${weather.low}°.${ahead}${updated} Show the forecast`;
     }
     const days = weather.days.map((day) => {
       const rain = day.rainChance ? `, ${day.rainChance}% chance of ${day.condition === 'snow' ? 'snow' : 'rain'}` : '';

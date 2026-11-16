@@ -2,6 +2,7 @@
 
 Status: built (2026-11-14)
 Related: [Spec 0002: More Widgets](0002-more-widgets.md), [GLOSSARY](../../GLOSSARY.md)
+Extended by: [Spec 0025: Rain Ahead](0025-rain-ahead.md)
 
 ## Problem Statement
 
