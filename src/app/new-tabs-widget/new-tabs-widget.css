@@ -55,6 +55,9 @@ li {
 }
 /* Most of its day's width, up to a bar that still reads as a bar at L. */
 .column {
+  /* Headroom over the busiest bar, so a pointed bar's count fits above it. */
+  --headroom: 0.875rem;
+  --bar-height: max(2px, calc(var(--share, 0) * (100% - var(--headroom))));
   position: relative;
   width: min(60%, 2rem);
 }
@@ -64,7 +67,7 @@ li {
   right: 0;
   bottom: 0;
   left: 0;
-  height: max(2px, calc(var(--share, 0) * 100%));
+  height: var(--bar-height);
   border-radius: 3px 3px 1px 1px;
   background: var(--text-secondary);
   opacity: 0.45;
@@ -73,7 +76,20 @@ li.today .bar {
   background: var(--accent);
   opacity: 1;
 }
-/* The bar the pointer is on, whose day the count shows. */
+/* The pointed bar's count, small, just above the bar. */
+.value {
+  position: absolute;
+  bottom: calc(var(--bar-height) + 0.125rem);
+  left: 50%;
+  color: var(--text-primary);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+/* The bar the pointer is on, whose count shows above it. */
 li.pointed .bar {
   opacity: 0.85;
 }

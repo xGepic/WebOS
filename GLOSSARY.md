@@ -75,7 +75,7 @@ The sites the user visits most, as the browser's own new tab page lists them, ea
 _Avoid_: Shortcuts, bookmarks, favourites, speed dial
 
 **New Tabs**:
-The new tabs the user opened on a day, each counted as its Desktop opens; a reload isn't one. The New Tabs Widget shows today's large, over a bar for each of the last seven days; pointing at a bar shows that day's instead. webOS keeps only those seven.
+The new tabs the user opened on a day, each counted as its Desktop opens; a reload isn't one. The New Tabs Widget shows today's large, over a bar for each of the last seven days; pointing at a bar shows that day's in small type above it. webOS keeps only those seven.
 _Avoid_: Tab count, tabs opened, page views, visits
 
 **Countdown**:

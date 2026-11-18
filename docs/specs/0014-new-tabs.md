@@ -1,6 +1,6 @@
 # Spec 0014: The New Tabs Widget
 
-Status: built (2026-11-15). On 2026-11-16 pointing at a bar came to show its day's count in place of today's, instead of a tooltip.
+Status: built (2026-11-15). On 2026-11-16 pointing at a bar came to show its day's count in place of today's, instead of a tooltip. On 2026-11-18 that count moved to small type above the bar, so today's stays put.
 Related: [Spec 0002: More Widgets](0002-more-widgets.md), [Spec 0012: The Top Sites Widget](0012-top-sites.md), [GLOSSARY](../../GLOSSARY.md)
 
 ## Problem Statement
@@ -28,7 +28,7 @@ webOS counts each new tab as its Desktop opens. A **New Tabs Widget** shows toda
 - Each count saves the state document, so the other open tabs take it on and their Widget follows. Two tabs opened in the same instant may be counted as one, as the store saves whole documents; that is close enough.
 - The view gives today's count, and the seven days oldest first, each with its weekday's letter, its date as "Thu, Nov 12", its count and whether it is today. A count that isn't a whole number from 0 up, as from a hand-edited backup, reads as 0. Past midnight the Widget starts the new day at 0 without a new tab opening, as the view is made from the clock.
 - The Widget `new-tabs` is S 3 × 2, M 3 × 3 and L 6 × 3, like the Countdown. A fresh Desktop shows it at S beside Recent, under the Calendar (column 15, row 3); an existing Desktop gets it hidden, for Edit Mode to show.
-- The bars are scaled to the busiest of the seven days. A day without new tabs shows a thin line, so the week keeps its shape. Pointing at a bar shows its day's count and date in place of today's ("12 Thu, Nov 12"), and brightens the bar and its letter, until the pointer leaves the bars; each bar's date and count are also in screen-reader text; the weekday letters hide when the Widget is too short for them. It opens no App.
+- The bars are scaled to the busiest of the seven days. A day without new tabs shows a thin line, so the week keeps its shape. The bars leave a little headroom over the busiest day. Pointing at a bar shows its day's count in small type just above it, and brightens the bar and its letter, until the pointer leaves the bars; today's count stays as it is; each bar's date and count are also in screen-reader text; the weekday letters hide when the Widget is too short for them. It opens no App.
 
 ## Testing Decisions
 
