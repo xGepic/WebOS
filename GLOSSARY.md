@@ -78,6 +78,10 @@ _Avoid_: Shortcuts, bookmarks, favourites, speed dial
 The new tabs the user opened on a day, each counted as its Desktop opens; a reload isn't one. The New Tabs Widget shows today's large, over a bar for each of the last seven days; pointing at a bar shows that day's in small type above it. webOS keeps only those seven.
 _Avoid_: Tab count, tabs opened, page views, visits
 
+**Commits**:
+The user's commits this month and last month over all their repositories, as GitHub counts them for their profile, read with a personal access token set in Settings. The GitHub Widget shows the two side by side. The token never goes into a backup.
+_Avoid_: Contributions, pushes, activity
+
 **Countdown**:
 A day the user counts down to, such as a race or a release, shown with the days to go on the Countdown Widget. It is cleared once its day has passed. One added with a day that has already passed counts up instead, with the days since.
 _Avoid_: Event, deadline, timer

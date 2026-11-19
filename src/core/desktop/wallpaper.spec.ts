@@ -60,7 +60,7 @@ describe('the Wallpaper', () => {
     const migrated = await setUp(createMemoryStorage({ ...v22, schemaVersion: 22 }));
 
     expect(migrated.webos.wallpaper.current()).toBe('midnight');
-    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 28, wallpaper: 'midnight' });
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 29, wallpaper: 'midnight' });
   });
 
   it('goes into a backup, and comes back with it', async () => {

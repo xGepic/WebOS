@@ -1,0 +1,75 @@
+:host {
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1rem 0.75rem;
+  border-radius: var(--radius-widget);
+}
+.login {
+  margin-left: 0.375rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+/* This month and last month side by side, each a large thin number under its label. */
+.months {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 0.75rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+.month {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.25rem;
+  min-width: 0;
+}
+/* Up to two lines, "commits / this month", in a narrow Widget. */
+.label {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.number {
+  margin: 0;
+  font-size: clamp(1.5rem, 26cqh, 3.5rem);
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+/* Last month is the comparison: a little quieter than this month. */
+.last .number {
+  color: var(--text-secondary);
+}
+/* Why the counts may be out of date. */
+.stale {
+  flex: none;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.message {
+  margin: 0;
+  padding: 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+/* Too short for the line under the numbers. */
+@container (max-height: 8.5rem) {
+  .stale {
+    display: none;
+  }
+}

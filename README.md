@@ -30,6 +30,7 @@ A personal Brave extension that replaces the new tab with a Desktop that looks a
 | [0024](docs/specs/0024-rose-wallpaper.md) | The Rose Wallpaper in place of Graphite |
 | [0025](docs/specs/0025-rain-ahead.md) | Rain Ahead on the Weather Widget: when rain or snow starts or stops in the next 12 hours |
 | [0026](docs/specs/0026-analog-clock.md) | The analog Clock: clicking the Clock Widget's time turns it into a dial, and back |
+| [0027](docs/specs/0027-github-commits.md) | The GitHub Widget, smaller: commits this month and last month over all repositories |
 
 See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-react.md).
 
@@ -50,7 +51,7 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
 
 ## Layout
 
-- `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history and the Top Sites, `Fetch` for the weather, `SystemMonitor` for the processor and memory, `NetworkMonitor` for the network, and `CalendarServer` for Apple Calendar), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
+- `src/core/`: the framework-free webOS core. No Angular imports. It is created with injected edges (`Storage`, `Clock`, `BrowserLookup` for Recent's history and the Top Sites, `Fetch` for the weather and GitHub, `SystemMonitor` for the processor and memory, `NetworkMonitor` for the network, and `CalendarServer` for Apple Calendar), and its tests run against in-memory, controllable and stubbed versions of them from `src/core/testing.ts`. `index.ts` is its only entry point (`createWebOS` and the `WebOS` interface); the rest is grouped by area, each module next to its tests:
   - `state/`: the versioned state document, its migrations, backups, and what About webOS shows of it
   - `desktop/`: the snap grid, the Widget catalog, Edit Mode's moves and Widget stacks, the Apps, the Wallpapers, and Ambient mode's setting
   - `search/`: the Search Widget's web search
@@ -59,9 +60,9 @@ See also the [GLOSSARY](GLOSSARY.md) and [ADR-0001](docs/adr/0001-angular-over-r
   - `clipboard/`: the Clipboard App's Clips, and which Dev Utilities tab a Clip opens in
   - `time/`: the Clock's time, date and face, Calendar with holidays and bridge days, Countdowns, the World Clock, Apple Calendar with the Next Event and Coming Up, and the Day View that brings a day's parts together
   - `sky/`: Weather with its Forecast, Rain Ahead and Wallpaper Weather, Sun and Moon
-  - `activity/`: Recent pages, Top Sites, New Tabs, and the System Widget's readings and network
+  - `activity/`: Recent pages, Top Sites, New Tabs, GitHub commits, and the System Widget's readings and network
   - `edges.ts`, `format.ts` and `testing.ts` stay at the top, shared by all of them.
-- `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history and Top Sites lookup, the network (`network.ts`, for the weather), the processor and memory (`system-monitor.ts`), the network status (`network-status.ts`) and iCloud's CalDAV server (`icloud-calendar.ts`) are injected into the core; the favicon lookup, opening URLs in this tab or a background tab (`tabs.ts`) and the extension's version (`extension-info.ts`) are used by views directly.
+- `src/edges/`: the browser-facing edges. Extension storage, the system clock, the history and Top Sites lookup, the network (`network.ts`, for the weather and GitHub), the processor and memory (`system-monitor.ts`), the network status (`network-status.ts`) and iCloud's CalDAV server (`icloud-calendar.ts`) are injected into the core; the favicon lookup, opening URLs in this tab or a background tab (`tabs.ts`) and the extension's version (`extension-info.ts`) are used by views directly.
 - `src/styles/`: design tokens (`tokens.css`), the shared translucent `.material` class, and the Wallpapers (`wallpaper.css`), each with its own accent, chosen as `data-wallpaper` on `<html>`. `public/wallpaper.js` sets it before Angular starts, from a copy the App keeps in `localStorage`, so a new tab never flashes the default. Surfaces get their translucent look only from `.material`. `controls.css` holds the shared fields, buttons, segmented controls, checkboxes, section headings, hints and screen-reader-only text used inside Apps and Widgets, and `.widget-open`, the control with which a Widget opens its App.
 - `src/motion/`: spring presets on Motion's `animate()`, with a short opacity fade under reduced motion, plus the framework-agnostic helpers built on them: the FLIP Window transition (`flip.ts`) and the grid helpers Edit Mode settles Widgets with (`grid.ts`). Everything that moves uses them; the exceptions are Angular CDK drag-sorting (Todos), whose row shifts use a short CSS transition that is off under reduced motion, and Wallpaper Weather (`app/wallpaper-weather/`), whose endless linear loops are CSS animations of `transform` that the compositor runs, with rain and snow off and the mist still under reduced motion.
 - `src/app/`: the Angular layer. Ambient mode, which watches for the user and shows the Ambient screen, is in `app/ambient/`. `WebOSCore` exposes the core's state as signals, and components are thin views over it. Each App lives in `src/app/apps/`. Note previews are rendered with `marked` and sanitised with DOMPurify (`apps/notes/markdown.ts`); that is the only HTML webOS injects.

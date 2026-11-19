@@ -212,7 +212,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites', 'new-tabs']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites', 'new-tabs', 'github']);
   });
 
   it('moves a v8 layout (ticket 11 to 14 builds) to the newest Stage layout once, keeping hidden Widgets hidden', async () => {
@@ -249,9 +249,9 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Notes was hidden, but webOS no longer has a Notes Widget.
-    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites', 'new-tabs']);
+    expect(webos.desktop.hidden()).toEqual(['today', 'top-sites', 'new-tabs', 'github']);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 28, weather: { city: null, report: null } });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 29, weather: { city: null, report: null } });
 
     // Once only: a layout changed after the migration stays as it is in the next tab.
     await webos.desktop.resize('clock', 'S');
@@ -291,7 +291,7 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['todos', 'today', 'top-sites', 'new-tabs']);
+    expect(webos.desktop.hidden()).toEqual(['todos', 'today', 'top-sites', 'new-tabs', 'github']);
     expect(webos.weather.city()).toBeNull();
   });
 
@@ -332,14 +332,14 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Notes was hidden too, but webOS no longer has a Notes Widget.
-    expect(webos.desktop.hidden()).toEqual(['weather', 'today', 'top-sites', 'new-tabs']);
+    expect(webos.desktop.hidden()).toEqual(['weather', 'today', 'top-sites', 'new-tabs', 'github']);
     expect(webos.weather.city()).toEqual(vienna);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
     expect(webos.countdowns.list()).toEqual([]);
     expect(webos.worldClock.view()).toEqual([]);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 28 });
-    // The GitHub Widget is gone, and with it the token and the stored graph.
-    expect(await storage.read()).not.toHaveProperty('github');
+    expect(await storage.read()).toMatchObject({ schemaVersion: 29 });
+    // The old GitHub Widget went at version 15, with its token and graph; the new one starts without a token.
+    expect(await storage.read()).toMatchObject({ github: { token: '', commits: null } });
   });
 
   it('moves a v11 layout (the first build with more Widgets) to the wide Stage layout, showing the new Widgets', async () => {
@@ -388,9 +388,11 @@ describe('state document', () => {
       'moon S@15,6',
     ]);
     // Calendar was hidden by the user; the newer Widgets were hidden only for lack of room.
-    expect(webos.desktop.hidden()).toEqual(['calendar', 'today', 'top-sites', 'new-tabs']);
+    expect(webos.desktop.hidden()).toEqual(['calendar', 'today', 'top-sites', 'new-tabs', 'github']);
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Race']);
-    expect(await storage.read()).not.toHaveProperty('github');
+    // The old token went at version 15 and doesn't come back with the new GitHub Widget.
+    expect(webos.github.hasToken()).toBe(false);
+    expect(await storage.read()).toMatchObject({ github: { token: '', commits: null } });
   });
 
   it('migrates a v16 document to v17 with no Clips, keeping everything else', async () => {
@@ -411,7 +413,7 @@ describe('state document', () => {
 
     expect(webos.clips.list()).toEqual([]);
     expect(webos.todos.open().map((todo) => todo.text)).toEqual(['Ship it']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 28, profile: { name: 'Stefan' }, clips: [] });
+    expect(await storage.read()).toMatchObject({ schemaVersion: 29, profile: { name: 'Stefan' }, clips: [] });
   });
 
   it('loads a v18 document from a pre-release build, dropping its holiday country and keeping everything else', async () => {
@@ -434,7 +436,7 @@ describe('state document', () => {
 
     expect(webos.clips.list().map((listed) => listed.text)).toEqual(['curl localhost']);
     const stored = await storage.read();
-    expect(stored).toMatchObject({ schemaVersion: 28, profile: { name: 'Stefan' } });
+    expect(stored).toMatchObject({ schemaVersion: 29, profile: { name: 'Stefan' } });
     expect(stored).not.toHaveProperty('calendar');
   });
 
@@ -458,7 +460,7 @@ describe('state document', () => {
     expect(webos.countdowns.list().map((countdown) => countdown.title)).toEqual(['Release']);
     expect(webos.appleCalendar.status()).toEqual({ connected: false });
     const stored = await storage.read();
-    expect(stored).toMatchObject({ schemaVersion: 28, appleCalendar: { account: null, calendars: [], sync: null }, systemWidget: { hidden: [] } });
+    expect(stored).toMatchObject({ schemaVersion: 29, appleCalendar: { account: null, calendars: [], sync: null }, systemWidget: { hidden: [] } });
     // Version 22 drops the Pinned Note with the Notes Widget.
     expect(stored).not.toHaveProperty('pinnedNoteId');
   });
@@ -513,8 +515,8 @@ describe('state document', () => {
       'system S@12,6',
       'moon S@15,6',
     ]);
-    expect(webos.desktop.hidden()).toEqual(['sun', 'today', 'top-sites', 'new-tabs']);
-    expect(await storage.read()).toMatchObject({ schemaVersion: 28 });
+    expect(webos.desktop.hidden()).toEqual(['sun', 'today', 'top-sites', 'new-tabs', 'github']);
+    expect(await storage.read()).toMatchObject({ schemaVersion: 29 });
   });
 
   it("keeps a v12 Desktop the user arranged, moving only what the wider Clock now covers, with Search under the Clock", async () => {

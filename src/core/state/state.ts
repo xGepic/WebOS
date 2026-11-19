@@ -2,6 +2,7 @@ import { defaultLayout, type LayoutEntry } from '../desktop/desktop';
 import { DEFAULT_AMBIENT_AFTER } from '../desktop/ambient';
 import { DEFAULT_WALLPAPER } from '../desktop/wallpaper';
 import { DEFAULT_CLOCK_FACE } from '../time/clock-face';
+import type { GitHubCommits } from '../activity/github';
 import type { NewTabCounts } from '../activity/new-tabs';
 import type { Clip } from '../clipboard/clips';
 import type { Storage } from '../edges';
@@ -61,9 +62,15 @@ export interface StateDocument {
   ambientAfter: number | null;
   /** The Clock Widget's face, "digital" or "analog". One this build doesn't know shows as digital. */
   clockFace: string;
+  github: {
+    /** The personal access token the GitHub Widget reads with; empty when not set. Backups leave it out. */
+    token: string;
+    /** The last commit counts fetched with it. A cache: backups leave it out. */
+    commits: GitHubCommits | null;
+  };
 }
 
-const SCHEMA_VERSION = 28;
+const SCHEMA_VERSION = 29;
 
 type Migration = (document: Record<string, unknown>) => Record<string, unknown>;
 
@@ -254,6 +261,17 @@ const migrations: Record<number, Migration> = {
   26: (document) => ({ ...document, schemaVersion: 27, ambientAfter: DEFAULT_AMBIENT_AFTER }),
   // The analog Clock: the Clock Widget keeps its digits until the time is clicked.
   27: (document) => ({ ...document, schemaVersion: 28, clockFace: DEFAULT_CLOCK_FACE }),
+  // The GitHub Widget is back, smaller: no token yet. A layout entry left from the old one (versions
+  // 10 to 14) goes, so it starts hidden like any Widget a saved layout doesn't mention, added when
+  // the layout is loaded.
+  28: (document) => ({
+    ...document,
+    schemaVersion: 29,
+    layout: (Array.isArray(document['layout']) ? document['layout'] : []).filter(
+      (entry) => !(isRecord(entry) && entry['widget'] === 'github'),
+    ),
+    github: { token: '', commits: null },
+  }),
 };
 
 /** The Widgets a document's saved layout has hidden. */
@@ -301,6 +319,7 @@ function freshDocument(): StateDocument {
     lastBackupAt: null,
     ambientAfter: DEFAULT_AMBIENT_AFTER,
     clockFace: DEFAULT_CLOCK_FACE,
+    github: { token: '', commits: null },
   };
 }
 
@@ -334,6 +353,7 @@ function assertCurrentShape(
   const weather = document['weather'] as { city?: unknown; report?: unknown } | undefined;
   const apple = document['appleCalendar'];
   const systemWidget = document['systemWidget'];
+  const github = document['github'];
   if (
     typeof profile?.name !== 'string' ||
     typeof apps !== 'object' ||
@@ -359,7 +379,10 @@ function assertCurrentShape(
     !isRecord(document['newTabs']) ||
     !(document['lastBackupAt'] === null || isFiniteNumber(document['lastBackupAt'])) ||
     !(document['ambientAfter'] === null || isFiniteNumber(document['ambientAfter'])) ||
-    typeof document['clockFace'] !== 'string'
+    typeof document['clockFace'] !== 'string' ||
+    !isRecord(github) ||
+    typeof github['token'] !== 'string' ||
+    !(github['commits'] === null || isRecord(github['commits']))
   ) {
     throw new StateDocumentError(`${subject} is damaged: part of it is missing.`);
   }

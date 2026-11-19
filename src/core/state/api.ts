@@ -13,8 +13,8 @@ export interface StateApi {
      * older backup forward to this build's schema. Rejects with a
      * `StateDocumentError` saying what is wrong, without touching anything, if
      * the file isn't a backup this build can use. This machine's Apple
-     * Calendar connection is kept: backups never hold it. So is when this
-     * machine last exported a backup.
+     * Calendar connection and GitHub token are kept: backups never hold them.
+     * So is when this machine last exported a backup.
      */
     import(text: string): Promise<void>;
   };
@@ -37,8 +37,9 @@ export function createState(store: Store): StateApi {
         return file;
       },
       async import(text) {
-        const { appleCalendar, lastBackupAt } = store.state();
-        await store.replace({ ...backup.importDocument(text), appleCalendar, lastBackupAt });
+        const { appleCalendar, lastBackupAt, github } = store.state();
+        // The commit counts are fetched afresh; see the GitHub Widget's refresher.
+        await store.replace({ ...backup.importDocument(text), appleCalendar, lastBackupAt, github: { token: github.token, commits: null } });
       },
     },
     about: {

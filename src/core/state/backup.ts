@@ -12,15 +12,21 @@ export interface BackupFile {
 
 /**
  * A backup file of `document`, named after the local date `now`: `webos-backup-2026-11-12.json`.
- * The cached weather is left out: it is stale by the time the file is used.
- * So is Apple Calendar, which holds the account's password.
+ * The cached weather and commit counts are left out: they are stale by the time the file is used.
+ * So are Apple Calendar, which holds the account's password, and the GitHub token:
+ * no secret sits in plain text in a backup.
  */
 export function exportFile(document: StateDocument, now: Date): BackupFile {
   const pad = (n: number) => String(n).padStart(2, '0');
   return {
     fileName: `webos-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`,
     text: JSON.stringify(
-      { ...document, weather: { ...document.weather, report: null }, appleCalendar: NO_APPLE_CALENDAR },
+      {
+        ...document,
+        weather: { ...document.weather, report: null },
+        appleCalendar: NO_APPLE_CALENDAR,
+        github: { token: '', commits: null },
+      },
       null,
       2,
     ),

@@ -132,6 +132,15 @@ export const widgets = {
       L: { columns: 6, rows: 3 },
     },
   },
+  // Commits this month and last month, side by side. The Countdown's sizes.
+  github: {
+    name: 'GitHub',
+    sizes: {
+      S: { columns: 3, rows: 2 },
+      M: { columns: 3, rows: 3 },
+      L: { columns: 6, rows: 3 },
+    },
+  },
   // A search field, one row high: Enter searches DuckDuckGo. M matches the Clock's width, to sit under it.
   search: {
     name: 'Search',
@@ -188,8 +197,9 @@ export interface LayoutEntry extends Placement {
  * one-column gap on either side of them; Top Sites under the Search Widget;
  * beneath it Today and Todos, then a Countdown, System and Moon side by side
  * along the bottom, and Recent with New Tabs beside it. Every Widget is
- * visible. The space beside Todos and either side of Top Sites is free, so
- * Edit Mode has room to move things.
+ * visible but GitHub, which needs a token first and isn't listed, so it is
+ * added hidden for Edit Mode to show. The space beside Todos and either side
+ * of Top Sites is free, so Edit Mode has room to move things.
  */
 export const defaultLayout: readonly LayoutEntry[] = [
   { widget: 'world-clock', size: 'M', column: 0, row: 0, visible: true },

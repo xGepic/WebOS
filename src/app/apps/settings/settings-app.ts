@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { AmbientSettings } from './ambient-settings';
 import { AppleCalendarSettings } from './apple-calendar-settings';
 import { BackupSettings } from './backup-settings';
+import { GitHubSettings } from './github-settings';
 import { ProfileSettings } from './profile-settings';
 import { SystemSettings } from './system-settings';
 import { WallpaperSettings } from './wallpaper-settings';
@@ -16,6 +17,7 @@ import { WeatherSettings } from './weather-settings';
     AmbientSettings,
     WeatherSettings,
     AppleCalendarSettings,
+    GitHubSettings,
     SystemSettings,
     BackupSettings,
   ],
@@ -26,6 +28,7 @@ import { WeatherSettings } from './weather-settings';
     <webos-ambient-settings />
     <webos-weather-settings />
     <webos-apple-calendar-settings />
+    <webos-github-settings />
     <webos-system-settings />
     <webos-backup-settings />
   `,

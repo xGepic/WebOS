@@ -17,10 +17,10 @@ describe('default Desktop layout', () => {
     expect(all).toEqual(Object.keys(desktop.widgets).sort());
   });
 
-  it('shows every Widget at once', async () => {
+  it('shows every Widget at once but GitHub, which needs a token first', async () => {
     const { desktop } = await freshWebOS();
 
-    expect(desktop.hidden()).toEqual([]);
+    expect(desktop.hidden()).toEqual(['github']);
   });
 });
 

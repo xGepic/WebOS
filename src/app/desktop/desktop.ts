@@ -16,6 +16,7 @@ import { springTo } from '../../motion/springs';
 import { CalendarWidget } from '../calendar-widget/calendar-widget';
 import { ClockWidget } from '../clock-widget/clock-widget';
 import { CountdownWidget } from '../countdown-widget/countdown-widget';
+import { GitHubWidget } from '../github-widget/github-widget';
 import { MoonWidget } from '../moon-widget/moon-widget';
 import { NewTabsWidget } from '../new-tabs-widget/new-tabs-widget';
 import { RecentWidget } from '../recent-widget/recent-widget';
@@ -76,6 +77,7 @@ const MENU_MARGIN = 8;
     TodayWidget,
     TopSitesWidget,
     NewTabsWidget,
+    GitHubWidget,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -257,6 +259,9 @@ const MENU_MARGIN = 8;
         }
         @case ('new-tabs') {
           <webos-new-tabs-widget />
+        }
+        @case ('github') {
+          <webos-github-widget />
         }
       }
     </ng-template>

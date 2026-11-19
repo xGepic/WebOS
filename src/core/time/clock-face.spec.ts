@@ -51,7 +51,7 @@ describe('the Clock face', () => {
     const migrated = await setUp(createMemoryStorage({ ...v27, schemaVersion: 27 }));
 
     expect(migrated.webos.clock.face()).toBe('digital');
-    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 28, clockFace: 'digital' });
+    expect(await migrated.storage.read()).toMatchObject({ schemaVersion: 29, clockFace: 'digital' });
   });
 
   it('goes into a backup, and comes back with it', async () => {

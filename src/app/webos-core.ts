@@ -68,6 +68,8 @@ export class WebOSCore {
   readonly recentPages = this.read((core) => core.recent.pages());
   readonly topSites = this.read((core) => core.topSites.sites());
   readonly newTabs = this.read((core) => core.newTabs.view());
+  readonly github = this.read((core) => core.github.view());
+  readonly hasGitHubToken = this.read((core) => core.github.hasToken());
   readonly system = this.read((core) => core.system.view());
   readonly systemParts = this.read((core) => core.system.parts());
   readonly wallpaper = this.read((core) => core.wallpaper.current());

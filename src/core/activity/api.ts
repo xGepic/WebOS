@@ -1,5 +1,7 @@
-import type { BrowserLookup, NetworkMonitor, SystemMonitor, TopSitePage, VisitedPage } from '../edges';
+import { FetchError, type BrowserLookup, type Fetch, type NetworkMonitor, type SystemMonitor, type TopSitePage, type VisitedPage } from '../edges';
+import { createRefresher } from '../refresher';
 import type { Store } from '../store';
+import * as github from './github';
 import * as newTabs from './new-tabs';
 import * as recent from './recent';
 import * as system from './system';
@@ -26,6 +28,20 @@ export interface ActivityApi {
     /** Counts a new tab today. webOS calls it once as a new tab opens, and not on a reload. */
     count(): Promise<void>;
   };
+  /** The GitHub Widget's commits this month and last month, read with a personal access token set in Settings. */
+  readonly github: {
+    /** Whether a token is set. The token itself never leaves the core. */
+    hasToken(): boolean;
+    view(): github.GitHubView;
+    /** Sets the token (blank removes it), drops the old token's counts, and fetches the new one's. */
+    setToken(token: string): Promise<void>;
+    /**
+     * Fetches the counts if the stored ones are an hour old, from another
+     * month, or missing, unless a fetch is already under way. A failed fetch
+     * keeps the last counts and doesn't reject.
+     */
+    refresh(): Promise<void>;
+  };
   /**
    * The System Widget: processor and memory use, the processor's name and the
    * network. The readings are kept per tab and never saved; which parts are
@@ -41,14 +57,44 @@ export interface ActivityApi {
   };
 }
 
-/** The Recent, Top Sites, New Tabs and System Widgets. The System Widget follows the network as it changes. */
+/**
+ * The Recent, Top Sites, New Tabs, GitHub and System Widgets. The System Widget
+ * follows the network as it changes. The Desktop loading fetches the GitHub
+ * commit counts if they are due; an imported backup fetches them afresh.
+ */
 export function createActivity(
   store: Store,
-  edges: { browser?: BrowserLookup; system?: SystemMonitor; network?: NetworkMonitor },
+  edges: { browser?: BrowserLookup; fetch?: Fetch; system?: SystemMonitor; network?: NetworkMonitor },
 ): ActivityApi {
   const { clock } = store;
-  const { browser, system: monitor, network } = edges;
+  const { browser, fetch, system: monitor, network } = edges;
   const state = store.state;
+
+  const commits = createRefresher(store, {
+    source: (current) => (fetch && current.github.token ? current.github.token : undefined),
+    same: (a, b) => a === b,
+    isDue: (current, now) => github.isDue(current.github.commits, new Date(now)),
+    load: async (token) => {
+      const now = clock.now();
+      return github.parseCommits(
+        await fetch!.json(github.GITHUB_GRAPHQL_URL, {
+          method: 'POST',
+          headers: { Authorization: `bearer ${token}` },
+          body: { query: github.COMMITS_QUERY, variables: github.commitsVariables(now) },
+        }),
+        now,
+      );
+    },
+    store: (current, answer) => ({ ...current, github: { ...current.github, commits: answer } }),
+    problemOf: (error): github.GitHubProblem =>
+      error instanceof FetchError && (error.status === 401 || error.status === 403) ? 'token' : 'unavailable',
+  });
+  void commits.refresh();
+  store.onAdopt((_, { imported }) => {
+    if (!imported) return;
+    commits.forget();
+    void commits.refresh(true);
+  });
 
   /** The pages visited last, as the browser gave them at this tab's last refresh. */
   let recentVisits: VisitedPage[] = [];
@@ -76,6 +122,17 @@ export function createActivity(
     newTabs: {
       view: () => newTabs.newTabsView(state().newTabs, clock.now()),
       count: () => store.commit({ ...state(), newTabs: newTabs.withNewTab(state().newTabs, clock.now()) }),
+    },
+    github: {
+      hasToken: () => !!state().github.token,
+      view: () =>
+        github.gitHubView(!!state().github.token, state().github.commits, { problem: commits.problem(), now: clock.now() }),
+      async setToken(token) {
+        commits.forget();
+        await store.commit({ ...state(), github: { token: token.trim(), commits: null } });
+        void commits.refresh(true);
+      },
+      refresh: () => commits.refresh(),
     },
     topSites: {
       sites: () => top.topSites(mostVisited),
